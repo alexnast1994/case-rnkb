@@ -1,0 +1,85 @@
+camunda:
+  bpm:
+    admin-user:
+      id:  ${CAMUNDA_ID:demo}
+      password: ${CAMUNDA_PASSWORD:demo}
+      firstName: ${CAMUNDA_FIRST_NAME:Demo}s
+      lastName: ${CAMUNDA_LAST_NAME:Demo}
+    database:
+      type: ${DATABASE_TYPE:oracle}
+
+
+app:
+  upload:
+    dir: ${UPLOAD_DIR:/Users/alibaizhanov/Documents/programs}
+  files:
+    #path: ${FILES_PIPELINE_PATH:/Users/alibaizhanov/Documents/consaltica_projects/rnkb/testcasejson/test.json}
+    #archive: ${FILES_PIPELINE_ARCHIVE:/Users/alibaizhanov/Documents/consaltica_projects/rnkb/testcasearchive/}
+    #error: ${FILES_PIPELINE_ERROR:/Users/alibaizhanov/Documents/consaltica_projects/rnkb/testcaseerror/}
+    readTime: ${FILES_SCHEDULER_RETENTION:100}
+
+minio:
+  endpoint: ${MINIO_ENDPOINT:https://s3.cognive.com/}
+  caseFolder: ${MINIO_CASE_FOLDER:tmp}
+  fileName: ${MINIO_FILE_NAME:result.json}
+  errorCaseFolder: ${MINIO_ERR0R_CASE_FOLDER:errortmp}
+  successCaseFolder: ${MINIO_SUCCESS_CASE_FOLDER:successtmp}
+  port: ${MINIO_PORT:9000}
+  accessKey: ${MINIO_ACCESS_KEY:test-user}
+  secretKey: ${MINIO_SECRET_KEY:%T4r#E2w!Q}
+  secure: false
+  bucket-name: ${MINIO_BUCKET_NAME:test-bucket}
+  file-size: ${MINIO_FILE_SIZE:1073741824} #  Here is the maximum file size
+
+spring:
+  liquibase:
+    enabled: false
+  jpa:
+    show-sql: ${DATABASE_SHOWSQL:true}
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    generate-ddl: false
+    database-platform: org.hibernate.dialect.Oracle12cDialect
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    hikari:
+      jdbc-url: ${DATABASE_URL:jdbc:oracle:thin:@176.9.124.111:1521:orcl}
+      username: ${DATABASE_USERNAME:OSADMIN}
+      password: ${DATABASE_PASSWORD:Qawsed123}
+      driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.driver.OracleDriver}
+
+      #  cloud:
+      #    function:
+      #      definition: dataCreateCase
+      #    stream:
+      #      bindings:
+      #        dataCreateCase-in-0:
+      #          destination: dataCreateCase
+      #          group: appCase
+      #          binder: kafka
+      #          consumer.concurrency: 3
+      #        dataCreateCaseResponse-out-0:
+      #          destination: routerInput
+      #          group: appCase
+      #          binder: kafka
+      #          content-type: application/json
+      #      source: dataCreateCaseResponse
+      #      binders:
+      #        kafka:
+      #          type: kafka
+      #          environment:
+      #            spring:
+      #              cloud:
+      #                stream:
+      #                  kafka:
+      #                    binder:
+      #                      brokers:
+      #                        - 192.168.102.199:9094
+      #                      configuration:
+      #                        max.request.size: 104857600
+
+
+server:
+  port: ${SERVER_PORT:8093}
+

@@ -1,0 +1,79 @@
+camunda:
+  bpm:
+    admin-user:
+      id:  ${CAMUNDA_ID:demo}
+      password: ${CAMUNDA_PASSWORD:demo}
+      firstName: ${CAMUNDA_FIRST_NAME:Demo}
+      lastName: ${CAMUNDA_LAST_NAME:Demo}
+    database:
+      type: ${DATABASE_TYPE:oracle}
+      schema-update: ${CAMUNDA_SCHEMA_UPDATE:true}
+    job-execution:
+      enabled: true
+    deployment-resource-pattern: classpath*:bpmn/*.bpmn
+    auto-deployment-enabled: true
+
+app:
+  upload:
+    dir: ${UPLOAD_DIR:/home/af_butenkoav/casernkb/downloads}
+  files:
+    #path: ${FILES_PIPELINE_PATH:/Users/alibaizhanov/Documents/consaltica_projects/rnkb/testcasejson/test.json}
+    #archive: ${FILES_PIPELINE_ARCHIVE:/Users/alibaizhanov/Documents/consaltica_projects/rnkb/testcasearchive/}
+    #error: ${FILES_PIPELINE_ERROR:/Users/alibaizhanov/Documents/consaltica_projects/rnkb/testcaseerror/}
+    readTime: ${FILES_SCHEDULER_RETENTION:100}
+
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://10.86.26.209:9000/}
+  caseFolder: ${MINIO_CASE_FOLDER:tmp}
+  fileName: ${MINIO_FILE_NAME:result.json}
+  errorCaseFolder: ${MINIO_ERR0R_CASE_FOLDER:errortmp}
+  successCaseFolder: ${MINIO_SUCCESS_CASE_FOLDER:successtmp}
+  port: ${MINIO_PORT:9000}
+  accessKey: ${MINIO_ACCESS_KEY:pipeline}
+  secretKey: ${MINIO_SECRET_KEY:oneveryhardpassword}
+  secure: false
+  bucket-name: ${MINIO_BUCKET_NAME:test-bucket-for-pipeline}
+  file-size: ${MINIO_FILE_SIZE:1073741824} #  Here is the maximum file size
+
+
+spring:
+  liquibase:
+    enabled: false
+  jpa:
+    show-sql: ${DATABASE_SHOWSQL:true}
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: none
+    generate-ddl: false
+    database-platform: org.hibernate.dialect.Oracle12cDialect
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    hikari:
+      jdbc-url: ${DATABASE_URL:jdbc:oracle:thin:@10.86.26.211:1521:ANALYST}
+      username: ${DATABASE_USERNAME:OSADMIN}
+      password: ${DATABASE_PASSWORD:Qawsed123}
+      driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.driver.OracleDriver}
+  application:
+    name: casernkb
+
+server:
+  port: ${SERVER_PORT:8093}
+logging:
+  level:
+    org.springframework: ERROR
+    org:
+      hibernate:
+        type: trace
+      camunda:
+        bpm: info
+    com:
+      cognive:
+        projects:
+          casernkb: DEBUG
+  pattern:
+    file: "%d %p %c{1.} [%t] %m%n"
+  file:
+    name: ${APP_LOGS_PATH:/home/af_butenkoav/casernkb/log/app.log}
+    clean-history-on-start: false
+

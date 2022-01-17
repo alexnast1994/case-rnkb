@@ -1,0 +1,76 @@
+{
+  "resolver":[
+    {
+      "processName": "operationProcess",
+      "camundaProcesses":[
+        {
+          "camundaProcessName": "operationCreateCase",
+          "responseTopicName": "dataCreateCaseResponse-out-0",
+          "inputParams": [
+            {
+              "value": "$.dataMap.dataKYC_DJ",
+              "paramType": "JsonPath",
+              "inputParamName": "operation",
+              "clazz": "com.djn.operation.SearchOperationResponse"
+            },
+            {
+              "value": "",
+              "paramType": "FullRequest",
+              "inputParamName": "response",
+              "clazz": "com.prime.router.struct.InnerStruct"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "processName": "operationSanctionProcess",
+      "camundaProcesses":[
+        {
+          "camundaProcessName": "operationCreateCase",
+          "responseTopicName": "dataCreateCaseResponse-out-0",
+          "inputParams": [
+            {
+              "value": "$.dataMap.dataKYC_DJ",
+              "paramType": "JsonPath",
+              "inputParamName": "operation",
+              "clazz": "com.djn.operation.SearchOperationResponse"
+            },
+            {
+              "value": "",
+              "paramType": "FullRequest",
+              "inputParamName": "response",
+              "clazz": "com.prime.router.struct.InnerStruct"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "processName": "clientProcess",
+      "camundaProcesses":[
+        {
+          "camundaProcessName": "clientCreateCase",
+          "responseTopicName": "dataCreateCaseResponse-out-0",
+          "inputParams": [
+            {
+              "value": "$.dataMap.dataKYC_DJ",
+              "paramType": "JsonPath",
+              "inputParamName": "client",
+              "clazz": "com.djn.client.SearchClientResponse"
+            },
+            {
+              "value": "",
+              "paramType": "FullRequest",
+              "inputParamName": "response",
+              "clazz": "com.prime.router.struct.InnerStruct"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "defaultProcessJsonPath":[
+    "$.processName"
+  ]
+}
