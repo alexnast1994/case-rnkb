@@ -25,11 +25,6 @@
     </properties>
     <repositories>
         <repository>
-            <id>camunda-bpm-nexus</id>
-            <name>Camunda Maven Repository</name>
-            <url>https://app.camunda.com/nexus/content/groups/public</url>
-        </repository>
-        <repository>
             <id>consaltica</id>
             <url>https://nexus.consaltica.ru/repository/consaltica/</url>
         </repository>
