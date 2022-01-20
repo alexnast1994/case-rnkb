@@ -15,7 +15,7 @@
     <bpmn:sequenceFlow id="Flow_03utneg" sourceRef="Activity_0lhtmmd" targetRef="Activity_0cj88dk" />
     <bpmn:sequenceFlow id="Flow_0ablcgz" sourceRef="StartEvent_1" targetRef="Activity_0lhtmmd" />
     <bpmn:sequenceFlow id="Flow_0yn6rif" sourceRef="Activity_0cj88dk" targetRef="Activity_0cxhkls" />
-    <bpmn:serviceTask id="Activity_0cxhkls" name="Get size" camunda:delegateExpression="${operCaseDel}">
+    <bpmn:serviceTask id="Activity_0cxhkls" name="Get opreations from variable" camunda:delegateExpression="${operationsCaseDelegate}">
       <bpmn:extensionElements>
         <camunda:inputOutput>
           <camunda:inputParameter name="operation">${operation}</camunda:inputParameter>
@@ -41,7 +41,7 @@
     <bpmn:subProcess id="Activity_0snq41v">
       <bpmn:incoming>Flow_0jy68tm</bpmn:incoming>
       <bpmn:outgoing>Flow_0spkv5c</bpmn:outgoing>
-      <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="operCase" camunda:elementVariable="oper" />
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="operationsCase" camunda:elementVariable="operationCase" />
       <bpmn:startEvent id="Event_0qvar3l">
         <bpmn:outgoing>Flow_0kp2j3a</bpmn:outgoing>
       </bpmn:startEvent>
@@ -54,7 +54,7 @@
         <bpmn:outgoing>Flow_1gs543y</bpmn:outgoing>
         <bpmn:script>import com.cognive.projects.casernkb.model.RuleResultCO
 
-RuleResultCO ruleResult = oper
+RuleResultCO ruleResult = operationCase
 
 return ruleResult</bpmn:script>
       </bpmn:scriptTask>

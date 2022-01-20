@@ -9,12 +9,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class OperCaseDel implements JavaDelegate {
+public class OperationsCaseDelegate implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         List<RuleResultCO> operation = (List<RuleResultCO>) delegateExecution.getVariable("operation");
-        delegateExecution.setVariable("sizeOfOper",operation.size()-1);
-        delegateExecution.setVariable("operCase",operation);
+        delegateExecution.setVariable("operationsCase",operation);
     }
 }
