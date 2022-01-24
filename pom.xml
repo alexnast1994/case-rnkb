@@ -46,22 +46,10 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.djn</groupId>
-            <artifactId>csm-response-model</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>com.cognive.platform</groupId>
             <artifactId>core</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>com.cognive.projects</groupId>
-            <artifactId>projects.kafkaReader</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>com.prime</groupId>
             <artifactId>db-struct-rnkb</artifactId>
