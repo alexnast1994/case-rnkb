@@ -12,7 +12,7 @@ CAMUNDA_ID -
 CAMUNDA_PASSWORD -
 CAMUNDA_FIRST_NAME - 
 CAMUNDA_LAST_NAME -
-DATABASE_TYPE - camunda database type: oracle
+CAMUNDA_DATABASE_TYPE - camunda database type: oracle
 CAMUNDA_SCHEMA_UPDATE -
 UPLOAD_DIR -
 FILES_SCHEDULER_RETENTION - fixed interval of time for job ms

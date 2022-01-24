@@ -6,7 +6,7 @@ camunda:
       firstName: ${CAMUNDA_FIRST_NAME:Demo}
       lastName: ${CAMUNDA_LAST_NAME:Demo}
     database:
-      type: ${DATABASE_TYPE:oracle}
+      type: ${CAMUNDA_DATABASE_TYPE:oracle}
       schema-update: ${CAMUNDA_SCHEMA_UPDATE:true}
     job-execution:
       enabled: true
@@ -47,7 +47,6 @@ spring:
     generate-ddl: false
     database-platform: ${DATABASE_PLATFORM:org.hibernate.dialect.Oracle12cDialect}
   datasource:
-    driver-class-name: oracle.jdbc.driver.OracleDriver
     hikari:
       jdbc-url: ${DATABASE_URL:jdbc:oracle:thin:@176.9.124.111:1521:orcl}
       username: ${DATABASE_USERNAME:OSADMIN}
