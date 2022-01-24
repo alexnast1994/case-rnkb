@@ -31,12 +31,12 @@
     </repositories>
     <distributionManagement>
         <snapshotRepository>
-            <id>consaltica</id>
-            <url>https://nexus.consaltica.ru/repository/consaltica/</url>
+            <id>rnkb-aml</id>
+            <url>https://nexus.consaltica.ru/repository/rnkb-aml/</url>
         </snapshotRepository>
         <repository>
-            <id>consaltica</id>
-            <url>https://nexus.consaltica.ru/repository/consaltica/</url>
+            <id>rnkb-aml</id>
+            <url>https://nexus.consaltica.ru/repository/rnkb-aml/</url>
         </repository>
     </distributionManagement>
     <dependencies>
