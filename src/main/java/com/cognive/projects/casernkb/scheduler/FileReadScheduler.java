@@ -96,7 +96,7 @@ public class FileReadScheduler {
             catch (Exception e){
                 e.printStackTrace();
             }finally {
-                minioService.putObject(inputStreamForSave,minioBucketName,minioErrorFolderName,"error-"+minioFileName,mimeType);
+                if(inputStreamForSave!=null) minioService.putObject(inputStreamForSave,minioBucketName,minioErrorFolderName,"error-"+minioFileName,mimeType);
             }
         }
     }
