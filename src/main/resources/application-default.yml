@@ -61,7 +61,7 @@ spring:
     name: casernkb
 
 server:
-  port: ${SERVER_PORT:8093}
+  port: ${SERVER_PORT:8193}
 logging:
   level:
     org.springframework: ERROR

@@ -82,5 +82,5 @@ spring:
 
 
 server:
-  port: ${SERVER_PORT:8093}
+  port: ${SERVER_PORT:8193}
 
