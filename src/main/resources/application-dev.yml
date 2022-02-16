@@ -15,11 +15,8 @@ camunda:
 
 app:
   upload:
-    dir: ${UPLOAD_DIR:/home/casernkb/downloads}
+    dir: ${UPLOAD_DIR:/}
   files:
-    #path: ${FILES_PIPELINE_PATH:/Users/alibaizhanov/Documents/consaltica_projects/rnkb/testcasejson/test.json}
-    #archive: ${FILES_PIPELINE_ARCHIVE:/Users/alibaizhanov/Documents/consaltica_projects/rnkb/testcasearchive/}
-    #error: ${FILES_PIPELINE_ERROR:/Users/alibaizhanov/Documents/consaltica_projects/rnkb/testcaseerror/}
     readTime: ${FILES_SCHEDULER_RETENTION:100}
 
 minio:
