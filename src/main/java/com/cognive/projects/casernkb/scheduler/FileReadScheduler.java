@@ -30,6 +30,7 @@ import java.util.*;
 public class FileReadScheduler {
 
     private static final String mimeType = "application/json";
+    private boolean isClosed = false;
 
     /*@Value("${app.files.path}" )
     private String jsonPath;*/
@@ -84,6 +85,7 @@ public class FileReadScheduler {
                     bpmProcessService.startProcess("operationCreateCaseJob", variables);
                     minioService.removeObject(minioBucketName,minioFolderName+"/"+minioFileName);
                     minioService.putObject(inputStreamForSave,minioBucketName,minioSuccessFolderName,"success-"+minioFileName,mimeType);
+                    isClosed = true;
                 }else{
                     log.error("Operations in JSON file is empty");
                     minioService.putObject(inputStreamForSave,minioBucketName,minioErrorFolderName,"error-"+minioFileName,mimeType);
@@ -96,7 +98,10 @@ public class FileReadScheduler {
             catch (Exception e){
                 e.printStackTrace();
             }finally {
-                if(inputStreamForSave!=null) minioService.putObject(inputStreamForSave,minioBucketName,minioErrorFolderName,"error-"+minioFileName,mimeType);
+                if(isClosed) {
+                    minioService.putObject(inputStreamForSave,minioBucketName,minioErrorFolderName,"error-"+minioFileName,mimeType);
+                    isClosed=false;
+                }
             }
         }
     }
