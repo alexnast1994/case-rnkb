@@ -98,7 +98,7 @@ public class FileReadScheduler {
             catch (Exception e){
                 e.printStackTrace();
             }finally {
-                if(isClosed) {
+                if(!isClosed) {
                     minioService.putObject(inputStreamForSave,minioBucketName,minioErrorFolderName,"error-"+minioFileName,mimeType);
                     isClosed=false;
                 }
