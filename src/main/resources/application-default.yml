@@ -75,6 +75,6 @@ logging:
   pattern:
     file: "%d %p %c{1.} [%t] %m%n"
   file:
-    name: ${APP_LOGS_PATH:/Users/alibaizhanov/Documents/programs/log/app.log}
+    name: ${LOG_PATH:/Users/alibaizhanov/Documents/programs/log/app.log}
     clean-history-on-start: false
 

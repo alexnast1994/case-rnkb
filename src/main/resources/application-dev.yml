@@ -72,6 +72,6 @@ logging:
   pattern:
     file: "%d %p %c{1.} [%t] %m%n"
   file:
-    name: ${APP_LOGS_PATH:/home/casernkb/log/app.log}
+    name: ${LOG_PATH:/home/casernkb/log/app.log}
     clean-history-on-start: false
 

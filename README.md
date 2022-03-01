@@ -5,7 +5,7 @@
 - {+ DATABASE_USERNAME - +} 
 - {+ DATABASE_PASSWORD - +}
 - {+ DATABASE_DRIVER - драйвер для подключения к БД +}
-- {+ APP_LOGS_PATH - путь для логирование:/home/af_butenkoav/casernkb/log/app.log +}
+- {+ LOG_PATH - путь для логирование:/home/af_butenkoav/casernkb/log/app.log +}
 - {+ DATABASE_PLATFORM - :org.hibernate.dialect.Oracle12cDialect +}
 - {+ DATABASE_MAX_POOL_SIZE - максимальное кол-во сессий к БД +}
 - {+ CAMUNDA_ID - The username (e.g., 'admin') +}
