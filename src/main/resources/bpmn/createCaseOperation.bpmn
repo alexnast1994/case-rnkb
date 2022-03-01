@@ -103,7 +103,7 @@ Optional&lt;BaseDictionary&gt; getBID(Long id) {
     return baseDictionaryRepository.findById(id);
 }
 
-def name = ruleResult?.getUID() == "6001"? "Post-conrtol": "Обязательный контроль" as String
+def name = ruleResult?.getCaseType() == "4"? "Постконтроль СО": "Обязательный контроль" as String
 def caseObjectTypeCode = "2" as String
 def defaultCaseTypeCode = "2" as String
 def caseTypeCode = ruleResult?.getCaseType() as String
