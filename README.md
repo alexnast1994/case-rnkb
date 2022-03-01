@@ -14,7 +14,6 @@
 - {+ CAMUNDA_LAST_NAME - Additional (optional) user attributes +}
 - {+ CAMUNDA_DATABASE_TYPE - Type of the underlying database. Possible values: h2, mysql, mariadb, oracle, postgres, mssql, db2 +}
 - {+ CAMUNDA_SCHEMA_UPDATE - If automatic schema update should be applied, use one of [true, false, create, create-drop, drop-create] +}
-- {+ UPLOAD_DIR - +}
 - {+ FILES_SCHEDULER_RETENTION - fixed interval of time for job ms +}
 - {+ MINIO_ENDPOINT - URL для MinIO +}
 - {+ MINIO_CASE_FOLDER - с какой папки брать файл для создания кейса +}
