@@ -1,5 +1,5 @@
 - {+ SERVER_PORT - порт приложения +}
-- {+ SPRING_ACTIVE_PROFILES - +}
+- {+ SPRING_APPLICATION_NAME - наименование сервиса: casernkb - +}
 - {+ DATABASE_SHOWSQL - +}
 - {+ DATABASE_URL - +}
 - {+ DATABASE_USERNAME - +} 
