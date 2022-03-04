@@ -34,12 +34,6 @@ minio:
 
 
 spring:
-  main.allow-bean-definition-overriding: true
-  datasource:
-    url: ${DATABASE_URL:jdbc:oracle:thin:@10.86.26.211:1521:ANALYST}
-    username: ${DATABASE_USERNAME:OSADMIN}
-    password: ${DATABASE_PASSWORD:Qawsed123}
-    driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.driver.OracleDriver}
   liquibase:
     enabled: false
   jpa:
@@ -48,16 +42,14 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       ddl-auto: none
-    properties:
-      hibernate:
-        format_sql: true
-        jdbc.lob.non_contextual_creation: true
-        temp.use_jdbc_metadata_defaults: false
-        synonyms: true
-        dialect: ${DATABASE_PLATFORM:org.hibernate.dialect.Oracle12cDialect}
-        enable_lazy_load_no_trans: true
     generate-ddl: false
     database-platform: ${DATABASE_PLATFORM:org.hibernate.dialect.Oracle12cDialect}
+  datasource:
+    hikari:
+      jdbc-url: ${DATABASE_URL:jdbc:oracle:thin:@10.86.26.211:1521:ANALYST}
+      username: ${DATABASE_USERNAME:OSADMIN}
+      password: ${DATABASE_PASSWORD:Qawsed123}
+      driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.driver.OracleDriver}
   application:
     name: ${SPRING_APPLICATION_NAME:casernkb}
 
