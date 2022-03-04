@@ -17,8 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @EntityScan(basePackages = {"com.prime.db.rnkb.model"})
-@ComponentScan(basePackages = {"com.cognive.projects.kafkaReader",
-                               "com.cognive.projects.casernkb.config",
+@ComponentScan(basePackages = {"com.cognive.projects.casernkb.config",
                                "com.cognive.projects.casernkb.utils",
                                "com.cognive.projects.casernkb.delegate",
                                "com.cognive.projects.casernkb.controller",
