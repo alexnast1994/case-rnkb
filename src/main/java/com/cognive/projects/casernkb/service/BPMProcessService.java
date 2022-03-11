@@ -40,5 +40,9 @@ public interface BPMProcessService {
 
     InputStream getProcessDiagram(String id);
 
+    /**
+     * create camunda message
+     */
 
+    void message(String name, String data);
 }

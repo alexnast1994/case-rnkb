@@ -54,6 +54,33 @@ spring:
       driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.driver.OracleDriver}
   application:
     name: ${SPRING_APPLICATION_NAME:casernkb}
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKERS}
+          configuration:
+            max.request.size: 104857600
+            security.protocol: ${KAFKA_SECURITY_PROTOCOL}
+            ssl.truststore.location: ${KAFKA_SSL_TRUSTSTORE_LOCATION}
+            ssl.truststore.password: ${KAFKA_SSL_TRUSTSTORE_PASSWORD}
+            ssl.keystore.type: ${KAFKA_SSL_KEYSTORE_TYPE}
+            ssl.keystore.location: ${KAFKA_SSL_KEYSTORE_LOCATION}
+            ssl.keystore.password: ${KAFKA_SSL_KEYSTORE_PASSWORD}
+            ssl.key.password: ${KAFKA_SSL_KEY_PASSWORD}
+            key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+            key.serializer: org.apache.kafka.common.serialization.StringSerializer
+      bindings:
+        commonMessageInput-in-0:
+          destination: ${COMMON_MESSAGE_TOPICS}
+          group: test-camunda-demo
+          binder: kafka
+        outMessage-out-0:
+          destination: ${COMMON_TOPIC_3}
+          group: test-camunda-demo
+          binder: kafka
+      function:
+        definition: commonMessageInput
 
 server:
   port: ${SERVER_PORT:8193}
@@ -73,6 +100,6 @@ logging:
   pattern:
     file: "%d %p %c{1.} [%t] %m%n"
   file:
-    name: ${LOG_PATH:/Users/alibaizhanov/Documents/programs/log/app.log}
+    name: ${LOG_PATH:app.log}
     clean-history-on-start: false
 

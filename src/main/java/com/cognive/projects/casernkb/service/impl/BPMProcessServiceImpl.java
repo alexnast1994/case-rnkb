@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class BPMProcessServiceImpl implements BPMProcessService {
@@ -88,6 +89,13 @@ public class BPMProcessServiceImpl implements BPMProcessService {
     @Override
     public InputStream getProcessDiagram(String id) {
         return repositoryService.getProcessModel(id);
+    }
+
+    @Override
+    public void message(String name, String data) {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("payload", data);
+        runtimeService.correlateMessage(name, variables);
     }
 
 }
