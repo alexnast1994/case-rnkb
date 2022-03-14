@@ -34,3 +34,4 @@ build/
 
 ### All logs ###
 *.log
+app.log.*

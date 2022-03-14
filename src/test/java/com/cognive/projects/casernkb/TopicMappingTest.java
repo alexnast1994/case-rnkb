@@ -1,7 +1,6 @@
 package com.cognive.projects.casernkb;
 
-import com.cognive.projects.casernkb.config.MessageMappingConfig;
-import org.junit.Assert;
+import com.cognive.projects.casernkb.config.BindingMappingConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class TopicMappingTest {
     @Autowired
-    MessageMappingConfig config;
+    BindingMappingConfig config;
 
     @Test
     void test() {

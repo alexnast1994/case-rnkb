@@ -12,6 +12,8 @@ camunda:
       enabled: true
     deployment-resource-pattern: classpath*:bpmn/*.bpmn
     auto-deployment-enabled: true
+    authorization:
+      enabled: true
 
 app:
   upload:
@@ -31,7 +33,6 @@ minio:
   secure: false
   bucket-name: ${MINIO_BUCKET_NAME:test-bucket}
   file-size: ${MINIO_FILE_SIZE:1073741824} #  Here is the maximum file size
-
 
 spring:
   liquibase:
@@ -72,18 +73,22 @@ spring:
             key.serializer: org.apache.kafka.common.serialization.StringSerializer
       bindings:
         commonMessageInput-in-0:
-          destination: ${COMMON_MESSAGE_TOPICS}
-          group: test-camunda-demo
+          destination: ${TOPIC_CASE_REQUEST}
+          group: case-rnkb
           binder: kafka
         outMessage-out-0:
-          destination: ${COMMON_TOPIC_3}
-          group: test-camunda-demo
+          destination: ${TOPIC_CASE_OUT}
+          group: case-rnkb
           binder: kafka
       function:
         definition: commonMessageInput
 
 server:
   port: ${SERVER_PORT:8193}
+  message-mapping:
+    message-case: ${TOPIC_CASE_REQUEST}
+    message-case-out: ${TOPIC_CASE_OUT}
+
 logging:
   level:
     org.springframework: ERROR

@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.service.impl;
 
+import com.cognive.projects.casernkb.config.BindingMappingConfig;
 import com.cognive.projects.casernkb.config.MessageMappingConfig;
 import com.cognive.projects.casernkb.service.BPMProcessService;
 import com.cognive.projects.casernkb.service.KafkaService;
@@ -19,7 +20,8 @@ import java.util.function.Consumer;
 @Component
 public class KafkaServiceImpl implements KafkaService {
 
-    private final MessageMappingConfig topicMappingConfig;
+    private final BindingMappingConfig topicMappingConfig;
+    private final MessageMappingConfig messageMappingConfig;
     private final BPMProcessService bpmService;
     private final StreamBridge streamBridge;
 
@@ -30,7 +32,7 @@ public class KafkaServiceImpl implements KafkaService {
             String topic = x.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
             log.info("Kafka message key={}, from: {}", key, topic);
 
-            String messageId = topicMappingConfig.getBinding(topic);
+            String messageId = messageMappingConfig.getMessage(topic);
             if(messageId == null)
                 throw new IllegalArgumentException("Unknown topic configuration");
 
@@ -38,15 +40,26 @@ public class KafkaServiceImpl implements KafkaService {
         };
     }
 
+    /**
+     * Send message to topic
+     * @param messageId - id for message
+     * @param key - kafka key
+     * @param data - kafka message
+     */
     @Override
     public void commonMessageOutput(String messageId, String key, String data) {
-        if(!topicMappingConfig.getBindings().containsKey(messageId))
+        String topicName = messageMappingConfig.getTopic(messageId);
+        if(topicName == null)
+            throw new IllegalArgumentException("Unknown topic configuration");
+
+        String binding = topicMappingConfig.getBinding(topicName);
+        if(binding == null)
             throw new IllegalArgumentException("Unknown binding configuration");
 
         Message<?> message = MessageBuilder.withPayload(data)
                 .setHeader(KafkaHeaders.MESSAGE_KEY, key)
                 .build();
 
-        streamBridge.send(messageId, message);
+        streamBridge.send(binding, message);
     }
 }

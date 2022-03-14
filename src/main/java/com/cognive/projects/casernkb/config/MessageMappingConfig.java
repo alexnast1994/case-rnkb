@@ -7,36 +7,29 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Message to topic mapping
+ * Spring map topics to binding
+ * Camunda operate messageId
+ */
 @Getter
 @Setter
 @Component
 @AllArgsConstructor
-@ConfigurationProperties(prefix = "spring.cloud.stream")
+@ConfigurationProperties(prefix = "server")
 public class MessageMappingConfig {
-    private Map<String, BindingsItem> bindings;
-    //private Map<String, String> bindings;
+    private Map<String, String> messageMapping;
+    private final Map<String, String> reverseMessageMapping;
 
-    private final Map<String, String> topicBindingMap = new ConcurrentHashMap<>();
-
-    public String getBinding(String topicName) {
-        if(this.topicBindingMap.isEmpty()) {
-            bindings.forEach((x, y) -> {
-                String[] topics = y.getDestination().split(",");
-                for(String t : topics) {
-                    topicBindingMap.put(t, x);
-                }
-            });
+    public String getMessage(String topicName) {
+        if(this.reverseMessageMapping.isEmpty()) {
+            messageMapping.forEach((x, y) -> reverseMessageMapping.put(y, x));
         }
-        return topicBindingMap.get(topicName);
+        return reverseMessageMapping.get(topicName);
     }
 
-    @Getter
-    @Setter
-    public static class BindingsItem {
-        private String destination;
-        private String group;
-        private String binder;
+    public String getTopic(String messageId) {
+        return messageMapping.get(messageId);
     }
 }

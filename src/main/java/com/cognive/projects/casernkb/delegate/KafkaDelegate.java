@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.delegate;
 
+import com.cognive.projects.casernkb.config.MessageMappingConfig;
 import com.cognive.projects.casernkb.service.KafkaService;
 import lombok.AllArgsConstructor;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
