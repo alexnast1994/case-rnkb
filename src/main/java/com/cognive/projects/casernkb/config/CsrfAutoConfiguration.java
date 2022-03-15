@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CsrfAutoConfiguration {
     private static final String CSRF_PREVENTION_FILTER = "CsrfPreventionFilter";
+
     /**
      * Overwrite csrf filter from Camunda configured here
      * org.camunda.bpm.spring.boot.starter.webapp.CamundaBpmWebappInitializer

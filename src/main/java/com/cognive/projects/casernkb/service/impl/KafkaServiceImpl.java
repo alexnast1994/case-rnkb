@@ -36,7 +36,7 @@ public class KafkaServiceImpl implements KafkaService {
             if(messageId == null)
                 throw new IllegalArgumentException("Unknown topic configuration");
 
-            bpmService.message(messageId, x.getPayload());
+            bpmService.message(key, messageId, x.getPayload());
         };
     }
 

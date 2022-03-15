@@ -44,5 +44,5 @@ public interface BPMProcessService {
      * create camunda message
      */
 
-    void message(String name, String data);
+    void message(String businessKey, String name, String data);
 }

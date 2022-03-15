@@ -6,6 +6,7 @@ import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
+import org.camunda.bpm.engine.runtime.MessageCorrelationBuilder;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.engine.task.TaskQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,10 +93,13 @@ public class BPMProcessServiceImpl implements BPMProcessService {
     }
 
     @Override
-    public void message(String name, String data) {
+    public void message(String businessKey, String name, String data) {
         Map<String, Object> variables = new HashMap<>();
         variables.put("payload", data);
-        runtimeService.correlateMessage(name, variables);
-    }
 
+        MessageCorrelationBuilder builder = runtimeService.createMessageCorrelation(name);
+        builder.setVariables(variables)
+                .processInstanceBusinessKey(businessKey)
+                .correlate();
+    }
 }

@@ -10,10 +10,16 @@ camunda:
       schema-update: ${CAMUNDA_SCHEMA_UPDATE:true}
     job-execution:
       enabled: true
-    deployment-resource-pattern: classpath*:bpmn/*.bpmn
+    deployment-resource-pattern: classpath*:bpmn/**/*.bpmn
     auto-deployment-enabled: true
     authorization:
       enabled: true
+    application:
+      delete-upon-undeploy: false
+      scan-for-process-definitions: false
+      deploy-changed-only: true
+      resume-previous-versions: true
+      resume-previous-by: a value
 
 app:
   upload:
@@ -52,7 +58,9 @@ spring:
       jdbc-url: ${DATABASE_URL:jdbc:oracle:thin:@176.9.124.111:1521:orcl}
       username: ${DATABASE_USERNAME:OSADMIN}
       password: ${DATABASE_PASSWORD:Qawsed123}
-      driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.driver.OracleDriver}
+      driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.OracleDriver}
+      schema: ${DATABASE_USERNAME:OSADMIN}
+
   application:
     name: ${SPRING_APPLICATION_NAME:casernkb}
   cloud:
