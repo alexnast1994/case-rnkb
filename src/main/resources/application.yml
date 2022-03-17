@@ -95,6 +95,7 @@ server:
   port: ${SERVER_PORT:8193}
   message-mapping:
     message-case: ${TOPIC_CASE_REQUEST}
+    message-pipeline: ${TOPIC_CASE_PIPELINE}
     message-case-out: ${TOPIC_CASE_OUT}
 
 logging:

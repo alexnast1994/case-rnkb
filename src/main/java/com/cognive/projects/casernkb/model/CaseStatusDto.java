@@ -1,9 +1,13 @@
 package com.cognive.projects.casernkb.model;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 public class CaseStatusDto {
-    private boolean isMainTagsChanged = false;
-    private boolean isDataChanged = false;
+    private boolean mainTagsChanged = false;
+    private boolean dataChanged = false;
 }

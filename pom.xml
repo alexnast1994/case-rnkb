@@ -51,9 +51,9 @@
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.prime</groupId>
-            <artifactId>db-struct-rnkb</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <groupId>com.cognive.models</groupId>
+            <artifactId>models-rnkb</artifactId>
+            <version>0.2.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.minio</groupId>
