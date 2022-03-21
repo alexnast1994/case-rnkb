@@ -1,6 +1,5 @@
 package com.cognive.projects.casernkb.delegate;
 
-import com.cognive.projects.casernkb.config.MessageMappingConfig;
 import com.cognive.projects.casernkb.service.KafkaService;
 import lombok.AllArgsConstructor;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
@@ -17,10 +16,6 @@ public class KafkaDelegate implements JavaDelegate {
         String messageId = (String)delegateExecution.getVariable("messageId");
         String key = (String)delegateExecution.getVariable("key");
         String data = (String)delegateExecution.getVariable("payload");
-
-        if(data == null) {
-            data = "test_" + delegateExecution.getCurrentActivityId();
-        }
 
         kafkaService.commonMessageOutput(messageId, key, data);
     }

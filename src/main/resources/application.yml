@@ -81,7 +81,7 @@ spring:
             key.serializer: org.apache.kafka.common.serialization.StringSerializer
       bindings:
         commonMessageInput-in-0:
-          destination: ${TOPIC_CASE_REQUEST}
+          destination: ${TOPIC_CASE_REQUEST},${TOPIC_CASE_PIPELINE}
           group: case-rnkb
           binder: kafka
         outMessage-out-0:
