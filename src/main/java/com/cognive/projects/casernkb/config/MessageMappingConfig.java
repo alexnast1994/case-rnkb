@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Message to topic mapping
@@ -20,7 +21,7 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "server")
 public class MessageMappingConfig {
     private Map<String, String> messageMapping;
-    private final Map<String, String> reverseMessageMapping;
+    private final Map<String, String> reverseMessageMapping = new ConcurrentHashMap<>();
 
     public String getMessage(String topicName) {
         if(this.reverseMessageMapping.isEmpty()) {
