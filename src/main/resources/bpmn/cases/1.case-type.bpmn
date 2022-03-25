@@ -166,7 +166,7 @@ execution.setVariable("paymentWork", payment)</bpmn:script>
 import com.prime.db.rnkb.model.BaseDictionary
 
 BaseDictionary getCaseStatus(String code) {
-   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(18, code);
+   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(16, code);
 }
 
 
