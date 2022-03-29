@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_14vbi72" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="Process_1bkhpeg" name="caseCreate" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="caseCreate">
+      <bpmn:outgoing>Flow_0ft4dh9</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="Event_15as0y6">
+      <bpmn:incoming>Flow_0a20bgy</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:scriptTask id="Activity_1y0u3c9" name="Формирование case" scriptFormat="groovy" camunda:resultVariable="case">
+      <bpmn:incoming>Flow_0ft4dh9</bpmn:incoming>
+      <bpmn:outgoing>Flow_0a20bgy</bpmn:outgoing>
+      <bpmn:script>import com.prime.db.rnkb.model.Case
+import java.time.LocalDateTime
+import com.prime.db.rnkb.model.BaseDictionary
+
+BaseDictionary getRule(String code) {
+   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(272, code);
+}
+
+BaseDictionary getCaseType(String code) {
+   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(18, code);
+}
+
+BaseDictionary getRuleType(String code) {
+   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(18, code);
+}
+
+var acceptedRules = execution.getVariable("acceptedRules");
+var payment = execution.getVariable("payment");
+
+Case caseData = new Case()
+CaseOperation caseOperation = new CaseOperation()
+CaseClient caseClient = new CaseClient()
+
+var caseRulesList = []
+acceptedRules.each{rule -&gt;
+  CaseRules cr = new CaseRules()
+  cr.ruleId = getRuleType(rule)
+  caseRulesList.add(cr)
+}
+
+caseOperation.setPaymentId(payment.getId())
+caseOperation.setDateOper(payment.getDateIn())
+caseOperation.setAmount(payment.getAmountNationalCurrency())
+
+caseOperation.setPayeeaccountnumber(payment.getPayeeAccountNumber())
+caseOperation.setPayeraccountnumber(payment.getPayerAccountNumber())
+caseOperation.setPayerbankname(payment.getBankPayerId().getName())
+caseOperation.setPayeebankname(payment.getBankPayeeId().getName())
+caseOperation.setPayername(payment.getPayerName())
+caseOperation.setPayeename(payment.getPayeeName())
+caseOperation.setType(payment.getType())
+caseOperation.setCurrency(payment.getCurrency())
+
+caseOperation.setPayerClientId(payment.getPayerClientId())
+caseOperation.setPayeeClientId(payment.getPayeeClientId())
+
+
+caseData.setCreationDate(LocalDateTime.now())
+caseData.setCaseRules(caseRulesList)
+caseData.setCaseType(getCaseType(caseType))
+caseData.getCaseOperation().add(caseOperation)
+caseData.getCaseClient().add(caseClient)
+
+
+return caseData</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_0a20bgy" sourceRef="Activity_1y0u3c9" targetRef="Event_15as0y6" />
+    <bpmn:sequenceFlow id="Flow_0ft4dh9" sourceRef="StartEvent_1" targetRef="Activity_1y0u3c9" />
+    <bpmn:textAnnotation id="TextAnnotation_0rheqm6">
+      <bpmn:text>acceptedRules
+payment
+caseType</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_1vm388c" sourceRef="StartEvent_1" targetRef="TextAnnotation_0rheqm6" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1bkhpeg">
+      <bpmndi:BPMNEdge id="Flow_0ft4dh9_di" bpmnElement="Flow_0ft4dh9">
+        <di:waypoint x="215" y="177" />
+        <di:waypoint x="310" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0a20bgy_di" bpmnElement="Flow_0a20bgy">
+        <di:waypoint x="410" y="177" />
+        <di:waypoint x="492" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="169" y="202" width="57" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_15as0y6_di" bpmnElement="Event_15as0y6">
+        <dc:Bounds x="492" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1y0u3c9_di" bpmnElement="Activity_1y0u3c9">
+        <dc:Bounds x="310" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0rheqm6_di" bpmnElement="TextAnnotation_0rheqm6">
+        <dc:Bounds x="147" y="70" width="100" height="53" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_1vm388c_di" bpmnElement="Association_1vm388c">
+        <di:waypoint x="197" y="159" />
+        <di:waypoint x="197" y="123" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

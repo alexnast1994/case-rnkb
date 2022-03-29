@@ -9,4 +9,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CaseStatusOutDto {
     private String status;
+
 }
