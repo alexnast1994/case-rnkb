@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1g7xbpg" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:process id="Process_1a49v7p" name="createCaseFromPipeline" isExecutable="true">
+  <bpmn:process id="createCaseFromPipeline" name="createCaseFromPipeline" isExecutable="true">
     <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
       <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
       <bpmn:outgoing>Flow_10kqd3k</bpmn:outgoing>
@@ -253,7 +253,7 @@ return caseData</bpmn:script>
   <bpmn:message id="Message_1ld6d8j" name="message-pipeline" />
   <bpmn:message id="Message_1w4kpx6" name="message-pipeline" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1a49v7p">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="createCaseFromPipeline">
       <bpmndi:BPMNEdge id="Flow_163efhh_di" bpmnElement="Flow_163efhh">
         <di:waypoint x="1960" y="345" />
         <di:waypoint x="2070" y="345" />
