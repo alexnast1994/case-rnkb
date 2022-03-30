@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0hxmixe" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="templateExample" name="Example of Template engine" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0p275v9</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0p275v9" sourceRef="StartEvent_1" targetRef="Activity_1swpk2w" />
+    <bpmn:serviceTask id="Activity_06ngoq7" name="template" camunda:delegateExpression="${templateDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="outputVarName">result</camunda:inputParameter>
+          <camunda:inputParameter name="parameters">
+            <camunda:map>
+              <camunda:entry key="case">${case}</camunda:entry>
+            </camunda:map>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="template">${template}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0cqed26</bpmn:incoming>
+      <bpmn:outgoing>Flow_1u8rp57</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0cqed26" sourceRef="Activity_1swpk2w" targetRef="Activity_06ngoq7" />
+    <bpmn:serviceTask id="Activity_1jae6rb" name="Логирование процесса" camunda:delegateExpression="${loggerDelegate}">
+      <bpmn:incoming>Flow_1u8rp57</bpmn:incoming>
+      <bpmn:outgoing>Flow_10gytu2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1u8rp57" sourceRef="Activity_06ngoq7" targetRef="Activity_1jae6rb" />
+    <bpmn:endEvent id="Event_1m8fi2i">
+      <bpmn:incoming>Flow_10gytu2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_10gytu2" sourceRef="Activity_1jae6rb" targetRef="Event_1m8fi2i" />
+    <bpmn:scriptTask id="Activity_1swpk2w" name="set params" scriptFormat="groovy">
+      <bpmn:incoming>Flow_0p275v9</bpmn:incoming>
+      <bpmn:outgoing>Flow_0cqed26</bpmn:outgoing>
+      <bpmn:script>import static org.camunda.spin.Spin.*
+import static org.camunda.spin.DataFormats.*
+import com.prime.db.rnkb.model.Case
+import com.prime.db.rnkb.model.BaseDictionary
+
+BaseDictionary status = new BaseDictionary()
+status.setId(1)
+status.setCode("3")
+status.setName("asdasd")
+
+Case caseData = new Case()
+caseData.setId(123)
+caseData.setStatus(status)
+
+def template = ' ${case.id} + ${case.status.code} ';
+
+execution.setVariable("template", template)
+execution.setVariable("case", caseData)</bpmn:script>
+    </bpmn:scriptTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="templateExample">
+      <bpmndi:BPMNEdge id="Flow_0p275v9_di" bpmnElement="Flow_0p275v9">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="260" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0cqed26_di" bpmnElement="Flow_0cqed26">
+        <di:waypoint x="360" y="117" />
+        <di:waypoint x="440" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1u8rp57_di" bpmnElement="Flow_1u8rp57">
+        <di:waypoint x="540" y="117" />
+        <di:waypoint x="620" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10gytu2_di" bpmnElement="Flow_10gytu2">
+        <di:waypoint x="720" y="117" />
+        <di:waypoint x="802" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_06ngoq7_di" bpmnElement="Activity_06ngoq7">
+        <dc:Bounds x="440" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jae6rb_di" bpmnElement="Activity_1jae6rb">
+        <dc:Bounds x="620" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1m8fi2i_di" bpmnElement="Event_1m8fi2i">
+        <dc:Bounds x="802" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_09prrmc_di" bpmnElement="Activity_1swpk2w">
+        <dc:Bounds x="260" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -149,6 +149,11 @@
             <artifactId>java-object-diff</artifactId>
             <version>0.95</version>
         </dependency>
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.31</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
