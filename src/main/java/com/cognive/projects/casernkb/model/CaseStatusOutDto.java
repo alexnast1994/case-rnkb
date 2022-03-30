@@ -4,12 +4,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
 public class CaseStatusOutDto {
     private String Id;// автоматически
-    private String TimeStamp; // автоматически
+    private LocalDateTime TimeStamp; // автоматически
     private String SourceSystemId; // "1000"
     private String SourceSystem; //	"AML"
     private String RequestType; //  "PaymentCheck"
@@ -30,7 +32,7 @@ public class CaseStatusOutDto {
     private String RejectType;
     private String RejectDescription;
     private String DecisionByUser;
-    private String DecisionDate; // Case.DECISIONDATE
+    private LocalDateTime DecisionDate; // Case.DECISIONDATE
     private String BlockDocumResult;
     //private String SourceSystem; // Payment.SOURCESYSTEMS
 }

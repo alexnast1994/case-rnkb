@@ -16,9 +16,18 @@ import groovy.json.JsonOutput
 import com.cognive.projects.casernkb.model.CaseStatusOutDto
 
 var case = execution.getVariable("case");
+var payment = execution.getVariable("payment");
 
 CaseStatusOutDto out = new CaseStatusOutDto()
-out.setStatus(case.getStatus().getCode())
+out.setCheckStatus(case.getStatus().getCode())
+out.setVersion("1.9")
+out.setObjectType("Operation")
+out.setRequestType("PaymentCheck")
+out.setSourceSystem(payment.getSourceSystems().getCode())
+out.setSourceId(payment.getExId())
+out.setSourceSystemId("1000")
+out.setTimeStamp(LocalDateTime.now())
+out.setDecisionDate(Case.getDecisiondate())
 
 return JsonOutput.prettyPrint(JsonOutput.toJson(out))
 </bpmn:script>
@@ -39,7 +48,8 @@ return JsonOutput.prettyPrint(JsonOutput.toJson(out))
     <bpmn:textAnnotation id="TextAnnotation_0rheqm6">
       <bpmn:text>messageId
 key
-case</bpmn:text>
+case
+payment</bpmn:text>
     </bpmn:textAnnotation>
     <bpmn:association id="Association_1vm388c" sourceRef="StartEvent_1" targetRef="TextAnnotation_0rheqm6" />
   </bpmn:process>
@@ -73,11 +83,11 @@ case</bpmn:text>
         <dc:Bounds x="410" y="137" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0rheqm6_di" bpmnElement="TextAnnotation_0rheqm6">
-        <dc:Bounds x="147" y="70" width="100" height="53" />
+        <dc:Bounds x="147" y="70" width="100" height="68" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_1vm388c_di" bpmnElement="Association_1vm388c">
         <di:waypoint x="197" y="159" />
-        <di:waypoint x="197" y="123" />
+        <di:waypoint x="197" y="138" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
