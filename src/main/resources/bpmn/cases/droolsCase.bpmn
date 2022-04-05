@@ -21,7 +21,7 @@
       <bpmn:startEvent id="Event_19hntkt">
         <bpmn:outgoing>Flow_18bo35a</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:scriptTask id="Activity_0us54of" name="Проверить парвила" scriptFormat="groovy" camunda:resultVariable="rulesResult">
+      <bpmn:scriptTask id="Activity_0us54of" name="Проверить парвила" scriptFormat="groovy" camunda:resultVariable="allRules">
         <bpmn:incoming>Flow_18bo35a</bpmn:incoming>
         <bpmn:outgoing>Flow_0shaxqn</bpmn:outgoing>
         <bpmn:script>import static org.camunda.spin.Spin.*
@@ -32,21 +32,24 @@ def jsonStr = execution.getVariable("payload")
 def jsonData = JSON(jsonStr)
 
 def rules = jsonData.prop("rules").elements()
-def paymentId = jsonData.prop("paymentId").stringValue()
+def paymentId = jsonData.prop("paymentId").numberValue()
 def acceptedRules = []
+def allRules = []
 
 rules.each{ rule -&gt; 
-  if(!rule.startWith("7"))
-     acceptedRules.add(rule.stringValue())
+  def ruleCode = rule.stringValue() 
+  allRules.add(ruleCode)
+  if(!ruleCode.startsWith("7"))
+     acceptedRules.add(ruleCode)
 }
 
 if(acceptedRules.size() &gt; 0) {
   execution.setVariable("createCase", true)
   execution.setVariable("acceptedRules", acceptedRules)
 }
-execution.setVariable("paymentId", paymentId)
+execution.setVariable("paymentId", (int)paymentId)
 
-return jsonData.prop("rules") </bpmn:script>
+return allRules</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:exclusiveGateway id="Gateway_00dx1bx" name="Операция попала под правила?" default="Flow_0fsn3gv">
         <bpmn:incoming>Flow_07egg41</bpmn:incoming>
@@ -80,10 +83,10 @@ import com.prime.db.rnkb.model.CaseOperation
 Payment payment = execution.getVariable("payment")
 payment.checkFlag = 1
 
-if(!payment.caseOperationList?isEmpty()) {
-  def case = caseOperationList.get(0).getCaseId()
-  if(case.getCaseType().getCode().equals("1") {
-     execution.setVariable("case", case)
+if(payment.caseOperationList != null &amp;&amp; !payment.caseOperationList.isEmpty()) {
+  def caseData = payment.caseOperationList.get(0).getCaseId()
+  if(caseData.getCaseType().getCode() == "1") {
+     execution.setVariable("caseData", caseData)
   }
 }
 
@@ -91,10 +94,10 @@ execution.setVariable("payment", payment)</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:sequenceFlow id="Flow_01gyzyy" sourceRef="Activity_06ngoq7" targetRef="Activity_0qjsgg5" />
       <bpmn:sequenceFlow id="Flow_07egg41" sourceRef="Activity_0qjsgg5" targetRef="Gateway_00dx1bx" />
-      <bpmn:endEvent id="Event_0tf3ijg">
+      <bpmn:endEvent id="Event_noRules">
         <bpmn:incoming>Flow_0fsn3gv</bpmn:incoming>
       </bpmn:endEvent>
-      <bpmn:sequenceFlow id="Flow_0fsn3gv" sourceRef="Gateway_00dx1bx" targetRef="Event_0tf3ijg" />
+      <bpmn:sequenceFlow id="Flow_0fsn3gv" sourceRef="Gateway_00dx1bx" targetRef="Event_noRules" />
       <bpmn:exclusiveGateway id="Gateway_0z8nozc" name="По операции есть связанный кейс с типом CASE.CASETYPE = 1 &#34;Обязательный контроль&#34;?" default="Flow_0sn2733">
         <bpmn:incoming>Flow_1xgzesw</bpmn:incoming>
         <bpmn:outgoing>Flow_0sn2733</bpmn:outgoing>
@@ -103,34 +106,34 @@ execution.setVariable("payment", payment)</bpmn:script>
       <bpmn:sequenceFlow id="Flow_1xgzesw" sourceRef="Gateway_00dx1bx" targetRef="Gateway_0z8nozc">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable("createCase") != null}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:sequenceFlow id="Flow_0sn2733" sourceRef="Gateway_0z8nozc" targetRef="Activity_05rl2nm" />
-      <bpmn:sequenceFlow id="Flow_00brbp2" sourceRef="Gateway_0z8nozc" targetRef="Activity_1wa8bd5">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable("case") != null}</bpmn:conditionExpression>
+      <bpmn:sequenceFlow id="Flow_0sn2733" sourceRef="Gateway_0z8nozc" targetRef="Activity_callCreateCase" />
+      <bpmn:sequenceFlow id="Flow_00brbp2" sourceRef="Gateway_0z8nozc" targetRef="Activity_checkCodes">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable("caseData") != null}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:callActivity id="Activity_05rl2nm" name="Создать кейс" calledElement="caseCreate">
+      <bpmn:callActivity id="Activity_callCreateCase" name="Создать кейс" calledElement="caseCreate">
         <bpmn:extensionElements>
-          <camunda:in source="1" target="caseType" />
+          <camunda:in source="&#34;1&#34;" target="caseType" />
           <camunda:in source="${payment}" target="payment" />
           <camunda:in source="${acceptedRules}" target="acceptedRules" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_0sn2733</bpmn:incoming>
         <bpmn:outgoing>Flow_0oamcfp</bpmn:outgoing>
       </bpmn:callActivity>
-      <bpmn:endEvent id="Event_17sspdu">
+      <bpmn:endEvent id="Event_createCase">
         <bpmn:incoming>Flow_0oamcfp</bpmn:incoming>
       </bpmn:endEvent>
-      <bpmn:sequenceFlow id="Flow_0oamcfp" sourceRef="Activity_05rl2nm" targetRef="Event_17sspdu" />
-      <bpmn:scriptTask id="Activity_1wa8bd5" name="Проверить новые коды">
+      <bpmn:sequenceFlow id="Flow_0oamcfp" sourceRef="Activity_callCreateCase" targetRef="Event_createCase" />
+      <bpmn:scriptTask id="Activity_checkCodes" name="Проверить новые коды">
         <bpmn:incoming>Flow_00brbp2</bpmn:incoming>
         <bpmn:outgoing>Flow_0y4mdlz</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.Payment
 import com.prime.db.rnkb.model.Case
 import com.prime.db.rnkb.model.CaseOperation
 
-Case case = execution.getVariable("case")
+Case case = execution.getVariable("caseData")
 
 
-def acceptedRules = execution.getVariable("acceptedRules")
+def acceptedRules = execution.getVariable("allRules")
 def newCodes = []
 
 acceptedRules.each{rule -&gt;
@@ -145,7 +148,7 @@ def validStatus = ["1", "2", "3", "5"]
 if(validStatus.any{code -&gt; code == status}) {
    execution.setVariable("saveNewCodes", true)
 }
-execution.setVariable("newAcceptedRules", true)
+execution.setVariable("newAcceptedRules", newCodes)
 
 </bpmn:script>
       </bpmn:scriptTask>
@@ -154,11 +157,11 @@ execution.setVariable("newAcceptedRules", true)
         <bpmn:outgoing>Flow_1x7vw0l</bpmn:outgoing>
         <bpmn:outgoing>Flow_0p7ncic</bpmn:outgoing>
       </bpmn:exclusiveGateway>
-      <bpmn:sequenceFlow id="Flow_0y4mdlz" sourceRef="Activity_1wa8bd5" targetRef="Gateway_17fq0zn" />
-      <bpmn:endEvent id="Event_02drq1g">
+      <bpmn:sequenceFlow id="Flow_0y4mdlz" sourceRef="Activity_checkCodes" targetRef="Gateway_17fq0zn" />
+      <bpmn:endEvent id="Event_noNewCodes">
         <bpmn:incoming>Flow_1x7vw0l</bpmn:incoming>
       </bpmn:endEvent>
-      <bpmn:sequenceFlow id="Flow_1x7vw0l" sourceRef="Gateway_17fq0zn" targetRef="Event_02drq1g" />
+      <bpmn:sequenceFlow id="Flow_1x7vw0l" sourceRef="Gateway_17fq0zn" targetRef="Event_noNewCodes" />
       <bpmn:exclusiveGateway id="Gateway_0kbpvas" name="Отработал новый CASERULES.CODE?" default="Flow_1vk9glr">
         <bpmn:incoming>Flow_0p7ncic</bpmn:incoming>
         <bpmn:outgoing>Flow_123tuwj</bpmn:outgoing>
@@ -204,7 +207,7 @@ newAcceptedRules.each{rule -&gt;
 
 case.setCaseRules(caseRulesList)</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:serviceTask id="Activity_0ldz0l2" name="Сохранить&#10;Case" camunda:delegateExpression="${saveObjectDelegate}">
+      <bpmn:serviceTask id="Activity_saveCase" name="Сохранить&#10;Case" camunda:delegateExpression="${saveObjectDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="saveObject">${case}</camunda:inputParameter>
@@ -214,16 +217,16 @@ case.setCaseRules(caseRulesList)</bpmn:script>
         <bpmn:incoming>Flow_0ij35pz</bpmn:incoming>
         <bpmn:outgoing>Flow_17w22dx</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:endEvent id="Event_0029za0">
+      <bpmn:endEvent id="Event_end">
         <bpmn:incoming>Flow_17w22dx</bpmn:incoming>
       </bpmn:endEvent>
-      <bpmn:sequenceFlow id="Flow_17w22dx" sourceRef="Activity_0ldz0l2" targetRef="Event_0029za0" />
-      <bpmn:sequenceFlow id="Flow_1ny4pt8" sourceRef="Activity_1iy2e9k" targetRef="Activity_0ldz0l2" />
-      <bpmn:sequenceFlow id="Flow_0ij35pz" sourceRef="Activity_0strjx4" targetRef="Activity_0ldz0l2" />
+      <bpmn:sequenceFlow id="Flow_17w22dx" sourceRef="Activity_saveCase" targetRef="Event_end" />
+      <bpmn:sequenceFlow id="Flow_1ny4pt8" sourceRef="Activity_1iy2e9k" targetRef="Activity_saveCase" />
+      <bpmn:sequenceFlow id="Flow_0ij35pz" sourceRef="Activity_0strjx4" targetRef="Activity_saveCase" />
       <bpmn:textAnnotation id="TextAnnotation_0aqvwu3">
         <bpmn:text>CASE.CASETYPE = 1 "Обязательный контроль"</bpmn:text>
       </bpmn:textAnnotation>
-      <bpmn:association id="Association_0j4pq3y" sourceRef="Activity_05rl2nm" targetRef="TextAnnotation_0aqvwu3" />
+      <bpmn:association id="Association_0j4pq3y" sourceRef="Activity_callCreateCase" targetRef="TextAnnotation_0aqvwu3" />
     </bpmn:subProcess>
     <bpmn:sequenceFlow id="Flow_0fiyz5q" sourceRef="Activity_1qwn6qf" targetRef="Activity_15er2ds" />
     <bpmn:endEvent id="Event_098yyfy">
@@ -374,7 +377,7 @@ case.setCaseRules(caseRulesList)</bpmn:script>
       <bpmndi:BPMNShape id="Activity_0jfq2e1_di" bpmnElement="Activity_0qjsgg5">
         <dc:Bounds x="1090" y="207" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0tf3ijg_di" bpmnElement="Event_0tf3ijg">
+      <bpmndi:BPMNShape id="Event_0tf3ijg_di" bpmnElement="Event_noRules">
         <dc:Bounds x="1242" y="342" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_0z8nozc_di" bpmnElement="Gateway_0z8nozc" isMarkerVisible="true">
@@ -383,13 +386,13 @@ case.setCaseRules(caseRulesList)</bpmn:script>
           <dc:Bounds x="1347" y="120" width="86" height="93" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0k4s99z_di" bpmnElement="Activity_05rl2nm">
+      <bpmndi:BPMNShape id="Activity_0k4s99z_di" bpmnElement="Activity_callCreateCase">
         <dc:Bounds x="1340" y="320" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_17sspdu_di" bpmnElement="Event_17sspdu">
+      <bpmndi:BPMNShape id="Event_17sspdu_di" bpmnElement="Event_createCase">
         <dc:Bounds x="1372" y="432" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1srl0tf_di" bpmnElement="Activity_1wa8bd5">
+      <bpmndi:BPMNShape id="Activity_1srl0tf_di" bpmnElement="Activity_checkCodes">
         <dc:Bounds x="1500" y="207" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_17fq0zn_di" bpmnElement="Gateway_17fq0zn" isMarkerVisible="true">
@@ -398,7 +401,7 @@ case.setCaseRules(caseRulesList)</bpmn:script>
           <dc:Bounds x="1657" y="120" width="87" height="53" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_02drq1g_di" bpmnElement="Event_02drq1g">
+      <bpmndi:BPMNShape id="Event_02drq1g_di" bpmnElement="Event_noNewCodes">
         <dc:Bounds x="1682" y="312" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_0kbpvas_di" bpmnElement="Gateway_0kbpvas" isMarkerVisible="true">
@@ -413,10 +416,10 @@ case.setCaseRules(caseRulesList)</bpmn:script>
       <bpmndi:BPMNShape id="Activity_068fdl8_di" bpmnElement="Activity_1iy2e9k">
         <dc:Bounds x="1950" y="207" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0ldz0l2_di" bpmnElement="Activity_0ldz0l2">
+      <bpmndi:BPMNShape id="Activity_0ldz0l2_di" bpmnElement="Activity_saveCase">
         <dc:Bounds x="2120" y="207" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0029za0_di" bpmnElement="Event_0029za0">
+      <bpmndi:BPMNShape id="Event_0029za0_di" bpmnElement="Event_end">
         <dc:Bounds x="2292" y="229" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0aqvwu3_di" bpmnElement="TextAnnotation_0aqvwu3">
