@@ -73,7 +73,7 @@ return allRules</bpmn:script>
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="Flow_0shaxqn" sourceRef="Activity_0us54of" targetRef="Activity_06ngoq7" />
       <bpmn:sequenceFlow id="Flow_18bo35a" sourceRef="Event_19hntkt" targetRef="Activity_0us54of" />
-      <bpmn:scriptTask id="Activity_0qjsgg5" name="Проставить флаг, Проверить Case" scriptFormat="groovy">
+      <bpmn:scriptTask id="Activity_setFlags" name="Проставить флаг, Проверить Case" scriptFormat="groovy">
         <bpmn:incoming>Flow_01gyzyy</bpmn:incoming>
         <bpmn:outgoing>Flow_07egg41</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.Payment
@@ -92,8 +92,8 @@ if(payment.caseOperationList != null &amp;&amp; !payment.caseOperationList.isEmp
 
 execution.setVariable("payment", payment)</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:sequenceFlow id="Flow_01gyzyy" sourceRef="Activity_06ngoq7" targetRef="Activity_0qjsgg5" />
-      <bpmn:sequenceFlow id="Flow_07egg41" sourceRef="Activity_0qjsgg5" targetRef="Gateway_00dx1bx" />
+      <bpmn:sequenceFlow id="Flow_01gyzyy" sourceRef="Activity_06ngoq7" targetRef="Activity_setFlags" />
+      <bpmn:sequenceFlow id="Flow_07egg41" sourceRef="Activity_setFlags" targetRef="Gateway_00dx1bx" />
       <bpmn:endEvent id="Event_noRules">
         <bpmn:incoming>Flow_0fsn3gv</bpmn:incoming>
       </bpmn:endEvent>
@@ -123,33 +123,29 @@ execution.setVariable("payment", payment)</bpmn:script>
         <bpmn:incoming>Flow_0oamcfp</bpmn:incoming>
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_0oamcfp" sourceRef="Activity_callCreateCase" targetRef="Event_createCase" />
-      <bpmn:scriptTask id="Activity_checkCodes" name="Проверить новые коды">
+      <bpmn:scriptTask id="Activity_checkCodes" name="Проверить новые коды" scriptFormat="groovy">
         <bpmn:incoming>Flow_00brbp2</bpmn:incoming>
         <bpmn:outgoing>Flow_0y4mdlz</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.Payment
 import com.prime.db.rnkb.model.Case
 import com.prime.db.rnkb.model.CaseOperation
 
-Case case = execution.getVariable("caseData")
-
+Case caseData = execution.getVariable("caseData")
 
 def acceptedRules = execution.getVariable("allRules")
 def newCodes = []
 
-acceptedRules.each{rule -&gt;
-  if(case.getCaseRules().any{caseRule -&gt; rule == caseRule.getCode()}) {
-     newCodes.add(rule)
-  }
+for(rule in acceptedRules) {
+    if(!caseData.caseRules.any{caseRule -&gt; rule == caseRule.getRuleId().getCode()}) {
+        newCodes.add(rule)
+    }
 }
 
-def status = case.getStatus().getCode()
+def status = caseData.getStatus().getCode()
 def validStatus = ["1", "2", "3", "5"]
 
-if(validStatus.any{code -&gt; code == status}) {
-   execution.setVariable("saveNewCodes", true)
-}
-execution.setVariable("newAcceptedRules", newCodes)
-
+execution.setVariable("saveNewCodes", validStatus.any{code -&gt; code == status})
+execution.setVariable("newCodes", newCodes)
 </bpmn:script>
       </bpmn:scriptTask>
       <bpmn:exclusiveGateway id="Gateway_17fq0zn" name="Отработал новый CASERULES.CODE?" default="Flow_1x7vw0l">
@@ -168,49 +164,56 @@ execution.setVariable("newAcceptedRules", newCodes)
         <bpmn:outgoing>Flow_1vk9glr</bpmn:outgoing>
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_0p7ncic" sourceRef="Gateway_17fq0zn" targetRef="Gateway_0kbpvas">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable("newAcceptedRules").size() != 0}</bpmn:conditionExpression>
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${newCodes.size() != 0}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:sequenceFlow id="Flow_123tuwj" name="CASE.SATATUS Code = 1 или 2 или 3 или 5" sourceRef="Gateway_0kbpvas" targetRef="Activity_1iy2e9k">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable("saveNewCodes") != null}</bpmn:conditionExpression>
+      <bpmn:sequenceFlow id="Flow_123tuwj" name="CASE.SATATUS Code = 1 или 2 или 3 или 5" sourceRef="Gateway_0kbpvas" targetRef="Activity_saveRules">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${saveNewCodes}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:sequenceFlow id="Flow_1vk9glr" sourceRef="Gateway_0kbpvas" targetRef="Activity_0strjx4" />
-      <bpmn:scriptTask id="Activity_0strjx4" name="Досохранить новые коды в&#10;CASECOMMENT.COMMENT">
+      <bpmn:sequenceFlow id="Flow_1vk9glr" sourceRef="Gateway_0kbpvas" targetRef="Activity_saveComment" />
+      <bpmn:scriptTask id="Activity_saveComment" name="Досохранить новые коды в&#10;CASECOMMENT.COMMENT" scriptFormat="groovy">
         <bpmn:incoming>Flow_1vk9glr</bpmn:incoming>
         <bpmn:outgoing>Flow_0ij35pz</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.Case
 import com.prime.db.rnkb.model.CaseComment
 
-var caseCommentList = case.getCaseCommentList()
+def comments = []
+if(caseData.getCaseCommentList() != null)
+   comments.addAll(caseData.getCaseCommentList())
+
 CaseComment cm = new CaseComment()
-cm.setComment(newAcceptedRules.join(";"))
-caseCommentList.add(cm)
-case.setCaseCommentList(caseCommentList)</bpmn:script>
+cm.setComment(newCodes.join(";"))
+comments.add(cm)
+caseData.setCaseCommentList(comments)
+
+execution.setVariable("caseData", caseData)</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:scriptTask id="Activity_1iy2e9k" name="Досохранить новые коды в CASERULES.CODE" scriptFormat="groovy">
+      <bpmn:scriptTask id="Activity_saveRules" name="Досохранить новые коды в CASERULES.CODE" scriptFormat="groovy">
         <bpmn:incoming>Flow_123tuwj</bpmn:incoming>
         <bpmn:outgoing>Flow_1ny4pt8</bpmn:outgoing>
-        <bpmn:script>import com.prime.db.rnkb.model.Payment
-import com.prime.db.rnkb.model.Case
-import com.prime.db.rnkb.model.CaseOperation
+        <bpmn:script>import com.prime.db.rnkb.model.Case
+import com.prime.db.rnkb.model.CaseRules
 import com.prime.db.rnkb.model.BaseDictionary
 
 BaseDictionary getRuleType(String code) {
    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(18, code);
 }
 
-var caseRulesList = case.getCaseRules()
-newAcceptedRules.each{rule -&gt;
+def caseRulesList = []
+if(caseData.getCaseRules() != null)
+   caseRulesList.addAll(caseData.getCaseRules())
+newCodes.each{rule -&gt;
   CaseRules cr = new CaseRules()
   cr.ruleId = getRuleType(rule)
   caseRulesList.add(cr)
 }
 
-case.setCaseRules(caseRulesList)</bpmn:script>
+caseData.setCaseRules(caseRulesList)
+execution.setVariable("caseData", caseData)</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:serviceTask id="Activity_saveCase" name="Сохранить&#10;Case" camunda:delegateExpression="${saveObjectDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="saveObject">${case}</camunda:inputParameter>
+            <camunda:inputParameter name="saveObject">${caseData}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_1ny4pt8</bpmn:incoming>
@@ -221,8 +224,8 @@ case.setCaseRules(caseRulesList)</bpmn:script>
         <bpmn:incoming>Flow_17w22dx</bpmn:incoming>
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_17w22dx" sourceRef="Activity_saveCase" targetRef="Event_end" />
-      <bpmn:sequenceFlow id="Flow_1ny4pt8" sourceRef="Activity_1iy2e9k" targetRef="Activity_saveCase" />
-      <bpmn:sequenceFlow id="Flow_0ij35pz" sourceRef="Activity_0strjx4" targetRef="Activity_saveCase" />
+      <bpmn:sequenceFlow id="Flow_1ny4pt8" sourceRef="Activity_saveRules" targetRef="Activity_saveCase" />
+      <bpmn:sequenceFlow id="Flow_0ij35pz" sourceRef="Activity_saveComment" targetRef="Activity_saveCase" />
       <bpmn:textAnnotation id="TextAnnotation_0aqvwu3">
         <bpmn:text>CASE.CASETYPE = 1 "Обязательный контроль"</bpmn:text>
       </bpmn:textAnnotation>
@@ -374,7 +377,7 @@ case.setCaseRules(caseRulesList)</bpmn:script>
       <bpmndi:BPMNShape id="Activity_06ngoq7_di" bpmnElement="Activity_06ngoq7">
         <dc:Bounds x="940" y="207" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0jfq2e1_di" bpmnElement="Activity_0qjsgg5">
+      <bpmndi:BPMNShape id="Activity_0jfq2e1_di" bpmnElement="Activity_setFlags">
         <dc:Bounds x="1090" y="207" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0tf3ijg_di" bpmnElement="Event_noRules">
@@ -410,10 +413,10 @@ case.setCaseRules(caseRulesList)</bpmn:script>
           <dc:Bounds x="1777" y="120" width="87" height="53" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_03h7xwv_di" bpmnElement="Activity_0strjx4">
+      <bpmndi:BPMNShape id="Activity_03h7xwv_di" bpmnElement="Activity_saveComment">
         <dc:Bounds x="1950" y="350" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_068fdl8_di" bpmnElement="Activity_1iy2e9k">
+      <bpmndi:BPMNShape id="Activity_068fdl8_di" bpmnElement="Activity_saveRules">
         <dc:Bounds x="1950" y="207" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0ldz0l2_di" bpmnElement="Activity_saveCase">
