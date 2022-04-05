@@ -31,7 +31,7 @@ public class DroolsCaseBpmTest {
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
     private static final String payloadJsonAccepted = "{\"rules\":[\"01\",\"74\"],\"paymentId\":123}";
-    private static final String payloadJsonAccepted2 = "{\"rules\":[\"01\",\"74\"],\"paymentId\":123}";
+    private static final String payloadJsonAccepted2 = "{\"rules\":[\"01\",\"74\", \"75\"],\"paymentId\":123}";
     private static final String payloadJsonNoRules = "{\"rules\":[],\"paymentId\":1}";
 
     @Test
@@ -256,10 +256,12 @@ public class DroolsCaseBpmTest {
         Condition<Object> isComment = new Condition<>(p -> {
             Case checkCase = (Case)p;
             return checkCase.getCaseCommentList().size() == 1 &&
-                    checkCase.getCaseCommentList().get(1).getComment().equals("74;75");
+                    checkCase.getCaseCommentList().get(0).getComment().equals("74;75");
         }, "isCaseRules size 2");
 
         assertThat(processInstance)
-                .hasPassed("Activity_checkCodes", "Activity_saveComment");
+                .hasPassed("Activity_checkCodes", "Activity_saveComment")
+                .variables()
+                .hasEntrySatisfying("caseData", isComment);
     }
 }

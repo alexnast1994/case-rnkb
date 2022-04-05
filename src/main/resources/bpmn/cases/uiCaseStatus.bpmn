@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_110zs4y" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:process id="uiStatusCase" name="Создание ответа из ui" isExecutable="true">
+  <bpmn:process id="uiCaseStatus" name="Создание ответа из ui" isExecutable="true">
     <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
       <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
       <bpmn:outgoing>Flow_10kqd3k</bpmn:outgoing>
@@ -27,7 +27,7 @@
       <bpmn:serviceTask id="Activity_12wxgz4" name="Сохранить&#10;Case" camunda:delegateExpression="${saveObjectDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="saveObject">${case}</camunda:inputParameter>
+            <camunda:inputParameter name="saveObject">${caseData}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_04xaicy</bpmn:incoming>
@@ -42,7 +42,7 @@
       <bpmn:serviceTask id="Activity_19t3uzo" name="Select case" camunda:delegateExpression="${selectOneDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="outputVarName">case</camunda:inputParameter>
+            <camunda:inputParameter name="outputVarName">caseData</camunda:inputParameter>
             <camunda:inputParameter name="parameters">
               <camunda:map>
                 <camunda:entry key="paymentId">${paymentId}</camunda:entry>
@@ -55,7 +55,7 @@
         <bpmn:outgoing>Flow_0tysos6</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="Flow_0tysos6" sourceRef="Activity_19t3uzo" targetRef="Gateway_1edp37d" />
-      <bpmn:scriptTask id="Activity_1p7p374" name="Проставить статус payment" scriptFormat="groovy">
+      <bpmn:scriptTask id="Activity_statusPayment" name="Проставить статус payment" scriptFormat="groovy">
         <bpmn:incoming>Flow_02jn5bl</bpmn:incoming>
         <bpmn:outgoing>Flow_0s0dkty</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.Payment
@@ -92,7 +92,7 @@ Payment payment = execution.getVariable("payment")
 def paymentStatus = "0"
 def needResponse = false
 def caseStatus = execution.getVariable("caseStatus")
-def caseType = execution.getVariable("caseType ")
+def caseType = execution.getVariable("caseType")
 def paymentCurrentStatus = payment.getStatus().getCode()
 
 if(caseType == "4") {
@@ -129,10 +129,10 @@ payment.paymentSourceStatus = getStatus(paymentStatus)
 execution.setVariable("payment", payment)
 execution.setVariable("needResponse", needResponse)</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:sequenceFlow id="Flow_0988z27" name="CASE.CASETYPE = 2 или 4" sourceRef="Gateway_1edp37d" targetRef="Activity_13y36pa">
+      <bpmn:sequenceFlow id="Flow_0988z27" name="CASE.CASETYPE = 2 или 4" sourceRef="Gateway_1edp37d" targetRef="Activity_selectPayment">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${caseType == "2" || caseType == "4"}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:scriptTask id="Activity_0j182jf" name="Сохранение CASE.STATUS" scriptFormat="groovy">
+      <bpmn:scriptTask id="Activity_0j182jf" name="Сохранение CASE.STATUS" scriptFormat="groovy" camunda:resultVariable="caseData">
         <bpmn:incoming>Flow_0s0dkty</bpmn:incoming>
         <bpmn:incoming>Flow_0xkz54j</bpmn:incoming>
         <bpmn:outgoing>Flow_04xaicy</bpmn:outgoing>
@@ -148,22 +148,22 @@ BaseDictionary getCaseStatus(String type, String code) {
    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(dic, code);
 }
 
-case.setCaseType(getCaseType(caseType))
-case.setStatus(getCaseStatus(caseType, caseStatus))
+caseData.setCaseType(getCaseType(caseType))
+caseData.setStatus(getCaseStatus(caseType, caseStatus))
 
-return case</bpmn:script>
+return caseData</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:sequenceFlow id="Flow_04xaicy" sourceRef="Activity_0j182jf" targetRef="Activity_12wxgz4" />
-      <bpmn:sequenceFlow id="Flow_0s0dkty" sourceRef="Activity_1p7p374" targetRef="Activity_0j182jf" />
+      <bpmn:sequenceFlow id="Flow_0s0dkty" sourceRef="Activity_statusPayment" targetRef="Activity_0j182jf" />
       <bpmn:sequenceFlow id="Flow_0xkz54j" sourceRef="Gateway_1edp37d" targetRef="Activity_0j182jf" />
-      <bpmn:endEvent id="Event_1q9wjfw">
+      <bpmn:endEvent id="Event_noResponse">
         <bpmn:incoming>Flow_1fue7ay</bpmn:incoming>
       </bpmn:endEvent>
-      <bpmn:sequenceFlow id="Flow_1fue7ay" sourceRef="Gateway_09mocrk" targetRef="Event_1q9wjfw" />
+      <bpmn:sequenceFlow id="Flow_1fue7ay" sourceRef="Gateway_09mocrk" targetRef="Event_noResponse" />
       <bpmn:callActivity id="Activity_05rl2nm" name="Формирование json ответа" calledElement="caseResponse">
         <bpmn:extensionElements>
           <camunda:in source="${key}" target="key" />
-          <camunda:in source="${case}" target="case" />
+          <camunda:in source="${caseData}" target="case" />
           <camunda:in source="${payment}" target="payment" />
           <camunda:in source="case-response" target="messageId" />
         </bpmn:extensionElements>
@@ -174,7 +174,7 @@ return case</bpmn:script>
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable("needResponse") != null}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="Flow_0zrr2lg" sourceRef="Activity_05rl2nm" targetRef="Event_1dxk5vn" />
-      <bpmn:serviceTask id="Activity_13y36pa" name="Select payment work" camunda:delegateExpression="${selectOneDelegate}">
+      <bpmn:serviceTask id="Activity_selectPayment" name="Select payment work" camunda:delegateExpression="${selectOneDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="outputVarName">payment</camunda:inputParameter>
@@ -189,7 +189,7 @@ return case</bpmn:script>
         <bpmn:incoming>Flow_0988z27</bpmn:incoming>
         <bpmn:outgoing>Flow_02jn5bl</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_02jn5bl" sourceRef="Activity_13y36pa" targetRef="Activity_1p7p374" />
+      <bpmn:sequenceFlow id="Flow_02jn5bl" sourceRef="Activity_selectPayment" targetRef="Activity_statusPayment" />
     </bpmn:subProcess>
     <bpmn:endEvent id="Event_098yyfy">
       <bpmn:incoming>Flow_13tvrx3</bpmn:incoming>
@@ -216,7 +216,7 @@ CASE.STATUS</bpmn:text>
   <bpmn:message id="Message_0t9jnmz" name="message-ui" />
   <bpmn:message id="Message_1bqokx3" name="message-pipeline" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="uiStatusCase">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="uiCaseStatus">
       <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
         <di:waypoint x="2200" y="287" />
         <di:waypoint x="2302" y="287" />
@@ -319,19 +319,19 @@ CASE.STATUS</bpmn:text>
       <bpmndi:BPMNShape id="Activity_19t3uzo_di" bpmnElement="Activity_19t3uzo">
         <dc:Bounds x="820" y="210" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1p7p374_di" bpmnElement="Activity_1p7p374">
+      <bpmndi:BPMNShape id="Activity_1p7p374_di" bpmnElement="Activity_statusPayment">
         <dc:Bounds x="1260" y="210" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0j182jf_di" bpmnElement="Activity_0j182jf">
         <dc:Bounds x="1430" y="210" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1q9wjfw_di" bpmnElement="Event_1q9wjfw">
+      <bpmndi:BPMNShape id="Event_1q9wjfw_di" bpmnElement="Event_noResponse">
         <dc:Bounds x="1742" y="332" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_05rl2nm_di" bpmnElement="Activity_05rl2nm">
         <dc:Bounds x="1843" y="210" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_13y36pa_di" bpmnElement="Activity_13y36pa">
+      <bpmndi:BPMNShape id="Activity_13y36pa_di" bpmnElement="Activity_selectPayment">
         <dc:Bounds x="1110" y="210" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_098yyfy_di" bpmnElement="Event_098yyfy">
