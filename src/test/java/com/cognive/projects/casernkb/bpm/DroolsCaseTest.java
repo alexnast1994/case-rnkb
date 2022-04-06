@@ -11,7 +11,6 @@ import org.camunda.bpm.engine.test.ProcessEngineRule;
 import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.jupiter.api.Disabled;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,7 +25,7 @@ import static org.mockito.Mockito.when;
 @Deployment(resources = {
         "bpmn/cases/droolsCase.bpmn"
 })
-public class DroolsCaseBpmTest {
+public class DroolsCaseTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
@@ -107,8 +106,8 @@ public class DroolsCaseBpmTest {
         caseStatus1.setCode("1");
         caseType1.setCode("1");
 
-        cr1.setCode(crCode1);
-        cr2.setCode(crCode2);
+        cr1.setRuleId(crCode1);
+        cr2.setRuleId(crCode2);
 
         Case caseData = new Case();
         caseData.setCaseRules(Arrays.asList(cr1, cr2));

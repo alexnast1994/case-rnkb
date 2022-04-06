@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 @Deployment(resources = {
         "bpmn/cases/pipelineCase.bpmn"
 })
-public class PipelineCaseBpmTest {
+public class PipelineCaseTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 

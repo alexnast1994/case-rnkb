@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 @Deployment(resources = {
         "bpmn/cases/uiCaseStatus.bpmn"
 })
-public class UiCaseStatusBpmTest {
+public class UiCaseStatusTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
