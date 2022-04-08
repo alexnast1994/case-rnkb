@@ -13,7 +13,7 @@
     </bpmn:serviceTask>
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_0hlfsn7</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_137u9fw" messageRef="Message_1w4kpx6" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_137u9fw" messageRef="Message_1w4kpx8" />
     </bpmn:startEvent>
     <bpmn:endEvent id="Event_098yyfy">
       <bpmn:incoming>Flow_13tvrx3</bpmn:incoming>
@@ -228,7 +228,7 @@ return caseData</bpmn:script>
     </bpmn:textAnnotation>
     <bpmn:association id="Association_0ynsvk3" sourceRef="StartEvent_1" targetRef="TextAnnotation_0utvcpa" />
   </bpmn:process>
-  <bpmn:message id="Message_1w4kpx6" name="message-case" />
+  <bpmn:message id="Message_1w4kpx8" name="message-case" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="caseType">
       <bpmndi:BPMNEdge id="Flow_080j4ak_di" bpmnElement="Flow_080j4ak">

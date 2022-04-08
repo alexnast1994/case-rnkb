@@ -203,8 +203,6 @@ CASE.STATUS</bpmn:text>
     </bpmn:textAnnotation>
     <bpmn:association id="Association_0fu882p" sourceRef="TextAnnotation_049rt3r" targetRef="Event_0zdf9e0" />
   </bpmn:process>
-  <bpmn:message id="Message_0t9jnmz" name="message-ui" />
-  <bpmn:message id="Message_1bqokx3" name="message-pipeline" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="uiCaseStatus">
       <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
