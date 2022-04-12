@@ -1,4 +1,4 @@
-package com.cognive.projects.casernkb.bpm;
+package com.cognive.projects.casernkb.bpm.cases;
 
 import com.cognive.projects.casernkb.RepositoryMockedTest;
 import com.cognive.projects.casernkb.repo.BaseDictRepo;

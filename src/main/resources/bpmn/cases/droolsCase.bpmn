@@ -247,7 +247,6 @@ execution.setVariable("caseData", caseData)</bpmn:script>
     </bpmn:textAnnotation>
     <bpmn:association id="Association_0fu882p" sourceRef="TextAnnotation_049rt3r" targetRef="Event_0zdf9e0" />
   </bpmn:process>
-  <bpmn:message id="Message_1f0tbqa" name="message-drools" />
   <bpmn:message id="Message_04f0g2w" name="message-drools" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="droolsCase">

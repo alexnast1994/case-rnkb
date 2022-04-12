@@ -7,32 +7,37 @@
     <bpmn:endEvent id="Event_15as0y6">
       <bpmn:incoming>Flow_1l3elhr</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0ft4dh9" sourceRef="StartEvent_1" targetRef="Activity_1ml27qt" />
-    <bpmn:scriptTask id="Activity_1ml27qt" name="Формирование ответа" camunda:resultVariable="caseJson">
+    <bpmn:sequenceFlow id="Flow_0ft4dh9" sourceRef="StartEvent_1" targetRef="Activity_saveJson" />
+    <bpmn:scriptTask id="Activity_saveJson" name="Формирование ответа" scriptFormat="groovy" camunda:resultVariable="caseJson">
       <bpmn:incoming>Flow_0ft4dh9</bpmn:incoming>
       <bpmn:outgoing>Flow_1c87z3d</bpmn:outgoing>
       <bpmn:script>import com.prime.db.rnkb.model.Case
-import groovy.json.JsonOutput
 import com.cognive.projects.casernkb.model.CaseStatusOutDto
+import java.time.LocalDateTime
 
-var case = execution.getVariable("case");
-var payment = execution.getVariable("payment");
+import com.fasterxml.jackson.databind.ObjectMapper
+
+def caseData = execution.getVariable("caseData");
+def payment = execution.getVariable("payment");
 
 CaseStatusOutDto out = new CaseStatusOutDto()
-out.setCheckStatus(case.getStatus().getCode())
+out.setCheckStatus(caseData.getStatus().getCode())
 out.setVersion("1.9")
 out.setObjectType("Operation")
 out.setRequestType("PaymentCheck")
 out.setSourceSystem(payment.getSourceSystems().getCode())
 out.setSourceId(payment.getExId())
 out.setSourceSystemId("1000")
-out.setTimeStamp(LocalDateTime.now())
-out.setDecisionDate(Case.getDecisiondate())
+out.setTimeStampFromLocalDateTime(LocalDateTime.now())
+out.setDecisionDateFromLocalDateTime(caseData.getDecisiondate())
 
-return JsonOutput.prettyPrint(JsonOutput.toJson(out))
+
+ObjectMapper mapper = new ObjectMapper()
+
+return mapper.writeValueAsString(out)
 </bpmn:script>
     </bpmn:scriptTask>
-    <bpmn:serviceTask id="Activity_1qptw1m" name="Направление JSON в топик Kafka" camunda:delegateExpression="${kafkaDelegate}">
+    <bpmn:serviceTask id="Activity_sendKafka" name="Направление JSON в топик Kafka" camunda:delegateExpression="${kafkaDelegate}">
       <bpmn:extensionElements>
         <camunda:inputOutput>
           <camunda:inputParameter name="key">${key}</camunda:inputParameter>
@@ -43,8 +48,8 @@ return JsonOutput.prettyPrint(JsonOutput.toJson(out))
       <bpmn:incoming>Flow_1c87z3d</bpmn:incoming>
       <bpmn:outgoing>Flow_1l3elhr</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_1c87z3d" sourceRef="Activity_1ml27qt" targetRef="Activity_1qptw1m" />
-    <bpmn:sequenceFlow id="Flow_1l3elhr" sourceRef="Activity_1qptw1m" targetRef="Event_15as0y6" />
+    <bpmn:sequenceFlow id="Flow_1c87z3d" sourceRef="Activity_saveJson" targetRef="Activity_sendKafka" />
+    <bpmn:sequenceFlow id="Flow_1l3elhr" sourceRef="Activity_sendKafka" targetRef="Event_15as0y6" />
     <bpmn:textAnnotation id="TextAnnotation_0rheqm6">
       <bpmn:text>messageId
 key
@@ -76,10 +81,10 @@ payment</bpmn:text>
       <bpmndi:BPMNShape id="Event_15as0y6_di" bpmnElement="Event_15as0y6">
         <dc:Bounds x="552" y="159" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1ml27qt_di" bpmnElement="Activity_1ml27qt">
+      <bpmndi:BPMNShape id="Activity_1ml27qt_di" bpmnElement="Activity_saveJson">
         <dc:Bounds x="260" y="137" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1qptw1m_di" bpmnElement="Activity_1qptw1m">
+      <bpmndi:BPMNShape id="Activity_1qptw1m_di" bpmnElement="Activity_sendKafka">
         <dc:Bounds x="410" y="137" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0rheqm6_di" bpmnElement="TextAnnotation_0rheqm6">

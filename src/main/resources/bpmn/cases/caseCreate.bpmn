@@ -7,47 +7,46 @@
     <bpmn:endEvent id="Event_15as0y6">
       <bpmn:incoming>Flow_0a20bgy</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:scriptTask id="Activity_1y0u3c9" name="Формирование case" scriptFormat="groovy" camunda:resultVariable="case">
+    <bpmn:scriptTask id="Activity_1y0u3c9" name="Формирование case" scriptFormat="groovy" camunda:resultVariable="caseData">
       <bpmn:incoming>Flow_0ft4dh9</bpmn:incoming>
       <bpmn:outgoing>Flow_0a20bgy</bpmn:outgoing>
       <bpmn:script>import com.prime.db.rnkb.model.Case
+import com.prime.db.rnkb.model.CaseOperation
+import com.prime.db.rnkb.model.CaseClient
+import com.prime.db.rnkb.model.CaseRules
 import java.time.LocalDateTime
 import com.prime.db.rnkb.model.BaseDictionary
 
-BaseDictionary getRule(String code) {
-   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(272, code);
+BaseDictionary getBd(int typeCode, String code) {
+   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(typeCode, code);
 }
 
-BaseDictionary getCaseType(String code) {
-   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(18, code);
-}
-
-BaseDictionary getRuleType(String code) {
-   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(18, code);
-}
-
-var acceptedRules = execution.getVariable("acceptedRules");
-var payment = execution.getVariable("payment");
+def acceptedRules = execution.getVariable("acceptedRules");
+def payment = execution.getVariable("payment");
 
 Case caseData = new Case()
 CaseOperation caseOperation = new CaseOperation()
 CaseClient caseClient = new CaseClient()
 
-var caseRulesList = []
+def caseRulesList = []
 acceptedRules.each{rule -&gt;
   CaseRules cr = new CaseRules()
-  cr.ruleId = getRuleType(rule)
+  cr.ruleId = getBd(272, rule)
   caseRulesList.add(cr)
 }
 
 caseOperation.setPaymentId(payment.getId())
-caseOperation.setDateOper(payment.getDateIn())
+caseOperation.setDateoper(payment.getDateIn())
 caseOperation.setAmount(payment.getAmountNationalCurrency())
 
 caseOperation.setPayeeaccountnumber(payment.getPayeeAccountNumber())
 caseOperation.setPayeraccountnumber(payment.getPayerAccountNumber())
-caseOperation.setPayerbankname(payment.getBankPayerId().getName())
-caseOperation.setPayeebankname(payment.getBankPayeeId().getName())
+if(payment.getBankPayerId() != null) {
+  caseOperation.setPayerbankname(payment.getBankPayerId().getName())
+}
+if(payment.getBankPayeeId() != null) {
+  caseOperation.setPayeebankname(payment.getBankPayeeId().getName())
+}
 caseOperation.setPayername(payment.getPayerName())
 caseOperation.setPayeename(payment.getPayeeName())
 caseOperation.setType(payment.getType())
@@ -56,12 +55,11 @@ caseOperation.setCurrency(payment.getCurrency())
 caseOperation.setPayerClientId(payment.getPayerClientId())
 caseOperation.setPayeeClientId(payment.getPayeeClientId())
 
-
-caseData.setCreationDate(LocalDateTime.now())
+caseData.setCreationdate(LocalDateTime.now())
 caseData.setCaseRules(caseRulesList)
-caseData.setCaseType(getCaseType(caseType))
-caseData.getCaseOperation().add(caseOperation)
-caseData.getCaseClient().add(caseClient)
+caseData.setCaseType(getBd(18, caseType))
+caseData.setCaseOperationList([caseOperation])
+caseData.setCaseClientList([caseClient])
 
 
 return caseData</bpmn:script>
