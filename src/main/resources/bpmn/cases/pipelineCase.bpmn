@@ -235,7 +235,7 @@ return caseData</bpmn:script>
     </bpmn:textAnnotation>
     <bpmn:association id="Association_1f84ijm" sourceRef="TextAnnotation_16wea2u" targetRef="Event_0scmnc8" />
   </bpmn:process>
-  <bpmn:message id="Message_1w4kpx6" name="message-pipeline" />
+  <bpmn:message id="Message_1w4kpx6" name="message-case-pipeline" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="pipelineCase">
       <bpmndi:BPMNShape id="TextAnnotation_16wea2u_di" bpmnElement="TextAnnotation_16wea2u">
