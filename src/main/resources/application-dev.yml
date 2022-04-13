@@ -45,9 +45,10 @@ spring:
     database-platform: ${DATABASE_PLATFORM:org.hibernate.dialect.Oracle12cDialect}
   datasource:
     hikari:
-      jdbc-url: ${DATABASE_URL:jdbc:oracle:thin:@176.9.124.111:1521:orcl}
-      username: ${DATABASE_USERNAME:OSADMIN}
-      password: ${DATABASE_PASSWORD:Qawsed123}
+      jdbc-url: ${DATABASE_URL:jdbc:oracle:thin:@//oracle.island.cognive.com:1521/ORCLPDB1}
+      username: ${DATABASE_USERNAME}
+#      Пароли задаются из вне, не храним в конфигах
+      password: ${DATABASE_PASSWORD}
       driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.driver.OracleDriver}
   application:
     name: ${SPRING_APPLICATION_NAME:casernkb}
@@ -61,7 +62,7 @@ logging:
       hibernate:
         type: trace
       camunda:
-        bpm: info
+        bpm: DEBUG
     com:
       cognive:
         projects:
