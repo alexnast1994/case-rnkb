@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1e29ntf" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="testMock" name="testMock" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_1dj52tj</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="Event_0d8a8ow">
+      <bpmn:incoming>Flow_0tf0ip3</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0tf0ip3" sourceRef="Activity_test" targetRef="Event_0d8a8ow" />
+    <bpmn:sequenceFlow id="Flow_1dj52tj" sourceRef="StartEvent_1" targetRef="Activity_test" />
+    <bpmn:scriptTask id="Activity_test" name="Set b1, b2" scriptFormat="groovy">
+      <bpmn:incoming>Flow_1dj52tj</bpmn:incoming>
+      <bpmn:outgoing>Flow_0tf0ip3</bpmn:outgoing>
+      <bpmn:script>import com.prime.db.rnkb.model.Case
+import com.prime.db.rnkb.model.BaseDictionary
+
+BaseDictionary getCaseStatus(String code) {
+   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(16, code);
+}
+
+execution.setVariable("b1", getCaseStatus("1").getName())
+execution.setVariable("b2", getCaseStatus("2").getName())
+</bpmn:script>
+    </bpmn:scriptTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="testMock">
+      <bpmndi:BPMNEdge id="Flow_0tf0ip3_di" bpmnElement="Flow_0tf0ip3">
+        <di:waypoint x="360" y="117" />
+        <di:waypoint x="412" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1dj52tj_di" bpmnElement="Flow_1dj52tj">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="260" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0d8a8ow_di" bpmnElement="Event_0d8a8ow">
+        <dc:Bounds x="412" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0uzpzx1_di" bpmnElement="Activity_test">
+        <dc:Bounds x="260" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

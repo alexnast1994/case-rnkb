@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Set;
 
 public class ObjectDiffTest {
@@ -57,4 +60,15 @@ public class ObjectDiffTest {
         Assertions.assertTrue(diffResult.contains("bankPayeeId.name"));
         Assertions.assertTrue(diffResult.contains("bankPayeeId.bic"));
     }
+
+    @Test
+    void t() {
+        LocalDateTime t = LocalDateTime.now();
+
+        LocalDateTime dd = LocalDateTime.of(LocalDate.now(), LocalTime.of(17, 0));
+
+
+        Assertions.assertEquals(17, dd.getHour());
+    }
+
 }
