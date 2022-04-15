@@ -35,3 +35,7 @@ build/
 ### All logs ###
 *.log
 app.log.*
+
+### Mac trash ###
+.DS_Store
+.DS_Store?
