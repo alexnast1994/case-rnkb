@@ -1,4 +1,4 @@
-package com.cognive.projects.casernkb.bpm;
+package com.cognive.projects.casernkb.bpm.judgment;
 
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
 import com.prime.db.rnkb.model.BaseDictionary;
@@ -28,7 +28,7 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/cancelReasonedJudgment.bpmn"
+        "bpmn/judgment/cancelReasonedJudgment.bpmn"
 })
 public class CancelReasonedJudgmentTest {
     @Rule
@@ -37,7 +37,7 @@ public class CancelReasonedJudgmentTest {
     @Test
     @SneakyThrows
     public void Should_work() {
-        autoMock("bpmn/cancelReasonedJudgment.bpmn");
+        autoMock("bpmn/judgment/cancelReasonedJudgment.bpmn");
 
         BaseDictionary bd2 = new BaseDictionary();
         BaseDictionary bd22 = new BaseDictionary();
