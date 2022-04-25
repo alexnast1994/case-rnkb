@@ -5,8 +5,8 @@ import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
 import com.prime.db.rnkb.model.CaseClient;
 import com.prime.db.rnkb.model.Client;
-import com.prime.db.rnkb.model.commucation.midl.Task;
 import com.prime.db.rnkb.model.commucation.midl.ChangingTimingTask;
+import com.prime.db.rnkb.model.commucation.midl.Task;
 import com.prime.db.rnkb.model.commucation.midl.ZkTaskCases;
 import com.prime.db.rnkb.model.commucation.request.Request;
 import org.assertj.core.api.Condition;
@@ -18,7 +18,6 @@ import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +87,7 @@ public class MidlRequestClientTest {
 
         Condition<Object> isTask = new Condition<>(p -> {
             Task t = (Task)p;
-            return t.getStatusId().getCode().equals("3")
+            return t.getStatusId().getCode().equals("1")
                     && t.getTypeOfTask().getCode().equals("3")
                     && t.getTaskType().getCode().equals("7");
         }, "isTask");
@@ -173,7 +172,7 @@ public class MidlRequestClientTest {
 
         Condition<Object> isTask = new Condition<>(p -> {
             Task t = (Task)p;
-            return t.getStatusId().getCode().equals("3")
+            return t.getStatusId().getCode().equals("1")
                     && t.getTypeOfTask().getCode().equals("3")
                     && t.getTaskType().getCode().equals("8");
         }, "isTask");
