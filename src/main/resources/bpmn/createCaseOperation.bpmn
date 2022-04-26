@@ -196,7 +196,7 @@ CaseComment cc = new CaseComment()
 
 cc.caseId = _case
 cc.comment = ruleResult?.getComment()
-cc.creationdate = LocalDateTime.now()
+cc.creationDate = LocalDateTime.now()
 
 return cc</bpmn:script>
       </bpmn:scriptTask>
