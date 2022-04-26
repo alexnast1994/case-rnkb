@@ -64,7 +64,6 @@ public class MidlRequestClientTest {
         Map<String, Object> selectResult = new HashMap<>();
         selectResult.put("caseData", caseData);
         selectResult.put("request", request);
-        selectResult.put("requestDbo", false);
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
@@ -77,6 +76,7 @@ public class MidlRequestClientTest {
         Map<String, Object> processParams = new HashMap<>();
         processParams.put("caseId", 123L);
         processParams.put("requestId", 125L);
+        processParams.put("requestDbo", false);
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseResponse")
                 .deploy(processEngineRule)
@@ -140,16 +140,15 @@ public class MidlRequestClientTest {
 
         BaseDictionary bd1 = new BaseDictionary();
         BaseDictionary bd3 = new BaseDictionary();
-        BaseDictionary bd7 = new BaseDictionary();
+        BaseDictionary bd8 = new BaseDictionary();
 
         bd1.setCode("1");
         bd3.setCode("3");
-        bd7.setCode("7");
+        bd8.setCode("8");
 
         Map<String, Object> selectResult = new HashMap<>();
         selectResult.put("caseData", caseData);
         selectResult.put("request", request);
-        selectResult.put("requestDbo", true);
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
@@ -157,11 +156,12 @@ public class MidlRequestClientTest {
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(184, "1")).thenReturn(bd1);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(185, "3")).thenReturn(bd3);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(186, "7")).thenReturn(bd7);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(186, "8")).thenReturn(bd8);
 
         Map<String, Object> processParams = new HashMap<>();
         processParams.put("caseId", 123L);
         processParams.put("requestId", 125L);
+        processParams.put("requestDbo", true);
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseResponse")
                 .deploy(processEngineRule)

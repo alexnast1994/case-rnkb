@@ -122,7 +122,7 @@ execution.setVariable("request", request)
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_1bqbhph" sourceRef="Gateway_02kkf5n" targetRef="Event_16rd5bt" />
       <bpmn:sequenceFlow id="Flow_041csic" sourceRef="Gateway_02kkf5n" targetRef="Activity_response">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${dboRequest}</bpmn:conditionExpression>
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${requestDbo}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:endEvent id="Event_0bjsmkr">
         <bpmn:incoming>Flow_09i8h8d</bpmn:incoming>
