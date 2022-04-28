@@ -32,7 +32,7 @@
     <bpmn:subProcess id="Activity_01gnm40">
       <bpmn:incoming>Flow_0v286vx</bpmn:incoming>
       <bpmn:outgoing>Flow_1whou80</bpmn:outgoing>
-      <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="${CaseIds}" camunda:elementVariable="CaseId" />
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="${caseIds}" camunda:elementVariable="CaseId" />
       <bpmn:serviceTask id="Activity_1ml7vgt" name="Select CLientRelation from base" camunda:delegateExpression="${selectOneDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
@@ -495,21 +495,21 @@ return rjRbs
         <di:waypoint x="4110" y="310" />
         <di:waypoint x="4260" y="310" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01253c3_di" bpmnElement="Flow_01253c3">
+        <di:waypoint x="4360" y="310" />
+        <di:waypoint x="4502" y="310" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0v286vx_di" bpmnElement="Flow_0v286vx">
         <di:waypoint x="540" y="310" />
         <di:waypoint x="650" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_16sg86q_di" bpmnElement="Flow_16sg86q">
-        <di:waypoint x="188" y="310" />
-        <di:waypoint x="240" y="310" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0b9b043_di" bpmnElement="Flow_0b9b043">
         <di:waypoint x="340" y="310" />
         <di:waypoint x="440" y="310" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_01253c3_di" bpmnElement="Flow_01253c3">
-        <di:waypoint x="4360" y="310" />
-        <di:waypoint x="4502" y="310" />
+      <bpmndi:BPMNEdge id="Flow_16sg86q_di" bpmnElement="Flow_16sg86q">
+        <di:waypoint x="188" y="310" />
+        <di:waypoint x="240" y="310" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="152" y="292" width="36" height="36" />
@@ -517,14 +517,14 @@ return rjRbs
       <bpmndi:BPMNShape id="Activity_1hjbmy9_di" bpmnElement="Activity_0uqf4tg">
         <dc:Bounds x="240" y="270" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1es98f4_di" bpmnElement="Event_1es98f4">
+        <dc:Bounds x="4502" y="292" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1vgpprs_di" bpmnElement="Activity_04cx2ds">
         <dc:Bounds x="440" y="270" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1b8hv6f_di" bpmnElement="Activity_0hj1qcq">
         <dc:Bounds x="4260" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1es98f4_di" bpmnElement="Event_1es98f4">
-        <dc:Bounds x="4502" y="292" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0u6edlb_di" bpmnElement="Activity_01gnm40" isExpanded="true">
         <dc:Bounds x="650" y="80" width="3460" height="460" />
@@ -613,8 +613,35 @@ return rjRbs
         <di:waypoint x="1104" y="330" />
         <di:waypoint x="1161" y="330" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Event_06qma72_di" bpmnElement="Event_06qma72">
-        <dc:Bounds x="3972" y="312" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_1ml7vgt_di" bpmnElement="Activity_1ml7vgt">
+        <dc:Bounds x="2103" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_148c04n_di" bpmnElement="Activity_1vg2qfl">
+        <dc:Bounds x="2731" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0t464hl_di" bpmnElement="Activity_0t464hl">
+        <dc:Bounds x="2574" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_17i4crs_di" bpmnElement="Activity_17i4crs">
+        <dc:Bounds x="3045" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0gbij6z_di" bpmnElement="Activity_0gbij6z">
+        <dc:Bounds x="3202" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0xiwd8y_di" bpmnElement="Activity_1spcwob">
+        <dc:Bounds x="1789" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1i781q2_di" bpmnElement="Activity_16fiugt">
+        <dc:Bounds x="1475" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1o96pt3_di" bpmnElement="Activity_1of9bfn">
+        <dc:Bounds x="2260" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1qq5zut_di" bpmnElement="Activity_1qq5zut">
+        <dc:Bounds x="1632" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_00dprny_di" bpmnElement="Event_00dprny">
+        <dc:Bounds x="732" y="312" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0qedj4f_di" bpmnElement="Activity_0qedj4f">
         <dc:Bounds x="847" y="290" width="100" height="80" />
@@ -628,41 +655,17 @@ return rjRbs
       <bpmndi:BPMNShape id="Activity_19lm5xn_di" bpmnElement="Activity_15e283h">
         <dc:Bounds x="1318" y="290" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1i781q2_di" bpmnElement="Activity_16fiugt">
-        <dc:Bounds x="1475" y="290" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1qq5zut_di" bpmnElement="Activity_1qq5zut">
-        <dc:Bounds x="1632" y="290" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0xiwd8y_di" bpmnElement="Activity_1spcwob">
-        <dc:Bounds x="1789" y="290" width="100" height="80" />
+      <bpmndi:BPMNShape id="Event_06qma72_di" bpmnElement="Event_06qma72">
+        <dc:Bounds x="3972" y="312" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0td8lq1_di" bpmnElement="Activity_10duc4d">
         <dc:Bounds x="1946" y="290" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1ml7vgt_di" bpmnElement="Activity_1ml7vgt">
-        <dc:Bounds x="2103" y="290" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1o96pt3_di" bpmnElement="Activity_1of9bfn">
-        <dc:Bounds x="2260" y="290" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0vbc2iv_di" bpmnElement="Activity_0vbc2iv">
         <dc:Bounds x="2417" y="290" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0t464hl_di" bpmnElement="Activity_0t464hl">
-        <dc:Bounds x="2574" y="290" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_148c04n_di" bpmnElement="Activity_1vg2qfl">
-        <dc:Bounds x="2731" y="290" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0qcolxv_di" bpmnElement="Activity_0qcolxv">
         <dc:Bounds x="2888" y="290" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_17i4crs_di" bpmnElement="Activity_17i4crs">
-        <dc:Bounds x="3045" y="290" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0gbij6z_di" bpmnElement="Activity_0gbij6z">
-        <dc:Bounds x="3202" y="290" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0kt1ib0_di" bpmnElement="Activity_0kt1ib0">
         <dc:Bounds x="3359" y="290" width="100" height="80" />
@@ -675,9 +678,6 @@ return rjRbs
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1iibrti_di" bpmnElement="Activity_1iibrti">
         <dc:Bounds x="3830" y="290" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_00dprny_di" bpmnElement="Event_00dprny">
-        <dc:Bounds x="732" y="312" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
