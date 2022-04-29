@@ -126,7 +126,7 @@ else{
 if (statusTypeCode != null) {
     cs.status = Optional.ofNullable(getBD(Integer.valueOf(statusTypeCode), statusCode)).orElse(null)
 }
-cs.creationdate = LocalDateTime.now()
+cs.creationDate = LocalDateTime.now()
 cs.caseStatus = Optional.ofNullable(getBD(caseStatusTypeCode, caseStatusCode)).orElse(null)
 
 return cs</bpmn:script>
