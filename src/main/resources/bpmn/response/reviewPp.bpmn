@@ -86,7 +86,6 @@ t.statusId = getBd(184, "1")
 t.creationDate = LocalDateTime.now()
 t.typeOfTask = getBd(185, "3")
 t.taskType = getBd(186, "9")
-t.caseId = caseData
 t.clientId= caseClient
 
 execution.setVariable("task", t)
