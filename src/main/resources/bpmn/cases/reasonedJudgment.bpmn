@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1mjxfdw" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:process id="ReasonedJudgmentProcess" isExecutable="true">
+  <bpmn:process id="reasonedJudgmentProcess" name="8. Автоматическое формирование МС" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_16sg86q</bpmn:outgoing>
     </bpmn:startEvent>
@@ -287,7 +287,7 @@ return rjClientRe</bpmn:script>
             <camunda:inputParameter name="outputVarName">CaseBase</camunda:inputParameter>
             <camunda:inputParameter name="parameters">
               <camunda:map>
-                <camunda:entry key="caseId">${CaseId}</camunda:entry>
+                <camunda:entry key="caseId">${caseId}</camunda:entry>
               </camunda:map>
             </camunda:inputParameter>
             <camunda:inputParameter name="selectQuery">SELECT c FROM Case c WHERE c.id = :caseId</camunda:inputParameter>
@@ -488,9 +488,20 @@ return rjRbs
       <bpmn:sequenceFlow id="Flow_1b5spu1" sourceRef="Activity_17i4crs" targetRef="Activity_0gbij6z" />
       <bpmn:sequenceFlow id="Flow_0xymz9e" sourceRef="Activity_0xbeo8g" targetRef="Activity_0p80o5x" />
     </bpmn:subProcess>
+    <bpmn:textAnnotation id="TextAnnotation_1ser3at">
+      <bpmn:text>clientId
+caseId
+
+
+</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_1kizanl" sourceRef="StartEvent_1" targetRef="TextAnnotation_1ser3at" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="ReasonedJudgmentProcess">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="reasonedJudgmentProcess">
+      <bpmndi:BPMNShape id="TextAnnotation_1ser3at_di" bpmnElement="TextAnnotation_1ser3at">
+        <dc:Bounds x="120" y="170" width="99.99510188087774" height="82" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1whou80_di" bpmnElement="Flow_1whou80">
         <di:waypoint x="4110" y="310" />
         <di:waypoint x="4260" y="310" />
@@ -679,6 +690,10 @@ return rjRbs
       <bpmndi:BPMNShape id="Activity_1iibrti_di" bpmnElement="Activity_1iibrti">
         <dc:Bounds x="3830" y="290" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_1kizanl_di" bpmnElement="Association_1kizanl">
+        <di:waypoint x="170" y="292" />
+        <di:waypoint x="170" y="252" />
+      </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>

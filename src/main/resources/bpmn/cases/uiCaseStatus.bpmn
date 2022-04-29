@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_110zs4y" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:process id="uiCaseStatus" name="Создание ответа из ui" isExecutable="true">
+  <bpmn:process id="uiCaseStatus" name="Ответ по платежу 3 процесс (ui)" isExecutable="true">
     <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
       <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
       <bpmn:outgoing>Flow_10kqd3k</bpmn:outgoing>
@@ -197,7 +197,12 @@ return caseData</bpmn:script>
       <bpmn:outgoing>Flow_0hlfsn7</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:textAnnotation id="TextAnnotation_049rt3r">
-      <bpmn:text>CASE.ID
+      <bpmn:text>caseId
+caseType
+caseStatus
+
+
+CASE.ID
 CASE.CASETYPE
 CASE.STATUS</bpmn:text>
     </bpmn:textAnnotation>
@@ -230,9 +235,6 @@ CASE.STATUS</bpmn:text>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1jae6rb_di" bpmnElement="Activity_1jae6rb">
         <dc:Bounds x="382" y="247" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
-        <dc:Bounds x="2159" y="247" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_15er2ds_di" bpmnElement="Activity_15er2ds" isExpanded="true">
         <dc:Bounds x="710" y="80" width="1420" height="410" />
@@ -285,20 +287,17 @@ CASE.STATUS</bpmn:text>
       <bpmndi:BPMNShape id="Event_19hntkt_di" bpmnElement="Event_19hntkt">
         <dc:Bounds x="750" y="232" width="36" height="36" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1dxk5vn_di" bpmnElement="Event_1dxk5vn">
+        <dc:Bounds x="2072" y="232" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1edp37d_di" bpmnElement="Gateway_1edp37d" isMarkerVisible="true">
         <dc:Bounds x="975" y="225" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="947" y="143" width="86" height="53" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_19t3uzo_di" bpmnElement="Activity_19t3uzo">
-        <dc:Bounds x="820" y="210" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1dxk5vn_di" bpmnElement="Event_1dxk5vn">
-        <dc:Bounds x="2072" y="232" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_05rl2nm_di" bpmnElement="Activity_response">
-        <dc:Bounds x="1940" y="210" width="100" height="80" />
+      <bpmndi:BPMNShape id="Activity_12wxgz4_di" bpmnElement="Activity_saveCase">
+        <dc:Bounds x="1560" y="210" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_09mocrk_di" bpmnElement="Gateway_09mocrk" isMarkerVisible="true">
         <dc:Bounds x="1845" y="225" width="50" height="50" />
@@ -306,8 +305,8 @@ CASE.STATUS</bpmn:text>
           <dc:Bounds x="1827" y="143" width="86" height="53" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1q9wjfw_di" bpmnElement="Event_noResponse">
-        <dc:Bounds x="1852" y="342" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_19t3uzo_di" bpmnElement="Activity_19t3uzo">
+        <dc:Bounds x="820" y="210" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1p7p374_di" bpmnElement="Activity_statusPayment">
         <dc:Bounds x="1110" y="210" width="100" height="80" />
@@ -315,11 +314,17 @@ CASE.STATUS</bpmn:text>
       <bpmndi:BPMNShape id="Activity_0j182jf_di" bpmnElement="Activity_0j182jf">
         <dc:Bounds x="1270" y="210" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_12wxgz4_di" bpmnElement="Activity_saveCase">
-        <dc:Bounds x="1560" y="210" width="100" height="80" />
+      <bpmndi:BPMNShape id="Event_1q9wjfw_di" bpmnElement="Event_noResponse">
+        <dc:Bounds x="1852" y="342" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_05rl2nm_di" bpmnElement="Activity_response">
+        <dc:Bounds x="1940" y="210" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_098yyfy_di" bpmnElement="Event_098yyfy">
         <dc:Bounds x="2302" y="269" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
+        <dc:Bounds x="2159" y="247" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0gfqkgh_di" bpmnElement="Event_0zdf9e0">
         <dc:Bounds x="304" y="269" width="36" height="36" />
@@ -328,10 +333,10 @@ CASE.STATUS</bpmn:text>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_049rt3r_di" bpmnElement="TextAnnotation_049rt3r">
-        <dc:Bounds x="160" y="117" width="323" height="53" />
+        <dc:Bounds x="160" y="117" width="323" height="125" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_0fu882p_di" bpmnElement="Association_0fu882p">
-        <di:waypoint x="322" y="170" />
+        <di:waypoint x="322" y="242" />
         <di:waypoint x="322" y="269" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>

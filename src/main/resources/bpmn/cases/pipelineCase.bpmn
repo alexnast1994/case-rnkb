@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1g7xbpg" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:process id="pipelineCase" name="Формирование кейс из pipeline" isExecutable="true">
+  <bpmn:process id="pipelineCase" name="Ответ по платежу  2.1 процесс (pipeline)" isExecutable="true">
     <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
       <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
       <bpmn:outgoing>Flow_10kqd3k</bpmn:outgoing>
@@ -230,7 +230,10 @@ return caseData</bpmn:script>
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_1ao5q4b" sourceRef="Event_0scmnc8" targetRef="Activity_1jae6rb" />
     <bpmn:textAnnotation id="TextAnnotation_16wea2u">
-      <bpmn:text>PAYMENT.EXID
+      <bpmn:text>payload - (JSON)
+
+
+PAYMENT.EXID
 Массив кодов сработавших сценариев из справочника 272 Справочник UID (правила СО)</bpmn:text>
     </bpmn:textAnnotation>
     <bpmn:association id="Association_1f84ijm" sourceRef="TextAnnotation_16wea2u" targetRef="Event_0scmnc8" />
@@ -238,9 +241,10 @@ return caseData</bpmn:script>
   <bpmn:message id="Message_1w4kpx6" name="message-case-pipeline" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="pipelineCase">
-      <bpmndi:BPMNShape id="TextAnnotation_16wea2u_di" bpmnElement="TextAnnotation_16wea2u">
-        <dc:Bounds x="120" y="260" width="323" height="68" />
-      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1ao5q4b_di" bpmnElement="Flow_1ao5q4b">
+        <di:waypoint x="300" y="415" />
+        <di:waypoint x="352" y="415" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_163efhh_di" bpmnElement="Flow_163efhh">
         <di:waypoint x="1901" y="415" />
         <di:waypoint x="1960" y="415" />
@@ -257,21 +261,11 @@ return caseData</bpmn:script>
         <di:waypoint x="452" y="415" />
         <di:waypoint x="490" y="415" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1ao5q4b_di" bpmnElement="Flow_1ao5q4b">
-        <di:waypoint x="300" y="415" />
-        <di:waypoint x="352" y="415" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Activity_1qwn6qf_di" bpmnElement="Activity_1qwn6qf">
         <dc:Bounds x="490" y="375" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1jae6rb_di" bpmnElement="Activity_1jae6rb">
         <dc:Bounds x="352" y="375" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0scmnc8_di" bpmnElement="Event_0scmnc8">
-        <dc:Bounds x="264" y="397" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="239" y="440" width="87" height="27" />
-        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_15er2ds_di" bpmnElement="Activity_15er2ds" isExpanded="true">
         <dc:Bounds x="680" y="80" width="1221" height="558" />
@@ -378,8 +372,17 @@ return caseData</bpmn:script>
       <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
         <dc:Bounds x="1960" y="375" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0scmnc8_di" bpmnElement="Event_0scmnc8">
+        <dc:Bounds x="264" y="397" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="239" y="440" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_16wea2u_di" bpmnElement="TextAnnotation_16wea2u">
+        <dc:Bounds x="120" y="260" width="323" height="96" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_1f84ijm_di" bpmnElement="Association_1f84ijm">
-        <di:waypoint x="282" y="328" />
+        <di:waypoint x="282" y="356" />
         <di:waypoint x="282" y="397" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>

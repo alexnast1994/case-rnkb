@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1apskln" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:process id="cancelReasonedJudgment" name="Отмена мотивированного суждения" isExecutable="true">
+  <bpmn:process id="cancelReasonedJudgment" name="9. Отмена Мотивированного суждения" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_0svaz96</bpmn:outgoing>
     </bpmn:startEvent>
@@ -126,7 +126,10 @@ execution.setVariable("clientId", clientId)</bpmn:script>
     <bpmn:sequenceFlow id="Flow_1pzming" sourceRef="Activity_0us8edk" targetRef="Activity_131dz13" />
     <bpmn:sequenceFlow id="Flow_0svaz96" sourceRef="StartEvent_1" targetRef="Activity_1jae6rb" />
     <bpmn:textAnnotation id="TextAnnotation_0o5xg26">
-      <bpmn:text>ID МС (reasonedJudgmentId)
+      <bpmn:text>reasonedJudgmentId
+
+
+ID МС (reasonedJudgmentId)
 ID клиента
 ID процессов</bpmn:text>
     </bpmn:textAnnotation>
@@ -172,6 +175,10 @@ ID процессов</bpmn:text>
       <bpmndi:BPMNShape id="Activity_0us8edk_di" bpmnElement="Activity_0us8edk" isExpanded="true">
         <dc:Bounds x="560" y="80" width="1000" height="390" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0ltjhw6_di" bpmnElement="Flow_0ltjhw6">
+        <di:waypoint x="1390" y="277" />
+        <di:waypoint x="1472" y="277" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_19dpd0j_di" bpmnElement="Flow_19dpd0j">
         <di:waypoint x="628" y="277" />
         <di:waypoint x="670" y="277" />
@@ -191,10 +198,6 @@ ID процессов</bpmn:text>
       <bpmndi:BPMNEdge id="Flow_1szt3ae_di" bpmnElement="Flow_1szt3ae">
         <di:waypoint x="770" y="277" />
         <di:waypoint x="820" y="277" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0ltjhw6_di" bpmnElement="Flow_0ltjhw6">
-        <di:waypoint x="1390" y="277" />
-        <di:waypoint x="1472" y="277" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_0ea9sb1_di" bpmnElement="Event_0ea9sb1">
         <dc:Bounds x="592" y="259" width="36" height="36" />
@@ -218,11 +221,11 @@ ID процессов</bpmn:text>
         <dc:Bounds x="1472" y="259" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0o5xg26_di" bpmnElement="TextAnnotation_0o5xg26">
-        <dc:Bounds x="159" y="140" width="271" height="82" />
+        <dc:Bounds x="159" y="140" width="271" height="96" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_0oki6d2_di" bpmnElement="Association_0oki6d2">
         <di:waypoint x="209" y="259" />
-        <di:waypoint x="209" y="222" />
+        <di:waypoint x="209" y="236" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
