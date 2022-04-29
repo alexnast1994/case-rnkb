@@ -1,0 +1,37 @@
+{
+  "repositories" : [
+    {
+      "className" : "com.cognive.projects.casernkb.repo.BaseDictRepo",
+      "methods" : [
+        {
+          "name" : "getByBaseDictionaryTypeCodeAndCode",
+          "args" : ["java.lang.Integer", "java.lang.String"],
+          "returnedType" : "com.prime.db.rnkb.model.BaseDictionary",
+          "objects" : [
+            {
+              "args" : [16, "1"],
+              "data" : {
+                "code" : "1",
+                "name" : "Code 1",
+                "id" : 1,
+                "type" : {
+                  "name": "Type 1",
+                  "code": 16,
+                  "id": 32
+                }
+              }
+            },
+            {
+              "args" : [16, "2"],
+              "data" : {
+                "code" : "2",
+                "name" : "Code 2",
+                "id" : 2
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
