@@ -53,7 +53,7 @@ return mapper.writeValueAsString(out)
     <bpmn:textAnnotation id="TextAnnotation_0rheqm6">
       <bpmn:text>messageId
 key
-case
+caseData
 payment</bpmn:text>
     </bpmn:textAnnotation>
     <bpmn:association id="Association_1vm388c" sourceRef="StartEvent_1" targetRef="TextAnnotation_0rheqm6" />

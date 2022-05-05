@@ -23,8 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
-import static org.camunda.bpm.extension.mockito.CamundaMockito.registerJavaDelegateMock;
-import static org.camunda.bpm.extension.mockito.CamundaMockito.registerMockInstance;
+import static org.camunda.bpm.extension.mockito.CamundaMockito.*;
 import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
@@ -71,9 +70,6 @@ public class CancelReasonedJudgmentTest {
 
         user2.setId(1L);
         user2.setName("user1");
-
-//        Если тип кейса Онлайн контроль, то есть Case.CASETYPE = Code 3 Значение из справочника 18 Тип кейса , то новый статус должен быть Case.STATUS = Code 2 131 Статус кейса Онлайн контроль
-//        Если тип кейса Постконтроль СО, то есть Case.CASETYPE = Code 4  Значение из справочника 18 Тип кейса , то новый статус должен быть Case.STATUS = Code 2 140 Статус кейса Постконтроль СО
 
         CaseUser caseUser11 = new CaseUser();
         CaseUser caseUser12 = new CaseUser();
@@ -122,6 +118,10 @@ public class CancelReasonedJudgmentTest {
         Map<String, Object> processParams = new HashMap<>();
         processParams.put("reasonedJudgmentId", 4L);
 
+        processEngineRule.manageDeployment(registerCallActivityMock("judgmentCleanTrigger")
+                .deploy(processEngineRule)
+        );
+
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("cancelReasonedJudgment", processParams);
 
@@ -147,7 +147,7 @@ public class CancelReasonedJudgmentTest {
         }, "isCases");
 
         assertThat(processInstance)
-                .hasPassed("Activity_changeStatus", "Activity_saveCases", "Activity_saveCaseUsers", "Activity_cleanClientTriggerCheck", "Activity_cleanClientTrigger", "Event_end")
+                .hasPassed("Activity_changeStatus", "Activity_saveCases", "Activity_saveCaseUsers", "Activity_cleanTriggers", "Event_end")
                 .variables()
                 .hasEntrySatisfying("cases", isCases)
                 .hasEntrySatisfying("caseUsers", isCaseUsers)
