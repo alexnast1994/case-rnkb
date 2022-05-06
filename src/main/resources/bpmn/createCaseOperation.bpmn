@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_12601mr" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.4.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_12601mr" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0">
   <bpmn:process id="operationCreateCase" name="operationCreateCase" isExecutable="true">
     <bpmn:startEvent id="Event_1ylboqh">
       <bpmn:outgoing>Flow_112yfei</bpmn:outgoing>
@@ -126,7 +126,7 @@ else{
 if (statusTypeCode != null) {
     cs.status = Optional.ofNullable(getBD(Integer.valueOf(statusTypeCode), statusCode)).orElse(null)
 }
-cs.creationDate = LocalDateTime.now()
+cs.creationdate = LocalDateTime.now()
 cs.caseStatus = Optional.ofNullable(getBD(caseStatusTypeCode, caseStatusCode)).orElse(null)
 
 return cs</bpmn:script>
