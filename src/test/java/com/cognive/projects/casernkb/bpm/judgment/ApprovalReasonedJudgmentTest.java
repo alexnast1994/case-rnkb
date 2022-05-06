@@ -127,8 +127,6 @@ public class ApprovalReasonedJudgmentTest {
 
         ReasonedJudgment rj = getRj();
 
-        BaseDictionary bd1 = new BaseDictionary();
-
         rj.setTypeRj(getBaseDictionary("02"));
         rj.setTypeOfControl(getBaseDictionary("1"));
 
