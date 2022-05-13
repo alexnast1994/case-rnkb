@@ -82,7 +82,7 @@ public class FileReadScheduler {
                 //log.info(json);
                 if(operations.size()>0) {
                     variables.put(CamundaVariables.PIPELINE_JSON.getName(), Variables.objectValue(operations).serializationDataFormat(Variables.SerializationDataFormats.JAVA).create());
-                    bpmProcessService.startProcess("operationCreateCaseJob", variables);
+                    bpmProcessService.startProcess("operationCreateCaseJob", "", variables);
                     minioService.removeObject(minioBucketName,minioFolderName+"/"+minioFileName);
                     minioService.putObject(inputStreamForSave,minioBucketName,minioSuccessFolderName,"success-"+minioFileName,mimeType);
                     isClosed = true;

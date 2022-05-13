@@ -34,6 +34,10 @@ public class MidlRequestClientTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
+    private String getPayloadJson(Long caseId, Long requestId, Boolean dboRequest) {
+        return "{\"payload\":{\"camundaMidlRequestClient\":{\"caseId\":" + caseId + ",\"requestId\":" + requestId + ",\"dboRequest\":" + dboRequest + "}}}";
+    }
+
     @Test
     public void Should_no_response() {
         autoMock("bpmn/midl/midlRequestClient.bpmn");
@@ -74,9 +78,7 @@ public class MidlRequestClientTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(186, "7")).thenReturn(bd7);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("caseId", 123L);
-        processParams.put("requestId", 125L);
-        processParams.put("requestDbo", false);
+        processParams.put("payload", getPayloadJson(123L, 125L, false));
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseResponse")
                 .deploy(processEngineRule)
@@ -159,9 +161,7 @@ public class MidlRequestClientTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(186, "8")).thenReturn(bd8);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("caseId", 123L);
-        processParams.put("requestId", 125L);
-        processParams.put("requestDbo", true);
+        processParams.put("payload", getPayloadJson(123L, 125L, true));
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseResponse")
                 .deploy(processEngineRule)

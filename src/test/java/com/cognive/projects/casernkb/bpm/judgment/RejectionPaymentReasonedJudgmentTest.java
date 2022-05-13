@@ -32,6 +32,10 @@ public class RejectionPaymentReasonedJudgmentTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
+    private String getPayloadJson(Long reasonedJudgmentId) {
+        return "{\"payload\":{\"camundaRejectionPaymentReasonedJudgment\":{\"reasonedJudgmentId\":" + reasonedJudgmentId + "}}}";
+    }
+
     private static final BaseDictionary baseDictionary2;
     private static final BaseDictionary baseDictionary4;
     private static final BaseDictionary baseDictionary6;
@@ -135,7 +139,7 @@ public class RejectionPaymentReasonedJudgmentTest {
         selectOneDelegate.onExecutionSetVariables(selectResult);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("reasonedJudgmentId", 4L);
+        processParams.put("payload", getPayloadJson(4L));
 
         processEngineRule.manageDeployment(registerCallActivityMock("paymentRejection")
                 .deploy(processEngineRule)
@@ -169,7 +173,7 @@ public class RejectionPaymentReasonedJudgmentTest {
         selectOneDelegate.onExecutionSetVariables(selectResult);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("reasonedJudgmentId", 4L);
+        processParams.put("payload", getPayloadJson(4L));
 
         processEngineRule.manageDeployment(registerCallActivityMock("paymentRejection")
                 .deploy(processEngineRule)

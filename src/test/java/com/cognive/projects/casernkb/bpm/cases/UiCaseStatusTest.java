@@ -30,6 +30,10 @@ public class UiCaseStatusTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
+    private String getPayloadJson(Long caseId, String caseType, String caseStatus) {
+        return "{\"payload\":{\"camundaUiCaseStatus\":{\"caseId\":" + caseId + ",\"caseType\":\"" + caseType + "\",\"caseStatus\":\"" + caseStatus + "\"}}}";
+    }
+
     @Test
     public void Should_no_response() {
         autoMock("bpmn/cases/uiCaseStatus.bpmn");
@@ -52,9 +56,7 @@ public class UiCaseStatusTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(16, "1")).thenReturn(caseType1);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("caseId", 123);
-        processParams.put("caseType", "1");
-        processParams.put("caseStatus", "2");
+        processParams.put("payload", getPayloadJson(123L, "1", "2"));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("uiCaseStatus", processParams);
@@ -108,9 +110,7 @@ public class UiCaseStatusTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(45, "7")).thenReturn(paymentStatus7);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("caseId", 123);
-        processParams.put("caseType", "4");
-        processParams.put("caseStatus", "2");
+        processParams.put("payload", getPayloadJson(123L, "4", "2"));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("uiCaseStatus", processParams);
@@ -172,9 +172,7 @@ public class UiCaseStatusTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(45, "9")).thenReturn(paymentStatus9);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("caseId", 123);
-        processParams.put("caseType", "2");
-        processParams.put("caseStatus", "7");
+        processParams.put("payload", getPayloadJson(123L, "2", "7"));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("uiCaseStatus", processParams);

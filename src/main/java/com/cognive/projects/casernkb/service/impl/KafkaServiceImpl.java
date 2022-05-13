@@ -13,6 +13,9 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 @AllArgsConstructor
@@ -25,18 +28,29 @@ public class KafkaServiceImpl implements KafkaService {
     private final BPMProcessService bpmService;
     private final StreamBridge streamBridge;
 
+    private static final String AML_HEADER = "aml_camunda_start";
+
     @Bean
     public Consumer<Message<String>> commonMessageInput(){
         return x-> {
             String key = x.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
             String topic = x.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
-            log.info("Kafka message key={}, from: {}", key, topic);
+            byte[] processIdBytes = x.getHeaders().get(AML_HEADER, byte[].class);
 
-            String messageId = messageMappingConfig.getMessage(topic);
-            if(messageId == null)
-                throw new IllegalArgumentException("Unknown topic configuration");
+            if(processIdBytes == null) {
+                log.warn("Input message with null processId header, key={}, topic={}. Skip message", key, topic);
+                return;
+            }
 
-            bpmService.message(key, messageId, x.getPayload());
+            String processId = new String(processIdBytes, StandardCharsets.UTF_8);
+
+            log.info("Kafka message key={}, from={}, processId={}", key, topic, processId);
+
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("payload", x.getPayload());
+
+            String id = bpmService.startProcess(processId, key, variables);
+            log.debug("Process started: {}", id);
         };
     }
 

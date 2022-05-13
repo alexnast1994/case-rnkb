@@ -34,6 +34,10 @@ public class ApprovalReasonedJudgmentTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
+    private String getPayloadJson(Long reasonedJudgmentId) {
+        return "{\"payload\":{\"camundaApprovalReasonedJudgment\":{\"reasonedJudgmentId\":" + reasonedJudgmentId + "}}}";
+    }
+
     private static final BaseDictionary baseDictionary2;
     private static final BaseDictionary baseDictionary4;
     private static final BaseDictionary baseDictionary6;
@@ -141,7 +145,7 @@ public class ApprovalReasonedJudgmentTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(178, "4")).thenReturn(baseDictionary4);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("reasonedJudgmentId", 4L);
+        processParams.put("payload", getPayloadJson(4L));
 
         processEngineRule.manageDeployment(registerCallActivityMock("judgmentCleanTrigger")
                 .deploy(processEngineRule)
@@ -217,7 +221,7 @@ public class ApprovalReasonedJudgmentTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(179, "4")).thenReturn(baseDictionary4);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("reasonedJudgmentId", 4L);
+        processParams.put("payload", getPayloadJson(4L));
 
         processEngineRule.manageDeployment(registerCallActivityMock("judgmentCleanTrigger")
                 .deploy(processEngineRule)
@@ -276,7 +280,7 @@ public class ApprovalReasonedJudgmentTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(179, "4")).thenReturn(baseDictionary4);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("reasonedJudgmentId", 4L);
+        processParams.put("payload", getPayloadJson(4L));
 
         processEngineRule.manageDeployment(registerCallActivityMock("judgmentCleanTrigger")
                 .deploy(processEngineRule)

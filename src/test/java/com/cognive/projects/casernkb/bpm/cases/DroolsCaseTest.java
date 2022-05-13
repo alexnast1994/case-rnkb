@@ -29,9 +29,9 @@ public class DroolsCaseTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
-    private static final String payloadJsonAccepted = "{\"rules\":[\"01\",\"74\"],\"paymentId\":123}";
-    private static final String payloadJsonAccepted2 = "{\"rules\":[\"01\",\"74\", \"75\"],\"paymentId\":123}";
-    private static final String payloadJsonNoRules = "{\"rules\":[],\"paymentId\":1}";
+    private static final String payloadJsonAccepted = "{\"payload\":{\"camundaDroolsCase\":{\"rules\":[\"01\",\"74\"],\"paymentId\":123}}}";
+    private static final String payloadJsonAccepted2 = "{\"payload\":{\"camundaDroolsCase\":{\"rules\":[\"01\",\"74\", \"75\"],\"paymentId\":123}}}";
+    private static final String payloadJsonNoRules = "{\"payload\":{\"camundaDroolsCase\":{\"rules\":[],\"paymentId\":1}}}";
 
     @Test
     @SneakyThrows

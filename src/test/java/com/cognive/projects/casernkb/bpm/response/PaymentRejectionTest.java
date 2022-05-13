@@ -1,13 +1,9 @@
-package com.cognive.projects.casernkb.bpm.midl;
+package com.cognive.projects.casernkb.bpm.response;
 
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
 import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
-import com.prime.db.rnkb.model.CaseClient;
-import com.prime.db.rnkb.model.Client;
-import com.prime.db.rnkb.model.commucation.midl.ChangingTimingTask;
 import com.prime.db.rnkb.model.commucation.midl.Task;
-import com.prime.db.rnkb.model.commucation.midl.ZkTaskCases;
 import org.assertj.core.api.Condition;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
@@ -16,9 +12,9 @@ import org.camunda.bpm.engine.test.ProcessEngineRule;
 import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
@@ -28,39 +24,33 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/midl/midlRequestPaymentRejection.bpmn"
+        "bpmn/response/paymentRejection.bpmn"
 })
-public class MidlRequestPaymentRejectionTest {
+public class PaymentRejectionTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
-    private String getPayloadJson(Long caseId, Long requestId) {
-        return "{\"payload\":{\"camundaMidlRequestPaymentRejection\":{\"caseId\":" + caseId + ",\"requestId\":" + requestId + "}}}";
+    private String getPayloadJson(Long caseId, Long clientId, Boolean dboRequest) {
+        return "{\"payload\":{\"camundaPaymentRejection\":{\"caseId\":" + caseId + ",\"clientId\":" + clientId + ",\"dboRequest\":" + dboRequest + "}}}";
     }
 
+    @Disabled
     @Test
     public void Should_save() {
-        autoMock("bpmn/midl/midlRequestPaymentRejection.bpmn");
+        autoMock("bpmn/response/paymentRejection.bpmn");
 
         Case caseData = new Case();
 
-        Client client = new Client();
-        client.setId(4L);
-
-        CaseClient caseClient = new CaseClient();
-        caseClient.setCaseId(caseData);
-        caseClient.setClientId(client);
-
-        caseData.setCaseClientList(List.of(caseClient));
-
-        caseData.setId(123L);
-
+        BaseDictionary bd2 = new BaseDictionary();
         BaseDictionary bd1 = new BaseDictionary();
         BaseDictionary bd3 = new BaseDictionary();
+        BaseDictionary bd5 = new BaseDictionary();
         BaseDictionary bd9 = new BaseDictionary();
 
         bd1.setCode("1");
+        bd2.setCode("2");
         bd3.setCode("3");
+        bd5.setCode("5");
         bd9.setCode("9");
 
         Map<String, Object> selectResult = new HashMap<>();
@@ -71,39 +61,32 @@ public class MidlRequestPaymentRejectionTest {
 
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(184, "1")).thenReturn(bd1);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(178, "2")).thenReturn(bd2);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(185, "3")).thenReturn(bd3);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(131, "5")).thenReturn(bd5);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(186, "9")).thenReturn(bd9);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("payload", getPayloadJson(123L, 125L));
+        processParams.put("payload", getPayloadJson(123L, 124L, true));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("midlRequestPaymentRejection", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("paymentRejection", processParams);
 
+        Condition<Object> isCase = new Condition<>(p -> {
+            Case c = (Case)p;
+            return c.getStatus().getCode().equals("5")
+                    && c.getCaseStatus().getCode().equals("2");
+        }, "isNull");
         Condition<Object> isTask = new Condition<>(p -> {
             Task t = (Task)p;
             return t.getStatusId().getCode().equals("1")
                     && t.getTypeOfTask().getCode().equals("3")
                     && t.getTaskType().getCode().equals("9");
-        }, "isTask");
-
-        Condition<Object> isTimingTask = new Condition<>(p -> {
-            ChangingTimingTask t = (ChangingTimingTask)p;
-            return t.getIssueId() != null;
-        }, "isTimingTask");
-
-        Condition<Object> isTaskCases = new Condition<>(p -> {
-            ZkTaskCases t = (ZkTaskCases) p;
-            return t.getCaseId().getId() == caseData.getId();
-        }, "isTaskCases");
-
+        }, "isNull");
         assertThat(processInstance)
-                .hasPassed("Activity_selectCase", "Activity_fillTask", "Activity_saveTask",
-                        "Activity_fillTiming", "Activity_saveTiming", "Activity_fillTaskCases",
-                        "Activity_saveTaskCases", "Activity_fillTiming")
+                .hasPassed("Activity_saveCase", "Activity_saveTask")
                 .variables()
-                .hasEntrySatisfying("timingTask", isTimingTask)
-                .hasEntrySatisfying("taskCases", isTaskCases)
+                .hasEntrySatisfying("caseData", isCase)
                 .hasEntrySatisfying("task", isTask);
     }
 }

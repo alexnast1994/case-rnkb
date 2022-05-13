@@ -28,8 +28,8 @@ public class PipelineCaseTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
-    private static final String payloadJson = "{\"rules\":[\"04\",\"05\"],\"paymentId\":123}";
-    private static final String payloadNoRulesJson = "{\"rules\":[],\"paymentId\":123}";
+    private static final String payloadJson = "{\"payload\":{\"camundaPipelineCase\":{\"rules\":[\"04\",\"05\"],\"paymentId\":123}}}";
+    private static final String payloadNoRulesJson = "{\"payload\":{\"camundaPipelineCase\":{\"rules\":[],\"paymentId\":123}}}";
 
     @Test
     public void Should_response_with_save_case() {

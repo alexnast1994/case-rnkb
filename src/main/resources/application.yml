@@ -81,11 +81,11 @@ spring:
             key.serializer: org.apache.kafka.common.serialization.StringSerializer
       bindings:
         commonMessageInput-in-0:
-          destination: ${TOPIC_CASE_REQUEST},${TOPIC_CASE_PIPELINE}
+          destination: ${TOPIC_MESSAGE_INPUT}
           group: case-rnkb
           binder: kafka
         outMessage-out-0:
-          destination: ${TOPIC_CASE_OUT}
+          destination: ${TOPIC_MESSAGE_OUT}
           group: case-rnkb
           binder: kafka
       function:
@@ -94,9 +94,10 @@ spring:
 server:
   port: ${SERVER_PORT:8193}
   message-mapping:
-    message-case: ${TOPIC_CASE_REQUEST}
-    message-pipeline: ${TOPIC_CASE_PIPELINE}
-    message-case-out: ${TOPIC_CASE_OUT}
+    message-case: ${TOPIC_MESSAGE_OUT}
+    message-pipeline: ${TOPIC_MESSAGE_OUT}
+    message-case-out: ${TOPIC_MESSAGE_OUT}
+  process-name-header: ${PROCESS_NAME_HEADER:aml_camunda_start}
 
 logging:
   level:
@@ -116,4 +117,3 @@ logging:
   file:
     name: ${LOG_PATH:app.log}
     clean-history-on-start: false
-

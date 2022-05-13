@@ -34,6 +34,10 @@ public class CancelReasonedJudgmentTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
+    private String getPayloadJson(Long reasonedJudgmentId) {
+        return "{\"payload\":{\"camundaCancelReasonedJudgment\":{\"reasonedJudgmentId\":" + reasonedJudgmentId + "}}}";
+    }
+
     @Test
     @SneakyThrows
     public void Should_work() {
@@ -116,7 +120,7 @@ public class CancelReasonedJudgmentTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(179, "2")).thenReturn(bd22);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("reasonedJudgmentId", 4L);
+        processParams.put("payload", getPayloadJson(4L));
 
         processEngineRule.manageDeployment(registerCallActivityMock("judgmentCleanTrigger")
                 .deploy(processEngineRule)

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_10jftwq" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:process id="droolsCase" name="Ответ по платежу  2.2 процесс (drools)" isExecutable="true" camunda:versionTag="latest">
+  <bpmn:process id="droolsCase" name="Ответ по платежу 2.2 процесс (drools)" isExecutable="true" camunda:versionTag="latest">
     <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
       <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
       <bpmn:outgoing>Flow_0fiyz5q</bpmn:outgoing>
@@ -31,8 +31,10 @@ import static org.camunda.spin.DataFormats.*
 def jsonStr = execution.getVariable("payload")
 def jsonData = JSON(jsonStr)
 
-def rules = jsonData.prop("rules").elements()
-def paymentId = jsonData.prop("paymentId").numberValue()
+def payloadObject = jsonData.prop("payload").prop("camundaDroolsCase")
+
+def rules = payloadObject.prop("rules").elements()
+def paymentId = payloadObject.prop("paymentId").numberValue()
 def acceptedRules = []
 def allRules = []
 

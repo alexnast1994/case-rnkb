@@ -5,6 +5,7 @@ import org.camunda.bpm.engine.repository.ProcessDefinition;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Map;
 
 public interface BPMProcessService {
 
@@ -18,9 +19,11 @@ public interface BPMProcessService {
      * Get deploy of process
      */
 
-    String getProcessInstanceId(String processKey, String orderCheckoutId) throws IOException;
+    //String getProcessInstanceId(String processKey, String orderCheckoutId) throws IOException;
 
-    String startProcess(String key, HashMap<String, Object> variables);
+    String startProcess(String key, Map<String, Object> variables);
+
+    String startProcess(String processId, String businessKey, Map<String, Object> variables);
 
     /**
      * start process

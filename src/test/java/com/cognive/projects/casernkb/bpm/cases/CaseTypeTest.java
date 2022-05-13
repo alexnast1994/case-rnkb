@@ -32,6 +32,10 @@ public class CaseTypeTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
+    private String getPayloadJson(Long paymentIdWork, Long paymentIdBase) {
+        return "{\"payload\":{\"camundaCaseType\":{\"paymentIdWork\":" + paymentIdWork + ",\"paymentIdBase\":" + paymentIdBase + "}}}";
+    }
+
     @Test
     @SneakyThrows
     public void Should_not_touch_any() {
@@ -49,8 +53,11 @@ public class CaseTypeTest {
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
 
+        Map<String, Object> processParams = new HashMap<>();
+        processParams.put("payload", getPayloadJson(123L, 134L));
+
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType");
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType", processParams);
 
         Condition<Object> isNull = new Condition<>(p -> ((Payment)p).getCheckFlag() != null, "isNull");
         assertThat(processInstance)
@@ -81,8 +88,11 @@ public class CaseTypeTest {
         final FluentJavaDelegateMock objectDiffDelegate = registerJavaDelegateMock("objectDiff");
         objectDiffDelegate.onExecutionSetVariable("diffChanges", true);
 
+        Map<String, Object> processParams = new HashMap<>();
+        processParams.put("payload", getPayloadJson(123L, 134L));
+
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType");
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType", processParams);
 
         Condition<Object> isNull = new Condition<>(p -> ((Payment)p).getCheckFlag() != null, "isNull");
         assertThat(processInstance)
@@ -118,8 +128,11 @@ public class CaseTypeTest {
         final FluentJavaDelegateMock objectDiffDelegate = registerJavaDelegateMock("objectDiff");
         objectDiffDelegate.onExecutionSetVariables(objectDiffResult);
 
+        Map<String, Object> processParams = new HashMap<>();
+        processParams.put("payload", getPayloadJson(123L, 134L));
+
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType");
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType", processParams);
 
         Condition<Object> isNull = new Condition<>(p -> ((Payment)p).getCheckFlag() == null, "isNull");
         assertThat(processInstance)
@@ -170,8 +183,11 @@ public class CaseTypeTest {
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(16, "9")).thenReturn(caseStatus9);
 
+        Map<String, Object> processParams = new HashMap<>();
+        processParams.put("payload", getPayloadJson(123L, 134L));
+
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType");
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType", processParams);
 
         Condition<Object> isNull = new Condition<>(p -> ((Payment)p).getCheckFlag() == null, "isNull");
         Condition<Object> isStatus = new Condition<>(p -> ((Case)p).getStatus().getCode().equals("9"), "is9");

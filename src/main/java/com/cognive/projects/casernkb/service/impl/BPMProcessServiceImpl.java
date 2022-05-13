@@ -43,20 +43,24 @@ public class BPMProcessServiceImpl implements BPMProcessService {
         return repositoryService.getProcessDefinition(processId);
     }
 
+//    @Override
+//    public String getProcessInstanceId(String processKey, String orderCheckoutId) throws IOException {
+//        String processInstanceId = historyService.createHistoricVariableInstanceQuery()
+//                .processDefinitionKey(processKey)
+//                .variableValueEquals("orderCheckoutId", orderCheckoutId)
+//                .singleResult()
+//                .getProcessInstanceId();
+//        return processInstanceId;
+//    }
+//
     @Override
-    public String getProcessInstanceId(String processKey, String orderCheckoutId) throws IOException {
-        String processInstanceId = historyService.createHistoricVariableInstanceQuery()
-                .processDefinitionKey(processKey)
-                .variableValueEquals("orderCheckoutId", orderCheckoutId)
-                .singleResult()
-                .getProcessInstanceId();
-        return processInstanceId;
+    public String startProcess(String processId, Map<String, Object> variables) {
+        return runtimeService.startProcessInstanceByKey(processId, variables).getProcessDefinitionId();
     }
 
     @Override
-    public String startProcess(String key, HashMap<String, Object> variables) {
-        return runtimeService.startProcessInstanceByKey(key, variables).getProcessDefinitionId();
-
+    public String startProcess(String processId, String businessKey, Map<String, Object> variables) {
+        return runtimeService.startProcessInstanceById(processId, businessKey, variables).getProcessInstanceId();
     }
 
     @Override
