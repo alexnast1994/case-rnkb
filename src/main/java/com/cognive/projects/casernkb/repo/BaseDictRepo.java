@@ -9,4 +9,7 @@ import org.springframework.data.repository.query.Param;
 public interface BaseDictRepo  extends IBaseDslRepository<BaseDictionary, QBaseDictionary> {
     @Query("select a from BaseDictionary a where a.type.code = :baseDictionaryTypeCode and a.code = :code and a.isActive = true")
     BaseDictionary getByBaseDictionaryTypeCodeAndCode(@Param("baseDictionaryTypeCode") Integer baseDictionaryTypeCode, @Param("code") String code);
+
+    @Query("select a from BaseDictionary a where a.type.code = :baseDictionaryTypeCode and a.charCode = :charCode and a.isActive = true")
+    BaseDictionary getByBaseDictionaryTypeCodeAndCharCode(@Param("baseDictionaryTypeCode") Integer baseDictionaryTypeCode, @Param("charCode") String charCode);
 }
