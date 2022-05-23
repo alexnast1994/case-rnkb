@@ -15,7 +15,7 @@ public class DebugDelegate implements JavaDelegate {
             log.info("-> {}", logParam);
         }
         delegateExecution.getVariables().forEach((x, y) -> {
-            log.info("{} = {}", x, y);
+            log.info("{} = {}, {}", x, y, y.getClass().getCanonicalName());
         });
     }
 }

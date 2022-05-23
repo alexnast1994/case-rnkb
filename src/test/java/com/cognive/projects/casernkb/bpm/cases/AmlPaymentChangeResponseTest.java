@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.bpm.cases;
 
+import com.cognive.projects.casernkb.model.PaymentDto;
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
 import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
@@ -11,6 +12,8 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.ProcessEngineRule;
 import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
+import org.camunda.spin.json.SpinJsonNode;
+import org.camunda.spin.plugin.variable.SpinValues;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -26,61 +29,68 @@ import static org.mockito.Mockito.when;
 
 
 @Deployment(resources = {
-    "bpmn/cases/caseType.bpmn"
+    "bpmn/cases/amlPaymentChangeResponse.bpmn"
 })
-public class CaseTypeTest {
+public class AmlPaymentChangeResponseTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
-    private String getPayloadJson(Long paymentIdWork, Long paymentIdBase) {
-        return "{\"payload\":{\"camundaCaseType\":{\"paymentIdWork\":" + paymentIdWork + ",\"paymentIdBase\":" + paymentIdBase + "}}}";
+    private String getPayloadJson(PaymentDto paymentOld, PaymentDto paymentNew) {
+        return "{\"payload\":{\"amlPaymentChangeResponse\":{\"OldPayment\":" + SpinJsonNode.JSON(paymentOld).toString()
+                + ",\"NewPayment\":" + SpinJsonNode.JSON(paymentNew).toString() + "}}}";
     }
 
     @Test
     @SneakyThrows
     public void Should_not_touch_any() {
-        autoMock("bpmn/cases/caseType.bpmn");
+        autoMock("bpmn/cases/amlPaymentChangeResponse.bpmn");
 
-        Payment pWork = new Payment();
-        Payment pBase = new Payment();
+        PaymentDto pOld = new PaymentDto();
+        PaymentDto pNew = new PaymentDto();
 
-        pWork.setCheckFlag(2);
+        pOld.setId(123L);
+        pNew.setId(124L);
+
+        Payment payment = new Payment();
+        payment.setCheckFlag(2);
 
         Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("paymentWork", pWork);
-        selectResult.put("paymentBase", pBase);
+        selectResult.put("payment", payment);
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("payload", getPayloadJson(123L, 134L));
+        processParams.put("payload", getPayloadJson(pOld, pNew));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlPaymentChangeResponse", processParams);
 
-        Condition<Object> isNull = new Condition<>(p -> ((Payment)p).getCheckFlag() != null, "isNull");
         assertThat(processInstance)
+                .hasPassed("Activity_diffObjects", "Activity_setFlags", "Event_noChanges")
+                .hasNotPassed("Event_noCases", "Event_caseSaved")
                 .variables()
-                    .hasEntrySatisfying("paymentWork", isNull);
+                    .doesNotContainKey("payment");
     }
 
     @Test
     public void Should_not_touch_payment() {
-        autoMock("bpmn/cases/caseType.bpmn");
+        autoMock("bpmn/cases/amlPaymentChangeResponse.bpmn");
 
-        Payment pWork = new Payment();
-        Payment pBase = new Payment();
+        PaymentDto pOld = new PaymentDto();
+        PaymentDto pNew = new PaymentDto();
 
-        pWork.setCheckFlag(2);
-        pBase.setCheckFlag(2);
+        pOld.setId(123L);
+        pNew.setId(124L);
 
-        pWork.setName("1");
-        pBase.setName("2");
+        Payment payment = new Payment();
+        payment.setCheckFlag(2);
 
         Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("paymentWork", pWork);
-        selectResult.put("paymentBase", pBase);
+        selectResult.put("payment", payment);
+
+        pOld.setPurpose("1");
+        pNew.setPurpose("2");
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
@@ -89,38 +99,40 @@ public class CaseTypeTest {
         objectDiffDelegate.onExecutionSetVariable("diffChanges", true);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("payload", getPayloadJson(123L, 134L));
+        processParams.put("payload", getPayloadJson(pOld, pNew));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlPaymentChangeResponse", processParams);
 
         Condition<Object> isNull = new Condition<>(p -> ((Payment)p).getCheckFlag() != null, "isNull");
         assertThat(processInstance)
                 .hasPassed("Activity_selectCase", "Event_noCases")
                 .hasNotPassed("Activity_savePayment", "Activity_clearFlag")
-                .variables().hasEntrySatisfying("paymentWork", isNull);
+                .variables().hasEntrySatisfying("payment", isNull);
     }
 
     @Test
     public void Should_clear_payment() {
-        autoMock("bpmn/cases/caseType.bpmn");
+        autoMock("bpmn/cases/amlPaymentChangeResponse.bpmn");
 
-        Payment pWork = new Payment();
-        Payment pBase = new Payment();
+        PaymentDto pOld = new PaymentDto();
+        PaymentDto pNew = new PaymentDto();
 
-        pWork.setCheckFlag(2);
-        pBase.setCheckFlag(2);
+        pOld.setId(123L);
+        pNew.setId(124L);
 
-        pWork.setName("1");
-        pBase.setName("2");
+        Payment payment = new Payment();
+        payment.setCheckFlag(2);
 
         Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("paymentWork", pWork);
-        selectResult.put("paymentBase", pBase);
+        selectResult.put("payment", payment);
+
+        pOld.setPurpose("1");
+        pNew.setPurpose("2");
 
         Map<String, Object> objectDiffResult = new HashMap<>();
         objectDiffResult.put("diffChanges", true);
-        objectDiffResult.put("diffPaths", Arrays.asList("sourceSystems", "dateIn"));
+        objectDiffResult.put("diffPaths", Arrays.asList("SOURCESYSTEMS", "DATEIN"));
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
@@ -129,20 +141,20 @@ public class CaseTypeTest {
         objectDiffDelegate.onExecutionSetVariables(objectDiffResult);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("payload", getPayloadJson(123L, 134L));
+        processParams.put("payload", getPayloadJson(pOld, pNew));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlPaymentChangeResponse", processParams);
 
         Condition<Object> isNull = new Condition<>(p -> ((Payment)p).getCheckFlag() == null, "isNull");
         assertThat(processInstance)
                 .hasPassed("Activity_selectCase", "Activity_clearFlag")
-                .variables().hasEntrySatisfying("paymentWork", isNull);
+                .variables().hasEntrySatisfying("payment", isNull);
     }
 
     @Test
     public void Should_save_case() {
-        autoMock("bpmn/cases/caseType.bpmn");
+        autoMock("bpmn/cases/amlPaymentChangeResponse.bpmn");
 
         BaseDictionary caseType3 = new BaseDictionary();
         BaseDictionary caseStatus9 = new BaseDictionary();
@@ -152,27 +164,29 @@ public class CaseTypeTest {
         caseStatus9.setCode("9");
         caseStatus1.setCode("1");
 
-        Payment pWork = new Payment();
-        Payment pBase = new Payment();
+        PaymentDto pOld = new PaymentDto();
+        PaymentDto pNew = new PaymentDto();
 
-        pWork.setCheckFlag(2);
-        pBase.setCheckFlag(2);
+        pOld.setId(123L);
+        pNew.setId(124L);
 
-        pWork.setName("1");
-        pBase.setName("2");
+        Payment payment = new Payment();
+        payment.setCheckFlag(2);
+
+        pOld.setPurpose("1");
+        pNew.setPurpose("2");
 
         Case caseData = new Case();
         caseData.setCaseType(caseType3);
         caseData.setStatus(caseStatus1);
 
         Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("paymentWork", pWork);
-        selectResult.put("paymentBase", pBase);
+        selectResult.put("payment", payment);
         selectResult.put("caseData", caseData);
 
         Map<String, Object> objectDiffResult = new HashMap<>();
         objectDiffResult.put("diffChanges", true);
-        objectDiffResult.put("diffPaths", Arrays.asList("sourceSystems", "dateIn"));
+        objectDiffResult.put("diffPaths", Arrays.asList("SOURCESYSTEMS", "DATEIN"));
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
@@ -184,17 +198,17 @@ public class CaseTypeTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(16, "9")).thenReturn(caseStatus9);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("payload", getPayloadJson(123L, 134L));
+        processParams.put("payload", getPayloadJson(pOld, pNew));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseType", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlPaymentChangeResponse", processParams);
 
         Condition<Object> isNull = new Condition<>(p -> ((Payment)p).getCheckFlag() == null, "isNull");
         Condition<Object> isStatus = new Condition<>(p -> ((Case)p).getStatus().getCode().equals("9"), "is9");
         assertThat(processInstance)
                 .hasPassed("Activity_selectCase", "Activity_clearFlag", "Activity_saveCase")
                 .variables()
-                    .hasEntrySatisfying("paymentWork", isNull)
+                    .hasEntrySatisfying("payment", isNull)
                     .hasEntrySatisfying("caseData", isStatus);
     }
 }

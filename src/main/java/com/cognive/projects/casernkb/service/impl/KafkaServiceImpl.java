@@ -6,6 +6,8 @@ import com.cognive.projects.casernkb.service.BPMProcessService;
 import com.cognive.projects.casernkb.service.KafkaService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.bpm.engine.variable.value.ObjectValue;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -47,7 +49,10 @@ public class KafkaServiceImpl implements KafkaService {
             log.info("Kafka message key={}, from={}, processId={}", key, topic, processId);
 
             Map<String, Object> variables = new HashMap<>();
-            variables.put("payload", x.getPayload());
+
+            // Store value as json, prevent Camunda String limitation (4000 and 2000 for Oracle)
+            ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
+            variables.put("payload", jsonData);
 
             String id = bpmService.startProcess(processId, key, variables);
             log.debug("Process started: {}", id);

@@ -60,7 +60,7 @@ public class BPMProcessServiceImpl implements BPMProcessService {
 
     @Override
     public String startProcess(String processId, String businessKey, Map<String, Object> variables) {
-        return runtimeService.startProcessInstanceById(processId, businessKey, variables).getProcessInstanceId();
+        return runtimeService.startProcessInstanceByKey(processId, businessKey, variables).getProcessInstanceId();
     }
 
     @Override

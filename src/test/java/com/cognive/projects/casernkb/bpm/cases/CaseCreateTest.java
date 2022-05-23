@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.bpm.cases;
 
+import camundajar.impl.scala.util.parsing.json.JSON;
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
 import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
@@ -10,6 +11,11 @@ import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.ProcessEngineRule;
+import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.bpm.engine.variable.value.ObjectValue;
+import org.camunda.spin.Spin;
+import org.camunda.spin.plugin.variable.SpinValues;
+import org.camunda.spin.plugin.variable.value.JsonValue;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -69,6 +75,7 @@ public class CaseCreateTest {
                     && c.getCaseRules().size() == 3
                     && c.getCaseRules().get(1).getRuleId().getCode().equals("4");
         }, "isCase");
+
         assertThat(processInstance)
                 .variables()
                 .hasEntrySatisfying("caseData", isCase);
