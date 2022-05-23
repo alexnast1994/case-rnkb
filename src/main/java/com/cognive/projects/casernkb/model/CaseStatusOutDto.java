@@ -68,7 +68,7 @@ public class CaseStatusOutDto {
             pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS"
     )
     @JsonProperty("DecisionDate")
-    private Date DecisionDate; // Case.DECISIONDATE
+    private Date DecisionDate;
     @JsonProperty("BlockDocumResult")
     private String BlockDocumResult;
     //private String SourceSystem; // Payment.SOURCESYSTEMS

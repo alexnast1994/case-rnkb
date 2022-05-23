@@ -35,7 +35,7 @@ acceptedRules.each{rule -&gt;
   caseRulesList.add(cr)
 }
 
-caseOperation.setPaymentId(payment.getId())
+caseOperation.setPaymentId(payment)
 caseOperation.setDateoper(payment.getDateIn())
 caseOperation.setAmount(payment.getAmountNationalCurrency())
 

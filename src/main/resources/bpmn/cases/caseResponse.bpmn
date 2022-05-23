@@ -17,19 +17,17 @@ import java.time.LocalDateTime
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
-def caseData = execution.getVariable("caseData");
 def payment = execution.getVariable("payment");
 
 CaseStatusOutDto out = new CaseStatusOutDto()
-out.setCheckStatus(caseData.getStatus().getCode())
+out.setCheckStatus(payment.paymentSourceStatus?.code)
 out.setVersion("1.9")
 out.setObjectType("Operation")
 out.setRequestType("PaymentCheck")
-out.setSourceSystem(payment.getSourceSystems().getCode())
+out.setSourceSystem(payment.sourceSystems?.code)
 out.setSourceId(payment.getExId())
 out.setSourceSystemId("1000")
 out.setTimeStampFromLocalDateTime(LocalDateTime.now())
-out.setDecisionDateFromLocalDateTime(caseData.getDecisiondate())
 
 
 ObjectMapper mapper = new ObjectMapper()
@@ -40,7 +38,6 @@ return mapper.writeValueAsString(out)
     <bpmn:serviceTask id="Activity_sendKafka" name="Направление JSON в топик Kafka" camunda:delegateExpression="${kafkaDelegate}">
       <bpmn:extensionElements>
         <camunda:inputOutput>
-          <camunda:inputParameter name="key">${key}</camunda:inputParameter>
           <camunda:inputParameter name="payload">${caseJson}</camunda:inputParameter>
           <camunda:inputParameter name="messageId">${messageId}</camunda:inputParameter>
         </camunda:inputOutput>
