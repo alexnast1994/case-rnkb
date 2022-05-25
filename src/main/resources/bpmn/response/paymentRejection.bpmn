@@ -86,6 +86,7 @@ import com.prime.db.rnkb.model.SysUser
 import com.prime.db.rnkb.model.commucation.midl.Task
 import com.prime.db.rnkb.model.commucation.request.Request
 import com.prime.db.rnkb.model.commucation.request.PersonsInRequest
+import java.time.LocalDateTime
 
 BaseDictionary getDict(int typeCode, String code) {
    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(typeCode, code);
@@ -99,12 +100,12 @@ t.statusId = getDict(184, "1")
 t.creationDate = curTime
 t.typeOfTask = getDict(185, "3")
 t.taskType = getDict(186, dboRequest ? "12" : "11")  
-t.caseId = caseData
-t.caseClient = caseClient
+//t.caseId = caseData
+t.clientId = client
 
 Request req = new Request()
 req.task = t
-req.cases = [casData]
+//req.cases = [caseData]
 req.recordType = getDict(189, "5")
 req.requestType = getDict(0, "19") // TODO type
 req.statusOfRequest = getDict(190, dboRequest ? "2" : "1")
@@ -118,10 +119,10 @@ person.requestId = req
 person.clientId = client
 person.fullName = client.fullName
 person.inn = client.inn
-person.birthDate = client.clientIndividual.birthdate
+person.birthDate = client?.clientIndividual?.birthdate
 
 if(client.verificationDocumentList != null) {
-  person.docSeriesNumber = client.verificationDocumentList.find { it.isMain }.docNumber
+  person.docSeriesNumber = client.verificationDocumentList?.find { it.isMain }.docNumber
 }
 person.branchName = client.exBranch
 
@@ -148,7 +149,7 @@ execution.setVariable("request", req)
       <bpmn:serviceTask id="Activity_1nnh36p" name="Select client" camunda:delegateExpression="${selectOneDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="outputVarName">caseData</camunda:inputParameter>
+            <camunda:inputParameter name="outputVarName">client</camunda:inputParameter>
             <camunda:inputParameter name="parameters">
               <camunda:map>
                 <camunda:entry key="caseId">${caseId}</camunda:entry>
@@ -160,7 +161,7 @@ execution.setVariable("request", req)
         <bpmn:incoming>Flow_0tcfa6a</bpmn:incoming>
         <bpmn:outgoing>Flow_1ykki9b</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:serviceTask id="Activity_saveCase" name="Сохранить&#10;Task" camunda:delegateExpression="${saveObjectDelegate}">
+      <bpmn:serviceTask id="Activity_saveTask" name="Сохранить&#10;Task" camunda:delegateExpression="${saveObjectDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="saveObject">${task}</camunda:inputParameter>
@@ -169,7 +170,7 @@ execution.setVariable("request", req)
         <bpmn:incoming>Flow_03c4tz0</bpmn:incoming>
         <bpmn:outgoing>Flow_0wk1mpv</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:serviceTask id="Activity_0bzt4s9" name="Сохранить&#10;Person" camunda:delegateExpression="${saveObjectDelegate}">
+      <bpmn:serviceTask id="Activity_savePerson" name="Сохранить&#10;Person" camunda:delegateExpression="${saveObjectDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="saveObject">${person}</camunda:inputParameter>
@@ -178,7 +179,7 @@ execution.setVariable("request", req)
         <bpmn:incoming>Flow_0wk1mpv</bpmn:incoming>
         <bpmn:outgoing>Flow_0qfya6o</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:serviceTask id="Activity_0tn1idc" name="Сохранить&#10;Request" camunda:delegateExpression="${saveObjectDelegate}">
+      <bpmn:serviceTask id="Activity_saveRequest" name="Сохранить&#10;Request" camunda:delegateExpression="${saveObjectDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="saveObject">${request}</camunda:inputParameter>
@@ -187,13 +188,13 @@ execution.setVariable("request", req)
         <bpmn:incoming>Flow_0qfya6o</bpmn:incoming>
         <bpmn:outgoing>Flow_0f5nfbx</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_03c4tz0" sourceRef="Activity_012hzh3" targetRef="Activity_saveCase" />
-      <bpmn:sequenceFlow id="Flow_0wk1mpv" sourceRef="Activity_saveCase" targetRef="Activity_0bzt4s9" />
-      <bpmn:sequenceFlow id="Flow_0qfya6o" sourceRef="Activity_0bzt4s9" targetRef="Activity_0tn1idc" />
+      <bpmn:sequenceFlow id="Flow_03c4tz0" sourceRef="Activity_012hzh3" targetRef="Activity_saveTask" />
+      <bpmn:sequenceFlow id="Flow_0wk1mpv" sourceRef="Activity_saveTask" targetRef="Activity_savePerson" />
+      <bpmn:sequenceFlow id="Flow_0qfya6o" sourceRef="Activity_savePerson" targetRef="Activity_saveRequest" />
       <bpmn:sequenceFlow id="Flow_0tcfa6a" sourceRef="Activity_06ngoq7" targetRef="Activity_1nnh36p" />
       <bpmn:sequenceFlow id="Flow_1ykki9b" sourceRef="Activity_1nnh36p" targetRef="Activity_012hzh3" />
       <bpmn:sequenceFlow id="Flow_15mj556" sourceRef="Event_1rggvkn" targetRef="Activity_0us54of" />
-      <bpmn:sequenceFlow id="Flow_0f5nfbx" sourceRef="Activity_0tn1idc" targetRef="Activity_00epde9" />
+      <bpmn:sequenceFlow id="Flow_0f5nfbx" sourceRef="Activity_saveRequest" targetRef="Activity_00epde9" />
       <bpmn:task id="Activity_0xuo1hs" name="Generate Template">
         <bpmn:incoming>Flow_1fifw1j</bpmn:incoming>
         <bpmn:outgoing>Flow_0ig92gh</bpmn:outgoing>
@@ -261,6 +262,10 @@ dboRequest Информация о ДБО клиента </bpmn:text>
         <di:waypoint x="2890" y="285" />
         <di:waypoint x="2990" y="285" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09jg2ud_di" bpmnElement="Flow_09jg2ud">
+        <di:waypoint x="3090" y="280" />
+        <di:waypoint x="3142" y="280" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0twmthz_di" bpmnElement="Flow_0twmthz">
         <di:waypoint x="198" y="280" />
         <di:waypoint x="230" y="280" />
@@ -268,10 +273,6 @@ dboRequest Информация о ДБО клиента </bpmn:text>
       <bpmndi:BPMNEdge id="Flow_0xgtmkf_di" bpmnElement="Flow_0xgtmkf">
         <di:waypoint x="330" y="280" />
         <di:waypoint x="360" y="280" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_09jg2ud_di" bpmnElement="Flow_09jg2ud">
-        <di:waypoint x="3090" y="280" />
-        <di:waypoint x="3142" y="280" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Activity_1xuv5nm_di" bpmnElement="Activity_1xuv5nm">
         <dc:Bounds x="360" y="240" width="100" height="80" />
@@ -291,20 +292,49 @@ dboRequest Информация о ДБО клиента </bpmn:text>
       <bpmndi:BPMNShape id="Activity_002z49l_di" bpmnElement="Activity_002z49l" isExpanded="true">
         <dc:Bounds x="510" y="80" width="2380" height="410" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_15mj556_di" bpmnElement="Flow_15mj556">
-        <di:waypoint x="578" y="280" />
-        <di:waypoint x="660" y="280" />
+      <bpmndi:BPMNEdge id="Flow_1fifw1j_di" bpmnElement="Flow_1fifw1j">
+        <di:waypoint x="1850" y="280" />
+        <di:waypoint x="1880" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qki6lf_di" bpmnElement="Flow_0qki6lf">
+        <di:waypoint x="760" y="280" />
+        <di:waypoint x="860" y="280" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0mbval4_di" bpmnElement="Flow_0mbval4">
         <di:waypoint x="2120" y="280" />
         <di:waypoint x="2195" y="280" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1cy6qse_di" bpmnElement="Flow_1cy6qse">
-        <di:waypoint x="2245" y="280" />
-        <di:waypoint x="2270" y="280" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1197" y="-28" width="11" height="14" />
-        </bpmndi:BPMNLabel>
+      <bpmndi:BPMNEdge id="Flow_0ig92gh_di" bpmnElement="Flow_0ig92gh">
+        <di:waypoint x="1980" y="280" />
+        <di:waypoint x="2020" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0f5nfbx_di" bpmnElement="Flow_0f5nfbx">
+        <di:waypoint x="1720" y="280" />
+        <di:waypoint x="1750" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15mj556_di" bpmnElement="Flow_15mj556">
+        <di:waypoint x="578" y="280" />
+        <di:waypoint x="660" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ykki9b_di" bpmnElement="Flow_1ykki9b">
+        <di:waypoint x="1100" y="280" />
+        <di:waypoint x="1140" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tcfa6a_di" bpmnElement="Flow_0tcfa6a">
+        <di:waypoint x="960" y="280" />
+        <di:waypoint x="1000" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qfya6o_di" bpmnElement="Flow_0qfya6o">
+        <di:waypoint x="1560" y="280" />
+        <di:waypoint x="1620" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0wk1mpv_di" bpmnElement="Flow_0wk1mpv">
+        <di:waypoint x="1390" y="280" />
+        <di:waypoint x="1460" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03c4tz0_di" bpmnElement="Flow_03c4tz0">
+        <di:waypoint x="1240" y="280" />
+        <di:waypoint x="1290" y="280" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1vjueaf_di" bpmnElement="Flow_1vjueaf">
         <di:waypoint x="2220" y="305" />
@@ -314,41 +344,12 @@ dboRequest Информация о ДБО клиента </bpmn:text>
         <di:waypoint x="2370" y="280" />
         <di:waypoint x="2392" y="280" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1ykki9b_di" bpmnElement="Flow_1ykki9b">
-        <di:waypoint x="1100" y="280" />
-        <di:waypoint x="1140" y="280" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_03c4tz0_di" bpmnElement="Flow_03c4tz0">
-        <di:waypoint x="1240" y="280" />
-        <di:waypoint x="1290" y="280" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0tcfa6a_di" bpmnElement="Flow_0tcfa6a">
-        <di:waypoint x="960" y="280" />
-        <di:waypoint x="1000" y="280" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0wk1mpv_di" bpmnElement="Flow_0wk1mpv">
-        <di:waypoint x="1390" y="280" />
-        <di:waypoint x="1460" y="280" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0qfya6o_di" bpmnElement="Flow_0qfya6o">
-        <di:waypoint x="1560" y="280" />
-        <di:waypoint x="1620" y="280" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0f5nfbx_di" bpmnElement="Flow_0f5nfbx">
-        <di:waypoint x="1720" y="280" />
-        <di:waypoint x="1750" y="280" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1fifw1j_di" bpmnElement="Flow_1fifw1j">
-        <di:waypoint x="1850" y="280" />
-        <di:waypoint x="1880" y="280" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0ig92gh_di" bpmnElement="Flow_0ig92gh">
-        <di:waypoint x="1980" y="280" />
-        <di:waypoint x="2020" y="280" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0qki6lf_di" bpmnElement="Flow_0qki6lf">
-        <di:waypoint x="760" y="280" />
-        <di:waypoint x="860" y="280" />
+      <bpmndi:BPMNEdge id="Flow_1cy6qse_di" bpmnElement="Flow_1cy6qse">
+        <di:waypoint x="2245" y="280" />
+        <di:waypoint x="2270" y="280" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1197" y="-28" width="11" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_1rggvkn_di" bpmnElement="Event_1rggvkn">
         <dc:Bounds x="542" y="262" width="36" height="36" />
@@ -377,17 +378,14 @@ dboRequest Информация о ДБО клиента </bpmn:text>
       <bpmndi:BPMNShape id="Activity_1nnh36p_di" bpmnElement="Activity_1nnh36p">
         <dc:Bounds x="1000" y="240" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_saveCase_di" bpmnElement="Activity_saveCase">
+      <bpmndi:BPMNShape id="Activity_saveCase_di" bpmnElement="Activity_saveTask">
         <dc:Bounds x="1290" y="240" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0bzt4s9_di" bpmnElement="Activity_0bzt4s9">
+      <bpmndi:BPMNShape id="Activity_0bzt4s9_di" bpmnElement="Activity_savePerson">
         <dc:Bounds x="1460" y="240" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0tn1idc_di" bpmnElement="Activity_0tn1idc">
+      <bpmndi:BPMNShape id="Activity_0tn1idc_di" bpmnElement="Activity_saveRequest">
         <dc:Bounds x="1620" y="240" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_00epde9_di" bpmnElement="Activity_00epde9">
-        <dc:Bounds x="1750" y="240" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0xuo1hs_di" bpmnElement="Activity_0xuo1hs">
         <dc:Bounds x="1880" y="240" width="100" height="80" />
@@ -397,6 +395,9 @@ dboRequest Информация о ДБО клиента </bpmn:text>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0us54of_di" bpmnElement="Activity_0us54of">
         <dc:Bounds x="660" y="240" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_00epde9_di" bpmnElement="Activity_00epde9">
+        <dc:Bounds x="1750" y="240" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_1wwm1mr_di" bpmnElement="TextAnnotation_1wwm1mr">
         <dc:Bounds x="130" y="150" width="250" height="53" />

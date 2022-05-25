@@ -91,52 +91,66 @@ execution.setVariable("processPayments", processPayments)
       <bpmn:incoming>Flow_0phrwtt</bpmn:incoming>
       <bpmn:outgoing>Flow_04zjd0p</bpmn:outgoing>
     </bpmn:callActivity>
+    <bpmn:textAnnotation id="TextAnnotation_13s7hbo">
+      <bpmn:text>payload
+
+PAYMENT.EXID
+Массив кодов сработавших сценариев из справочника 75 Перечень видов операций, сведения о которых представляются в уполномоченный орган (Росфинмониторинг)</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_09bp8tb" sourceRef="StartEvent_1" targetRef="TextAnnotation_13s7hbo" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlPaymentResponseBatch">
+      <bpmndi:BPMNShape id="TextAnnotation_13s7hbo_di" bpmnElement="TextAnnotation_13s7hbo">
+        <dc:Bounds x="147" y="80" width="153" height="168" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0sfmqgy_di" bpmnElement="Flow_0sfmqgy">
-        <di:waypoint x="655" y="97" />
-        <di:waypoint x="742" y="97" />
+        <di:waypoint x="655" y="487" />
+        <di:waypoint x="742" y="487" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0tekepu_di" bpmnElement="Flow_0tekepu">
-        <di:waypoint x="360" y="97" />
-        <di:waypoint x="420" y="97" />
+        <di:waypoint x="360" y="487" />
+        <di:waypoint x="420" y="487" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0phrwtt_di" bpmnElement="Flow_0phrwtt">
-        <di:waypoint x="630" y="122" />
-        <di:waypoint x="630" y="240" />
+        <di:waypoint x="630" y="512" />
+        <di:waypoint x="630" y="630" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1da6ev0_di" bpmnElement="Flow_1da6ev0">
-        <di:waypoint x="520" y="97" />
-        <di:waypoint x="605" y="97" />
+        <di:waypoint x="520" y="487" />
+        <di:waypoint x="605" y="487" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_04zjd0p_di" bpmnElement="Flow_04zjd0p">
-        <di:waypoint x="580" y="280" />
-        <di:waypoint x="470" y="280" />
-        <di:waypoint x="470" y="137" />
+        <di:waypoint x="580" y="670" />
+        <di:waypoint x="470" y="670" />
+        <di:waypoint x="470" y="527" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_15m1zmu_di" bpmnElement="Flow_15m1zmu">
-        <di:waypoint x="215" y="97" />
-        <di:waypoint x="260" y="97" />
+        <di:waypoint x="215" y="487" />
+        <di:waypoint x="260" y="487" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
-        <dc:Bounds x="179" y="79" width="36" height="36" />
+        <dc:Bounds x="179" y="469" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0us54of_di" bpmnElement="Activity_parse">
-        <dc:Bounds x="260" y="57" width="100" height="80" />
+        <dc:Bounds x="260" y="447" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_loopCase_di" bpmnElement="Activity_loopPayment">
-        <dc:Bounds x="420" y="57" width="100" height="80" />
+        <dc:Bounds x="420" y="447" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_007e3ul_di" bpmnElement="Gateway_007e3ul" isMarkerVisible="true">
-        <dc:Bounds x="605" y="72" width="50" height="50" />
+        <dc:Bounds x="605" y="462" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0krcp1s_di" bpmnElement="Event_end">
-        <dc:Bounds x="742" y="79" width="36" height="36" />
+        <dc:Bounds x="742" y="469" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_process5_di" bpmnElement="Activity_processPaymentResponse">
-        <dc:Bounds x="580" y="240" width="100" height="80" />
+        <dc:Bounds x="580" y="630" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_09bp8tb_di" bpmnElement="Association_09bp8tb">
+        <di:waypoint x="197" y="469" />
+        <di:waypoint x="197" y="248" />
+      </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>

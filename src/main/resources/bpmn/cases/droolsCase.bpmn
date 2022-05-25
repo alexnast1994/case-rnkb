@@ -92,7 +92,8 @@ if(payment.caseOperationList != null &amp;&amp; !payment.caseOperationList.isEmp
   }
 }
 
-execution.setVariable("payment", payment)</bpmn:script>
+execution.setVariable("payment", payment)
+execution.setVariable("caseType", "1")</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:sequenceFlow id="Flow_01gyzyy" sourceRef="Activity_06ngoq7" targetRef="Activity_setFlags" />
       <bpmn:sequenceFlow id="Flow_07egg41" sourceRef="Activity_setFlags" targetRef="Gateway_00dx1bx" />
@@ -114,9 +115,10 @@ execution.setVariable("payment", payment)</bpmn:script>
       </bpmn:sequenceFlow>
       <bpmn:callActivity id="Activity_callCreateCase" name="Создать кейс" calledElement="caseCreate">
         <bpmn:extensionElements>
-          <camunda:in source="&#34;1&#34;" target="caseType" />
-          <camunda:in source="${payment}" target="payment" />
-          <camunda:in source="${acceptedRules}" target="acceptedRules" />
+          <camunda:in source="caseType" target="caseType" />
+          <camunda:in source="payment" target="payment" />
+          <camunda:in source="acceptedRules" target="acceptedRules" />
+          <camunda:in source="session" target="session" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_0sn2733</bpmn:incoming>
         <bpmn:outgoing>Flow_0oamcfp</bpmn:outgoing>

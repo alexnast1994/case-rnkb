@@ -4,49 +4,95 @@
     <bpmn:startEvent id="StartEvent_1" name="caseCreate">
       <bpmn:outgoing>Flow_0ft4dh9</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:endEvent id="Event_15as0y6">
-      <bpmn:incoming>Flow_0a20bgy</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:scriptTask id="Activity_1y0u3c9" name="Формирование case" scriptFormat="groovy" camunda:resultVariable="caseData">
+    <bpmn:sequenceFlow id="Flow_0ft4dh9" sourceRef="StartEvent_1" targetRef="Activity_createCase" />
+    <bpmn:scriptTask id="Activity_createCase" name="Формирование case" scriptFormat="groovy">
       <bpmn:incoming>Flow_0ft4dh9</bpmn:incoming>
-      <bpmn:outgoing>Flow_0a20bgy</bpmn:outgoing>
+      <bpmn:outgoing>Flow_113rnzs</bpmn:outgoing>
       <bpmn:script>import com.prime.db.rnkb.model.Case
-import com.prime.db.rnkb.model.CaseOperation
-import com.prime.db.rnkb.model.CaseClient
-import com.prime.db.rnkb.model.CaseRules
-import java.time.LocalDateTime
 import com.prime.db.rnkb.model.BaseDictionary
+import java.time.LocalDateTime
 
-BaseDictionary getBd(int typeCode, String code) {
-   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(typeCode, code);
+BaseDictionary getCaseType(String code) {
+   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(18, code);
+}
+
+
+def caseType = execution.getVariable("caseType");
+
+Case caseData = new Case()
+
+caseData.setCreationdate(LocalDateTime.now())
+caseData.setCaseType(getCaseType(caseType))
+
+execution.setVariable("caseData", caseData);</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:serviceTask id="Activity_saveCase" name="Сохранить&#10;Case" camunda:delegateExpression="${saveObjectDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="outputVarName">caseDataOut</camunda:inputParameter>
+          <camunda:inputParameter name="saveObject">${caseData}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_113rnzs</bpmn:incoming>
+      <bpmn:outgoing>Flow_1qkn8wq</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_saveCaseRelations" name="Сохранить&#10;связанные с case объекты" camunda:delegateExpression="${saveObjectListDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="saveObjectList">${caseRelationList}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0tbyj9n</bpmn:incoming>
+      <bpmn:outgoing>Flow_1vak5gg</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:scriptTask id="Activity_caseRelations" name="Формирование case, связанные данные" scriptFormat="groovy" camunda:resultVariable="caseData">
+      <bpmn:incoming>Flow_1qkn8wq</bpmn:incoming>
+      <bpmn:outgoing>Flow_0tbyj9n</bpmn:outgoing>
+      <bpmn:script>import com.prime.db.rnkb.model.Case
+import com.prime.db.rnkb.model.CaseClient
+import com.prime.db.rnkb.model.CaseOperation
+import com.prime.db.rnkb.model.CaseRules
+import com.prime.db.rnkb.model.BaseDictionary
+import java.time.LocalDateTime
+
+BaseDictionary getRule(String code) {
+   baseDictRepo.getByBaseDictionaryTypeCodeAndCharCode(272, code);
+}
+
+boolean isCodeLower34(String code) {
+   return (code as int) &lt; 34;
 }
 
 def acceptedRules = execution.getVariable("acceptedRules");
 def payment = execution.getVariable("payment");
+def caseData = execution.getVariable("caseDataOut");
 
-Case caseData = new Case()
 CaseOperation caseOperation = new CaseOperation()
-CaseClient caseClient = new CaseClient()
+//CaseClient caseClient = new CaseClient()
 
-def caseRulesList = []
+def caseRelationList = []
+
 acceptedRules.each{rule -&gt;
   CaseRules cr = new CaseRules()
-  cr.ruleId = getBd(272, rule)
-  caseRulesList.add(cr)
+  cr.ruleId = getRule(rule)
+  cr.caseId = caseData
+  caseRelationList.add(cr)
 }
 
+//caseRelationList.add(caseClient)
+
+caseOperation.setCaseId(caseData);
 caseOperation.setPaymentId(payment)
 caseOperation.setDateoper(payment.getDateIn())
 caseOperation.setAmount(payment.getAmountNationalCurrency())
 
 caseOperation.setPayeeaccountnumber(payment.getPayeeAccountNumber())
 caseOperation.setPayeraccountnumber(payment.getPayerAccountNumber())
-if(payment.getBankPayerId() != null) {
-  caseOperation.setPayerbankname(payment.getBankPayerId().getName())
-}
-if(payment.getBankPayeeId() != null) {
-  caseOperation.setPayeebankname(payment.getBankPayeeId().getName())
-}
+
+if(payment.getBankPayerId() != null)
+    caseOperation.setPayerbankname(payment.getBankPayerId().getName())
+if(payment.getBankPayeeId() != null)
+    caseOperation.setPayeebankname(payment.getBankPayeeId().getName())
 caseOperation.setPayername(payment.getPayerName())
 caseOperation.setPayeename(payment.getPayeeName())
 caseOperation.setType(payment.getType())
@@ -55,17 +101,19 @@ caseOperation.setCurrency(payment.getCurrency())
 caseOperation.setPayerClientId(payment.getPayerClientId())
 caseOperation.setPayeeClientId(payment.getPayeeClientId())
 
-caseData.setCreationdate(LocalDateTime.now())
-caseData.setCaseRules(caseRulesList)
-caseData.setCaseType(getBd(18, caseType))
-caseData.setCaseOperationList([caseOperation])
-caseData.setCaseClientList([caseClient])
 
+caseRelationList.add(caseOperation)
 
-return caseData</bpmn:script>
+execution.setVariable("caseRelationList", caseRelationList);
+</bpmn:script>
     </bpmn:scriptTask>
-    <bpmn:sequenceFlow id="Flow_0a20bgy" sourceRef="Activity_1y0u3c9" targetRef="Event_15as0y6" />
-    <bpmn:sequenceFlow id="Flow_0ft4dh9" sourceRef="StartEvent_1" targetRef="Activity_1y0u3c9" />
+    <bpmn:sequenceFlow id="Flow_113rnzs" sourceRef="Activity_createCase" targetRef="Activity_saveCase" />
+    <bpmn:sequenceFlow id="Flow_1qkn8wq" sourceRef="Activity_saveCase" targetRef="Activity_caseRelations" />
+    <bpmn:sequenceFlow id="Flow_0tbyj9n" sourceRef="Activity_caseRelations" targetRef="Activity_saveCaseRelations" />
+    <bpmn:endEvent id="Event_0z85w8w">
+      <bpmn:incoming>Flow_1vak5gg</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1vak5gg" sourceRef="Activity_saveCaseRelations" targetRef="Event_0z85w8w" />
     <bpmn:textAnnotation id="TextAnnotation_0rheqm6">
       <bpmn:text>acceptedRules
 payment
@@ -77,11 +125,23 @@ caseType</bpmn:text>
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="caseCreate">
       <bpmndi:BPMNEdge id="Flow_0ft4dh9_di" bpmnElement="Flow_0ft4dh9">
         <di:waypoint x="215" y="177" />
-        <di:waypoint x="310" y="177" />
+        <di:waypoint x="277" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0a20bgy_di" bpmnElement="Flow_0a20bgy">
+      <bpmndi:BPMNEdge id="Flow_113rnzs_di" bpmnElement="Flow_113rnzs">
+        <di:waypoint x="377" y="177" />
         <di:waypoint x="410" y="177" />
-        <di:waypoint x="492" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qkn8wq_di" bpmnElement="Flow_1qkn8wq">
+        <di:waypoint x="510" y="177" />
+        <di:waypoint x="550" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tbyj9n_di" bpmnElement="Flow_0tbyj9n">
+        <di:waypoint x="650" y="177" />
+        <di:waypoint x="690" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vak5gg_di" bpmnElement="Flow_1vak5gg">
+        <di:waypoint x="790" y="177" />
+        <di:waypoint x="839" y="177" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="179" y="159" width="36" height="36" />
@@ -89,14 +149,23 @@ caseType</bpmn:text>
           <dc:Bounds x="169" y="202" width="57" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_15as0y6_di" bpmnElement="Event_15as0y6">
-        <dc:Bounds x="492" y="159" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1y0u3c9_di" bpmnElement="Activity_1y0u3c9">
-        <dc:Bounds x="310" y="137" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0rheqm6_di" bpmnElement="TextAnnotation_0rheqm6">
         <dc:Bounds x="147" y="70" width="100" height="53" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_createCase_di" bpmnElement="Activity_createCase">
+        <dc:Bounds x="277" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_saveCase_di" bpmnElement="Activity_saveCase">
+        <dc:Bounds x="410" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_saveCaseRelations_di" bpmnElement="Activity_saveCaseRelations">
+        <dc:Bounds x="690" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_caseRelations_di" bpmnElement="Activity_caseRelations">
+        <dc:Bounds x="550" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0z85w8w_di" bpmnElement="Event_0z85w8w">
+        <dc:Bounds x="839" y="159" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_1vm388c_di" bpmnElement="Association_1vm388c">
         <di:waypoint x="197" y="159" />

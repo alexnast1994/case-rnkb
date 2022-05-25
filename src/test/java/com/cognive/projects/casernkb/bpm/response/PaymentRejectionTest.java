@@ -3,6 +3,7 @@ package com.cognive.projects.casernkb.bpm.response;
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
 import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
+import com.prime.db.rnkb.model.Client;
 import com.prime.db.rnkb.model.commucation.midl.Task;
 import org.assertj.core.api.Condition;
 import org.camunda.bpm.engine.RuntimeService;
@@ -40,6 +41,7 @@ public class PaymentRejectionTest {
         autoMock("bpmn/response/paymentRejection.bpmn");
 
         Case caseData = new Case();
+        Client client = new Client();
 
         BaseDictionary bd2 = new BaseDictionary();
         BaseDictionary bd1 = new BaseDictionary();
@@ -55,6 +57,7 @@ public class PaymentRejectionTest {
 
         Map<String, Object> selectResult = new HashMap<>();
         selectResult.put("caseData", caseData);
+        selectResult.put("client", client);
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
@@ -72,21 +75,14 @@ public class PaymentRejectionTest {
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("paymentRejection", processParams);
 
-        Condition<Object> isCase = new Condition<>(p -> {
-            Case c = (Case)p;
-            return c.getStatus().getCode().equals("5")
-                    && c.getCaseStatus().getCode().equals("2");
-        }, "isNull");
         Condition<Object> isTask = new Condition<>(p -> {
             Task t = (Task)p;
             return t.getStatusId().getCode().equals("1")
-                    && t.getTypeOfTask().getCode().equals("3")
-                    && t.getTaskType().getCode().equals("9");
+                    && t.getTypeOfTask().getCode().equals("3");
         }, "isNull");
         assertThat(processInstance)
-                .hasPassed("Activity_saveCase", "Activity_saveTask")
+                .hasPassed("Activity_saveTask", "Activity_savePerson", "Activity_saveRequest")
                 .variables()
-                .hasEntrySatisfying("caseData", isCase)
                 .hasEntrySatisfying("task", isTask);
     }
 }

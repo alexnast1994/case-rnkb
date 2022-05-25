@@ -40,6 +40,14 @@ public class PaymentResponseTest {
         BaseDictionary caseType2 = new BaseDictionary();
         caseType2.setCode("2");
 
+        BaseDictionary caseRule04 = new BaseDictionary();
+        caseRule04.setCode("4");
+        caseRule04.setCharCode("04");
+
+        BaseDictionary caseRule05 = new BaseDictionary();
+        caseRule05.setCode("5");
+        caseRule05.setCharCode("05");
+
         Payment payment = new Payment();
         Case ss = new Case();
         ss.setId(4);
@@ -59,12 +67,18 @@ public class PaymentResponseTest {
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(45, "10")).thenReturn(sourceStatus10);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(18, "2")).thenReturn(caseType2);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCharCode(272, "04")).thenReturn(caseRule04);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCharCode(272, "05")).thenReturn(caseRule05);
 
         Map<String, Object> processParams = new HashMap<>();
         processParams.put("paymentId", 123L);
         processParams.put("rules", List.of("04", "05"));
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseResponse")
+                .deploy(processEngineRule)
+        );
+
+        processEngineRule.manageDeployment(registerCallActivityMock("caseCreate")
                 .deploy(processEngineRule)
         );
 
@@ -76,16 +90,10 @@ public class PaymentResponseTest {
             return checkCase.getCaseType().getCode().equals("2");
         }, "isCaseRules size 2");
 
-        Condition<Object> isCaseRelation = new Condition<>(p -> {
-            List<Object> list = (List<Object>)p;
-            return list.size() == 3;
-        }, "isCaseRules size 2");
-
         assertThat(processInstance)
-            .hasPassed("Activity_createCase", "Activity_saveCase", "Activity_caseRelations", "Activity_saveCaseRelations", "Activity_response")
+            .hasPassed("Activity_createCase", "Activity_case", "Activity_response")
             .variables()
             .hasEntrySatisfying("caseData", isCaseType)
-            .hasEntrySatisfying("caseRelationList", isCaseRelation)
         ;
     }
 
