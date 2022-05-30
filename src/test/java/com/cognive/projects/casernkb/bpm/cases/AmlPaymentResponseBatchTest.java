@@ -69,7 +69,7 @@ public class AmlPaymentResponseBatchTest {
         }, "isCaseRules size 2");
 
         assertThat(processInstance)
-                .hasPassed("Activity_processPaymentResponse", "Activity_parse", "Activity_loopPayment", "Event_end")
+                .hasPassed("Activity_parse", "Activity_process21", "Event_end")
                 .variables()
                 .hasEntrySatisfying("payments", isPayments);
     }

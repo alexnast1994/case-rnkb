@@ -28,20 +28,20 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/judgment/cancelReasonedJudgment.bpmn"
+        "bpmn/judgment/amlCancelReasonedJudgment.bpmn"
 })
-public class CancelReasonedJudgmentTest {
+public class AmlCancelReasonedJudgmentTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
     private String getPayloadJson(Long reasonedJudgmentId) {
-        return "{\"payload\":{\"camundaCancelReasonedJudgment\":{\"reasonedJudgmentId\":" + reasonedJudgmentId + "}}}";
+        return "{\"payload\":{\"amlCancelReasonedJudgment\":{\"reasonedJudgmentId\":" + reasonedJudgmentId + "}}}";
     }
 
     @Test
     @SneakyThrows
     public void Should_work() {
-        autoMock("bpmn/judgment/cancelReasonedJudgment.bpmn");
+        autoMock("bpmn/judgment/amlCancelReasonedJudgment.bpmn");
 
         BaseDictionary bd2 = new BaseDictionary();
         BaseDictionary bd22 = new BaseDictionary();
@@ -127,7 +127,7 @@ public class CancelReasonedJudgmentTest {
         );
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("cancelReasonedJudgment", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlCancelReasonedJudgment", processParams);
 
         Condition<Object> isCases = new Condition<>(p -> {
             List<Case> checkCase = (List<Case>)p;

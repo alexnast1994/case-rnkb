@@ -24,19 +24,19 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/cases/uiCaseStatus.bpmn"
+        "bpmn/cases/amlCaseStatusResponse.bpmn"
 })
-public class UiCaseStatusTest {
+public class AmlCaseStatusResponseTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
     private String getPayloadJson(Long caseId, String caseType, String caseStatus) {
-        return "{\"payload\":{\"camundaUiCaseStatus\":{\"caseId\":" + caseId + ",\"caseType\":\"" + caseType + "\",\"caseStatus\":\"" + caseStatus + "\"}}}";
+        return "{\"payload\":{\"amlCaseStatusResponse\":{\"caseId\":" + caseId + ",\"caseType\":\"" + caseType + "\",\"caseStatus\":\"" + caseStatus + "\"}}}";
     }
 
     @Test
     public void Should_no_response() {
-        autoMock("bpmn/cases/uiCaseStatus.bpmn");
+        autoMock("bpmn/cases/amlCaseStatusResponse.bpmn");
 
         BaseDictionary caseType1 = new BaseDictionary();
         BaseDictionary caseStatus2 = new BaseDictionary();
@@ -59,7 +59,7 @@ public class UiCaseStatusTest {
         processParams.put("payload", getPayloadJson(123L, "1", "2"));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("uiCaseStatus", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlCaseStatusResponse", processParams);
 
         Condition<Object> isCase = new Condition<>(p -> {
             Case checkCase = (Case)p;
@@ -77,7 +77,7 @@ public class UiCaseStatusTest {
 
     @Test
     public void Should_no_response_save_payment() {
-        autoMock("bpmn/cases/uiCaseStatus.bpmn");
+        autoMock("bpmn/cases/amlCaseStatusResponse.bpmn");
 
         BaseDictionary caseType4 = new BaseDictionary();
         BaseDictionary caseStatus2 = new BaseDictionary();
@@ -113,7 +113,7 @@ public class UiCaseStatusTest {
         processParams.put("payload", getPayloadJson(123L, "4", "2"));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("uiCaseStatus", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlCaseStatusResponse", processParams);
 
         Condition<Object> isCase = new Condition<>(p -> {
             Case checkCase = (Case)p;
@@ -133,7 +133,7 @@ public class UiCaseStatusTest {
 
     @Test
     public void Should_response() {
-        autoMock("bpmn/cases/uiCaseStatus.bpmn");
+        autoMock("bpmn/cases/amlCaseStatusResponse.bpmn");
 
         BaseDictionary caseType2 = new BaseDictionary();
         BaseDictionary caseStatus7 = new BaseDictionary();
@@ -175,7 +175,7 @@ public class UiCaseStatusTest {
         processParams.put("payload", getPayloadJson(123L, "2", "7"));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("uiCaseStatus", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlCaseStatusResponse", processParams);
 
         Condition<Object> isCase = new Condition<>(p -> {
             Case checkCase = (Case)p;

@@ -28,14 +28,14 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/judgment/approvalReasonedJudgment.bpmn"
+        "bpmn/judgment/amlApprovalReasonedJudgment.bpmn"
 })
-public class ApprovalReasonedJudgmentTest {
+public class AmlApprovalReasonedJudgmentTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
     private String getPayloadJson(Long reasonedJudgmentId) {
-        return "{\"payload\":{\"camundaApprovalReasonedJudgment\":{\"reasonedJudgmentId\":" + reasonedJudgmentId + "}}}";
+        return "{\"payload\":{\"amlApprovalReasonedJudgment\":{\"reasonedJudgmentId\":" + reasonedJudgmentId + "}}}";
     }
 
     private static final BaseDictionary baseDictionary2;
@@ -127,7 +127,7 @@ public class ApprovalReasonedJudgmentTest {
     @Test
     @SneakyThrows
     public void Should_type_02_control_1() {
-        autoMock("bpmn/judgment/approvalReasonedJudgment.bpmn");
+        autoMock("bpmn/judgment/amlApprovalReasonedJudgment.bpmn");
 
         ReasonedJudgment rj = getRj();
 
@@ -168,7 +168,7 @@ public class ApprovalReasonedJudgmentTest {
         );
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("approvalReasonedJudgment", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlApprovalReasonedJudgment", processParams);
 
         Condition<Object> isCases = new Condition<>(p -> {
             List<Case> checkCase = (List<Case>)p;
@@ -189,8 +189,8 @@ public class ApprovalReasonedJudgmentTest {
 
         assertThat(processInstance)
                 .hasPassed("Activity_changeStatus", "Activity_saveCases", "Activity_saveCaseUsers",
-                        "Activity_cleanTriggers", "Activity_processOes4077", "Activity_calculationRiskRating",
-                        "Activity_loopCase", "Activity_process13", "Activity_process3", "Event_end")
+                        "Activity_cleanTriggers", "Activity_processOes4077", "Activity_calculationRiskRating"
+                        , "Activity_process13", "Activity_process3", "Event_end")
                 .variables()
                 .hasEntrySatisfying("cases", isCases)
                 .hasEntrySatisfying("caseUsers", isCaseUsers)
@@ -201,7 +201,7 @@ public class ApprovalReasonedJudgmentTest {
     @Test
     @SneakyThrows
     public void Should_type_02_control_2() {
-        autoMock("bpmn/judgment/approvalReasonedJudgment.bpmn");
+        autoMock("bpmn/judgment/amlApprovalReasonedJudgment.bpmn");
 
         ReasonedJudgment rj = getRj();
 
@@ -228,7 +228,7 @@ public class ApprovalReasonedJudgmentTest {
         );
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("approvalReasonedJudgment", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlApprovalReasonedJudgment", processParams);
 
         Condition<Object> isCases = new Condition<>(p -> {
             List<Case> checkCase = (List<Case>)p;
@@ -260,7 +260,7 @@ public class ApprovalReasonedJudgmentTest {
     @Test
     @SneakyThrows
     public void Should_type_01_control_2() {
-        autoMock("bpmn/judgment/approvalReasonedJudgment.bpmn");
+        autoMock("bpmn/judgment/amlApprovalReasonedJudgment.bpmn");
 
         ReasonedJudgment rj = getRj();
 
@@ -287,7 +287,7 @@ public class ApprovalReasonedJudgmentTest {
         );
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("approvalReasonedJudgment", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlApprovalReasonedJudgment", processParams);
 
         Condition<Object> isCases = new Condition<>(p -> {
             List<Case> checkCase = (List<Case>)p;

@@ -23,20 +23,20 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/judgment/statusReasonedJudgment.bpmn"
+        "bpmn/judgment/amlStatusReasonedJudgment.bpmn"
 })
-public class StatusReasonedJudgmentTest {
+public class AmlStatusReasonedJudgmentTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
     private String getPayloadJson(Long reasonedJudgmentId) {
-        return "{\"payload\":{\"camundaStatusReasonedJudgment\":{\"reasonedJudgmentId\":" + reasonedJudgmentId + "}}}";
+        return "{\"payload\":{\"amlStatusReasonedJudgment\":{\"reasonedJudgmentId\":" + reasonedJudgmentId + "}}}";
     }
 
     @Test
     @SneakyThrows
     public void Should_work() {
-        autoMock("bpmn/judgment/statusReasonedJudgment.bpmn");
+        autoMock("bpmn/judgment/amlStatusReasonedJudgment.bpmn");
 
         ReasonedJudgment rj = new ReasonedJudgment();
 
@@ -67,7 +67,7 @@ public class StatusReasonedJudgmentTest {
         processParams.put("payload", getPayloadJson(4L));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("statusReasonedJudgment", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlStatusReasonedJudgment", processParams);
 
         Condition<Object> isJudgment = new Condition<>(p -> {
             ReasonedJudgment rj2 = (ReasonedJudgment)p;

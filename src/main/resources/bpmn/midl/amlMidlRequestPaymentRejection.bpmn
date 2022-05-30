@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1bv5jd6" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:process id="midlRequestPaymentRejection" name="7. Создание задачи МИДЛ при отзыве платежного поручения" isExecutable="true">
+  <bpmn:process id="amlMidlRequestPaymentRejection" name="7. Создание задачи МИДЛ при отзыве платежного поручения" isExecutable="true">
     <bpmn:startEvent id="Event_start">
       <bpmn:outgoing>Flow_0svaz96</bpmn:outgoing>
     </bpmn:startEvent>
@@ -147,7 +147,7 @@ import static org.camunda.spin.DataFormats.*
 def jsonStr = execution.getVariable("payload")
 def jsonData = JSON(jsonStr)
 
-def payloadObject = jsonData.prop("payload").prop("camundaMidlRequestPaymentRejection")
+def payloadObject = jsonData.prop("payload").prop("amlMidlRequestPaymentRejection")
 
 def caseId = payloadObject.prop("caseId").numberValue()
 def requestId = payloadObject.prop("requestId").numberValue()
@@ -170,10 +170,7 @@ requestId</bpmn:text>
     <bpmn:association id="Association_0oki6d2" sourceRef="Event_start" targetRef="TextAnnotation_0o5xg26" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="midlRequestPaymentRejection">
-      <bpmndi:BPMNShape id="TextAnnotation_0o5xg26_di" bpmnElement="TextAnnotation_0o5xg26">
-        <dc:Bounds x="158" y="187" width="130" height="39" />
-      </bpmndi:BPMNShape>
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlMidlRequestPaymentRejection">
       <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
         <di:waypoint x="1990" y="310" />
         <di:waypoint x="2042" y="310" />
@@ -186,20 +183,14 @@ requestId</bpmn:text>
         <di:waypoint x="510" y="310" />
         <di:waypoint x="580" y="310" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0svaz96_di" bpmnElement="Flow_0svaz96">
-        <di:waypoint x="227" y="310" />
-        <di:waypoint x="272" y="310" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0ijxlkz_di" bpmnElement="Flow_0ijxlkz">
         <di:waypoint x="372" y="310" />
         <di:waypoint x="410" y="310" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
-        <dc:Bounds x="1890" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_end_di" bpmnElement="Event_end">
-        <dc:Bounds x="2042" y="292" width="36" height="36" />
-      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0svaz96_di" bpmnElement="Flow_0svaz96">
+        <di:waypoint x="227" y="310" />
+        <di:waypoint x="272" y="310" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_start_di" bpmnElement="Event_start">
         <dc:Bounds x="191" y="292" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -209,9 +200,23 @@ requestId</bpmn:text>
       <bpmndi:BPMNShape id="Activity_1qwn6qf_di" bpmnElement="Activity_1qwn6qf">
         <dc:Bounds x="410" y="270" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
+        <dc:Bounds x="1890" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_end_di" bpmnElement="Event_end">
+        <dc:Bounds x="2042" y="292" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0us8edk_di" bpmnElement="Activity_0us8edk" isExpanded="true">
         <dc:Bounds x="580" y="113" width="1280" height="397" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1g0ut79_di" bpmnElement="Flow_1g0ut79">
+        <di:waypoint x="790" y="310" />
+        <di:waypoint x="840" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0dys3g9_di" bpmnElement="Flow_0dys3g9">
+        <di:waypoint x="648" y="310" />
+        <di:waypoint x="690" y="310" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_016rwaq_di" bpmnElement="Flow_016rwaq">
         <di:waypoint x="1750" y="310" />
         <di:waypoint x="1792" y="310" />
@@ -239,14 +244,6 @@ requestId</bpmn:text>
       <bpmndi:BPMNEdge id="Flow_1a7yctn_di" bpmnElement="Flow_1a7yctn">
         <di:waypoint x="940" y="310" />
         <di:waypoint x="980" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0dys3g9_di" bpmnElement="Flow_0dys3g9">
-        <di:waypoint x="648" y="310" />
-        <di:waypoint x="690" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1g0ut79_di" bpmnElement="Flow_1g0ut79">
-        <di:waypoint x="790" y="310" />
-        <di:waypoint x="840" y="310" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Activity_fillTask_di" bpmnElement="Activity_fillTask">
         <dc:Bounds x="980" y="270" width="100" height="80" />
@@ -277,6 +274,9 @@ requestId</bpmn:text>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0us54of_di" bpmnElement="Activity_0us54of">
         <dc:Bounds x="690" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0o5xg26_di" bpmnElement="TextAnnotation_0o5xg26">
+        <dc:Bounds x="158" y="187" width="130" height="39" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_0oki6d2_di" bpmnElement="Association_0oki6d2">
         <di:waypoint x="209" y="292" />

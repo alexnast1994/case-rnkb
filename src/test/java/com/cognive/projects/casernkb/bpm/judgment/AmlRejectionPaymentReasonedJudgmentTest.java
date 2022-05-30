@@ -26,14 +26,14 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 
 
 @Deployment(resources = {
-        "bpmn/judgment/rejectionPaymentReasonedJudgment.bpmn"
+        "bpmn/judgment/amlRejectionPaymentReasonedJudgment.bpmn"
 })
-public class RejectionPaymentReasonedJudgmentTest {
+public class AmlRejectionPaymentReasonedJudgmentTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
     private String getPayloadJson(Long reasonedJudgmentId) {
-        return "{\"payload\":{\"camundaRejectionPaymentReasonedJudgment\":{\"reasonedJudgmentId\":" + reasonedJudgmentId + "}}}";
+        return "{\"payload\":{\"amlRejectionPaymentReasonedJudgment\":{\"reasonedJudgmentId\":" + reasonedJudgmentId + "}}}";
     }
 
     private static final BaseDictionary baseDictionary2;
@@ -125,7 +125,7 @@ public class RejectionPaymentReasonedJudgmentTest {
     @Test
     @SneakyThrows
     public void Should_ms_request() {
-        autoMock("bpmn/judgment/rejectionPaymentReasonedJudgment.bpmn");
+        autoMock("bpmn/judgment/amlRejectionPaymentReasonedJudgment.bpmn");
 
         ReasonedJudgment rj = getRj();
 
@@ -146,11 +146,10 @@ public class RejectionPaymentReasonedJudgmentTest {
         );
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("rejectionPaymentReasonedJudgment", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlRejectionPaymentReasonedJudgment", processParams);
 
         assertThat(processInstance)
-                .hasPassed("Activity_selectJudgment", "Activity_msData", "Activity_dboSelect", "Activity_dbo",
-                        "Activity_loopCase", "Activity_process5", "Event_end")
+                .hasPassed("Activity_selectJudgment", "Activity_msData", "Activity_dboSelect", "Activity_dbo", "Activity_process", "Event_end")
                 .variables()
                 .containsEntry("clientId", 123L)
         ;
@@ -159,7 +158,7 @@ public class RejectionPaymentReasonedJudgmentTest {
     @Test
     @SneakyThrows
     public void Should_no_ms() {
-        autoMock("bpmn/judgment/rejectionPaymentReasonedJudgment.bpmn");
+        autoMock("bpmn/judgment/amlRejectionPaymentReasonedJudgment.bpmn");
 
         ReasonedJudgment rj = getRj();
 
@@ -180,7 +179,7 @@ public class RejectionPaymentReasonedJudgmentTest {
         );
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("rejectionPaymentReasonedJudgment", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlRejectionPaymentReasonedJudgment", processParams);
 
         assertThat(processInstance)
                 .hasPassed("Activity_selectJudgment", "Activity_msData", "Event_end")

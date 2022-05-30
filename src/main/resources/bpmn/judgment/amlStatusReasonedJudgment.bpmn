@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1o5tjiy" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:process id="statusReasonedJudgment" name="10. Процесс изменения статусов МС" isExecutable="true">
+  <bpmn:process id="amlStatusReasonedJudgment" name="10. Процесс изменения статусов МС" isExecutable="true">
     <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
       <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
       <bpmn:outgoing>Flow_1sy9nxz</bpmn:outgoing>
@@ -81,7 +81,7 @@ import static org.camunda.spin.DataFormats.*
 def jsonStr = execution.getVariable("payload")
 def jsonData = JSON(jsonStr)
 
-def payloadObject = jsonData.prop("payload").prop("camundaStatusReasonedJudgment")
+def payloadObject = jsonData.prop("payload").prop("amlStatusReasonedJudgment")
 
 def reasonedJudgmentId = payloadObject.prop("reasonedJudgmentId").numberValue()
 
@@ -110,10 +110,7 @@ ID МС = reasonedJudgmentId
     <bpmn:association id="Association_0fu882p" sourceRef="TextAnnotation_049rt3r" targetRef="Event_0zdf9e0" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="statusReasonedJudgment">
-      <bpmndi:BPMNShape id="TextAnnotation_049rt3r_di" bpmnElement="TextAnnotation_049rt3r">
-        <dc:Bounds x="160" y="40" width="323" height="82" />
-      </bpmndi:BPMNShape>
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlStatusReasonedJudgment">
       <bpmndi:BPMNEdge id="Flow_10l6p2i_di" bpmnElement="Flow_10l6p2i">
         <di:waypoint x="1480" y="200" />
         <di:waypoint x="1520" y="200" />
@@ -126,13 +123,13 @@ ID МС = reasonedJudgmentId
         <di:waypoint x="620" y="210" />
         <di:waypoint x="690" y="210" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0ijxlkz_di" bpmnElement="Flow_0ijxlkz">
-        <di:waypoint x="482" y="210" />
-        <di:waypoint x="520" y="210" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0hlfsn7_di" bpmnElement="Flow_0hlfsn7">
         <di:waypoint x="340" y="210" />
         <di:waypoint x="382" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ijxlkz_di" bpmnElement="Flow_0ijxlkz">
+        <di:waypoint x="482" y="210" />
+        <di:waypoint x="520" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Activity_1qwn6qf_di" bpmnElement="Activity_1qwn6qf">
         <dc:Bounds x="520" y="170" width="100" height="80" />
@@ -146,6 +143,10 @@ ID МС = reasonedJudgmentId
       <bpmndi:BPMNShape id="Activity_1o0oyt6_di" bpmnElement="Activity_1o0oyt6" isExpanded="true">
         <dc:Bounds x="690" y="100" width="790" height="200" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0v1mfoj_di" bpmnElement="Flow_0v1mfoj">
+        <di:waypoint x="910" y="200" />
+        <di:waypoint x="960" y="200" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0nqvr16_di" bpmnElement="Flow_0nqvr16">
         <di:waypoint x="1360" y="200" />
         <di:waypoint x="1402" y="200" />
@@ -162,10 +163,9 @@ ID МС = reasonedJudgmentId
         <di:waypoint x="1060" y="200" />
         <di:waypoint x="1110" y="200" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0v1mfoj_di" bpmnElement="Flow_0v1mfoj">
-        <di:waypoint x="910" y="200" />
-        <di:waypoint x="960" y="200" />
-      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_0v4pzri_di" bpmnElement="Event_0v4pzri">
+        <dc:Bounds x="732" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_06ngoq7_di" bpmnElement="Activity_06ngoq7">
         <dc:Bounds x="960" y="160" width="100" height="80" />
       </bpmndi:BPMNShape>
@@ -178,9 +178,6 @@ ID МС = reasonedJudgmentId
       <bpmndi:BPMNShape id="Event_0r1z0nl_di" bpmnElement="Event_0r1z0nl">
         <dc:Bounds x="1402" y="182" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0v4pzri_di" bpmnElement="Event_0v4pzri">
-        <dc:Bounds x="732" y="182" width="36" height="36" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0us54of_di" bpmnElement="Activity_0us54of">
         <dc:Bounds x="810" y="160" width="100" height="80" />
       </bpmndi:BPMNShape>
@@ -189,6 +186,9 @@ ID МС = reasonedJudgmentId
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
         <dc:Bounds x="1520" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_049rt3r_di" bpmnElement="TextAnnotation_049rt3r">
+        <dc:Bounds x="160" y="40" width="323" height="82" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_0fu882p_di" bpmnElement="Association_0fu882p">
         <di:waypoint x="322" y="122" />

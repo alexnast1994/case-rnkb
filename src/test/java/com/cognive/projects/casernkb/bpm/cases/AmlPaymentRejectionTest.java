@@ -1,4 +1,4 @@
-package com.cognive.projects.casernkb.bpm.response;
+package com.cognive.projects.casernkb.bpm.cases;
 
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
 import com.prime.db.rnkb.model.BaseDictionary;
@@ -25,20 +25,20 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/response/paymentRejection.bpmn"
+        "bpmn/cases/amlPaymentRejection.bpmn"
 })
-public class PaymentRejectionTest {
+public class AmlPaymentRejectionTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
     private String getPayloadJson(Long caseId, Long clientId, Boolean dboRequest) {
-        return "{\"payload\":{\"camundaPaymentRejection\":{\"caseId\":" + caseId + ",\"clientId\":" + clientId + ",\"dboRequest\":" + dboRequest + "}}}";
+        return "{\"payload\":{\"amlPaymentRejection\":{\"caseId\":" + caseId + ",\"clientId\":" + clientId + ",\"dboRequest\":" + dboRequest + "}}}";
     }
 
     @Disabled
     @Test
     public void Should_save() {
-        autoMock("bpmn/response/paymentRejection.bpmn");
+        autoMock("bpmn/cases/amlPaymentRejection.bpmn");
 
         Case caseData = new Case();
         Client client = new Client();
@@ -73,7 +73,7 @@ public class PaymentRejectionTest {
         processParams.put("payload", getPayloadJson(123L, 124L, true));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("paymentRejection", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlPaymentRejection", processParams);
 
         Condition<Object> isTask = new Condition<>(p -> {
             Task t = (Task)p;

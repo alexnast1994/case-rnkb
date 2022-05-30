@@ -28,19 +28,19 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/midl/midlRequestClient.bpmn"
+        "bpmn/midl/amlMidlRequestClient.bpmn"
 })
 public class MidlRequestClientTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
     private String getPayloadJson(Long caseId, Long requestId, Boolean dboRequest) {
-        return "{\"payload\":{\"camundaMidlRequestClient\":{\"caseId\":" + caseId + ",\"requestId\":" + requestId + ",\"dboRequest\":" + dboRequest + "}}}";
+        return "{\"payload\":{\"amlMidlRequestClient\":{\"caseId\":" + caseId + ",\"requestId\":" + requestId + ",\"dboRequest\":" + dboRequest + "}}}";
     }
 
     @Test
     public void Should_no_response() {
-        autoMock("bpmn/midl/midlRequestClient.bpmn");
+        autoMock("bpmn/midl/amlMidlRequestClient.bpmn");
 
         Request request = new Request();
         Case caseData = new Case();
@@ -85,7 +85,7 @@ public class MidlRequestClientTest {
         );
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("midlRequestClient", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlMidlRequestClient", processParams);
 
         Condition<Object> isTask = new Condition<>(p -> {
             Task t = (Task)p;
@@ -123,7 +123,7 @@ public class MidlRequestClientTest {
 
     @Test
     public void Should_response() {
-        autoMock("bpmn/midl/midlRequestClient.bpmn");
+        autoMock("bpmn/midl/amlMidlRequestClient.bpmn");
 
         Request request = new Request();
         Case caseData = new Case();
@@ -168,7 +168,7 @@ public class MidlRequestClientTest {
         );
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("midlRequestClient", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlMidlRequestClient", processParams);
 
         Condition<Object> isTask = new Condition<>(p -> {
             Task t = (Task)p;

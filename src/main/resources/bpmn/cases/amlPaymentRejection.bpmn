@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1rvuuce" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:process id="paymentRejection" name="5. Формирование отказа по платежу + задача МИДЛ + Json при наличии ДБО" isExecutable="true">
+  <bpmn:process id="amlPaymentRejection" name="5. Формирование отказа по платежу + задача МИДЛ + Json при наличии ДБО" isExecutable="true">
     <bpmn:scriptTask id="Activity_1xuv5nm" name="Присвоить переменные процесса" scriptFormat="groovy">
       <bpmn:incoming>Flow_0xgtmkf</bpmn:incoming>
       <bpmn:outgoing>Flow_0zfz4fl</bpmn:outgoing>
@@ -214,7 +214,7 @@ import static org.camunda.spin.DataFormats.*
 def jsonStr = execution.getVariable("payload")
 def jsonData = JSON(jsonStr)
 
-def payloadObject = jsonData.prop("payload").prop("camundaPaymentRejection")
+def payloadObject = jsonData.prop("payload").prop("amlPaymentRejection")
 
 def caseId = payloadObject.prop("caseId").numberValue()
 def clientId = payloadObject.prop("clientId").numberValue()
@@ -253,7 +253,7 @@ dboRequest Информация о ДБО клиента </bpmn:text>
     <bpmn:association id="Association_1q16fej" sourceRef="Event_1w2l03y" targetRef="TextAnnotation_1wwm1mr" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="paymentRejection">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlPaymentRejection">
       <bpmndi:BPMNEdge id="Flow_0zfz4fl_di" bpmnElement="Flow_0zfz4fl">
         <di:waypoint x="460" y="280" />
         <di:waypoint x="510" y="280" />
