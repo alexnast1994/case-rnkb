@@ -37,16 +37,14 @@ public class KafkaServiceImpl implements KafkaService {
         return x-> {
             String key = x.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
             String topic = x.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
-            byte[] processIdBytes = x.getHeaders().get(AML_HEADER, byte[].class);
+            String amlHeader = getAmlHeader(x.getHeaders().get(AML_HEADER));
 
-            if(processIdBytes == null) {
+            if(amlHeader == null) {
                 log.warn("Input message with null processId header, key={}, topic={}. Skip message", key, topic);
                 return;
             }
 
-            String processId = new String(processIdBytes, StandardCharsets.UTF_8);
-
-            log.info("Kafka message key={}, from={}, processId={}", key, topic, processId);
+            log.info("Kafka message key={}, from={}, processId={}", key, topic, amlHeader);
 
             Map<String, Object> variables = new HashMap<>();
 
@@ -54,7 +52,7 @@ public class KafkaServiceImpl implements KafkaService {
             ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
             variables.put("payload", jsonData);
 
-            String id = bpmService.startProcess(processId, key, variables);
+            String id = bpmService.startProcess(amlHeader, key, variables);
             log.debug("Process started: {}", id);
         };
     }
@@ -80,5 +78,18 @@ public class KafkaServiceImpl implements KafkaService {
                 .build();
 
         streamBridge.send(binding, message);
+    }
+
+    private String getAmlHeader(Object value) {
+        if(value == null)
+            return null;
+
+        if(String.class.isAssignableFrom(value.getClass()))
+            return (String)value;
+
+        if(byte[].class.isAssignableFrom(value.getClass()))
+            return new String((byte[])value, StandardCharsets.UTF_8);
+
+        return null;
     }
 }
