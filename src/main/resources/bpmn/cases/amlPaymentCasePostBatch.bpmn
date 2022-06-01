@@ -36,7 +36,7 @@ def payments = [:]
 
 // Group by payment
 batch.each{batchRule -&gt; 
-    def paymentId = batchRule.prop("PaymentId").numberValue()
+    def paymentId = batchRule.prop("PaymentId").numberValue().longValue()
     def caseRules = payments[paymentId]
     if(caseRules == null) {
         caseRules = new CaseRulesDto()
@@ -171,6 +171,10 @@ PAYMENT.EXID
         <di:waypoint x="1960" y="260" />
         <di:waypoint x="2020" y="260" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
+        <di:waypoint x="2120" y="260" />
+        <di:waypoint x="2182" y="260" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_16o1bkj_di" bpmnElement="Flow_16o1bkj">
         <di:waypoint x="620" y="250" />
         <di:waypoint x="685" y="250" />
@@ -183,19 +187,13 @@ PAYMENT.EXID
         <di:waypoint x="482" y="250" />
         <di:waypoint x="520" y="250" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
-        <di:waypoint x="2120" y="260" />
-        <di:waypoint x="2182" y="260" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Event_098yyfy_di" bpmnElement="Event_098yyfy">
-        <dc:Bounds x="2182" y="242" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
-        <dc:Bounds x="2020" y="220" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_17psnrn_di" bpmnElement="Activity_17psnrn" isExpanded="true">
         <dc:Bounds x="685" y="80" width="1275" height="340" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_148jwd6_di" bpmnElement="Flow_148jwd6">
+        <di:waypoint x="1780" y="260" />
+        <di:waypoint x="1862" y="260" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1qme100_di" bpmnElement="Flow_1qme100">
         <di:waypoint x="761" y="260" />
         <di:waypoint x="840" y="260" />
@@ -204,45 +202,38 @@ PAYMENT.EXID
         <di:waypoint x="940" y="260" />
         <di:waypoint x="1010" y="260" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_148jwd6_di" bpmnElement="Flow_148jwd6">
-        <di:waypoint x="1780" y="260" />
-        <di:waypoint x="1862" y="260" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_068l0e6_di" bpmnElement="Event_068l0e6">
         <dc:Bounds x="725" y="242" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1upk4ti_di" bpmnElement="Activity_parsePayload">
         <dc:Bounds x="840" y="220" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_19ffz89_di" bpmnElement="Event_19ffz89">
-        <dc:Bounds x="1862" y="242" width="36" height="36" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1sm9ekd_di" bpmnElement="Activity_1sm9ekd" isExpanded="true">
         <dc:Bounds x="1010" y="135" width="770" height="250" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_0drp6tg_di" bpmnElement="Flow_0drp6tg">
-        <di:waypoint x="1086" y="235" />
-        <di:waypoint x="1140" y="235" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0q0e80a_di" bpmnElement="Flow_0q0e80a">
-        <di:waypoint x="1240" y="235" />
-        <di:waypoint x="1295" y="235" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_11v04bj_di" bpmnElement="Flow_11v04bj">
-        <di:waypoint x="1345" y="235" />
-        <di:waypoint x="1390" y="235" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_085k0wh_di" bpmnElement="Flow_085k0wh">
-        <di:waypoint x="1320" y="260" />
-        <di:waypoint x="1320" y="307" />
+      <bpmndi:BPMNEdge id="Flow_1qv2joc_di" bpmnElement="Flow_1qv2joc">
+        <di:waypoint x="1490" y="235" />
+        <di:waypoint x="1540" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_19jlaw0_di" bpmnElement="Flow_19jlaw0">
         <di:waypoint x="1640" y="235" />
         <di:waypoint x="1692" y="235" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1qv2joc_di" bpmnElement="Flow_1qv2joc">
-        <di:waypoint x="1490" y="235" />
-        <di:waypoint x="1540" y="235" />
+      <bpmndi:BPMNEdge id="Flow_085k0wh_di" bpmnElement="Flow_085k0wh">
+        <di:waypoint x="1320" y="260" />
+        <di:waypoint x="1320" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11v04bj_di" bpmnElement="Flow_11v04bj">
+        <di:waypoint x="1345" y="235" />
+        <di:waypoint x="1390" y="235" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0q0e80a_di" bpmnElement="Flow_0q0e80a">
+        <di:waypoint x="1240" y="235" />
+        <di:waypoint x="1295" y="235" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0drp6tg_di" bpmnElement="Flow_0drp6tg">
+        <di:waypoint x="1086" y="235" />
+        <di:waypoint x="1140" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_0yrcxyv_di" bpmnElement="Event_0yrcxyv">
         <dc:Bounds x="1050" y="217" width="36" height="36" />
@@ -250,20 +241,23 @@ PAYMENT.EXID
       <bpmndi:BPMNShape id="Activity_0b5lrt0_di" bpmnElement="Activity_09fu3uq">
         <dc:Bounds x="1140" y="195" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0i0fdee_di" bpmnElement="Activity_createCase">
+        <dc:Bounds x="1540" y="195" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_08m8030_di" bpmnElement="Gateway_08m8030" isMarkerVisible="true">
         <dc:Bounds x="1295" y="210" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1vfrz1i_di" bpmnElement="Event_1vfrz1i">
         <dc:Bounds x="1302" y="307" width="36" height="36" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0bwbgyt_di" bpmnElement="Event_0bwbgyt">
+        <dc:Bounds x="1692" y="217" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_17jv3nv_di" bpmnElement="Activity_selectPayment">
         <dc:Bounds x="1390" y="195" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0i0fdee_di" bpmnElement="Activity_createCase">
-        <dc:Bounds x="1540" y="195" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0bwbgyt_di" bpmnElement="Event_0bwbgyt">
-        <dc:Bounds x="1692" y="217" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_19ffz89_di" bpmnElement="Event_19ffz89">
+        <dc:Bounds x="1862" y="242" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1qwn6qf_di" bpmnElement="Activity_1qwn6qf">
         <dc:Bounds x="520" y="210" width="100" height="80" />
@@ -276,6 +270,12 @@ PAYMENT.EXID
         <bpmndi:BPMNLabel>
           <dc:Bounds x="279" y="275" width="87" height="27" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_098yyfy_di" bpmnElement="Event_098yyfy">
+        <dc:Bounds x="2182" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
+        <dc:Bounds x="2020" y="220" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_049rt3r_di" bpmnElement="TextAnnotation_049rt3r">
         <dc:Bounds x="160" y="80" width="323" height="125" />

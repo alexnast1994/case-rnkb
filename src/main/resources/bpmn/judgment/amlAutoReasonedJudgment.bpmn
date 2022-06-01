@@ -497,14 +497,14 @@ def jsonData = JSON(jsonStr)
 
 def payloadObject = jsonData.prop("payload").prop("amlAutoReasonedJudgment")
 
-def clientId= payloadObject.prop("clientId").numberValue()
+def clientId= payloadObject.prop("clientId").numberValue().longValue()
 def caseElements = payloadObject.prop("caseIds").elements()
 def startDate = payloadObject.prop("startDate").stringValue()
 def offDate = payloadObject.prop("offDate").stringValue()
 
 def caseIds = []
 caseElements.each{caseElement-&gt; 
-    caseIds.add(caseElement.numberValue())
+    caseIds.add(caseElement.numberValue().longValue())
 }
 
 execution.setVariable("caseIds", caseIds)

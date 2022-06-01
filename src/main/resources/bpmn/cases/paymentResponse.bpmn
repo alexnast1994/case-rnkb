@@ -146,6 +146,7 @@ execution.setVariable("caseData", caseData);</bpmn:script>
           <camunda:in source="caseData" target="case" />
           <camunda:in source="payment" target="payment" />
           <camunda:in sourceExpression="message-case-response" target="messageId" />
+          <camunda:in source="session" target="session" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_1y9rsy0</bpmn:incoming>
         <bpmn:outgoing>Flow_17a5k7l</bpmn:outgoing>
@@ -237,6 +238,11 @@ PAYMENT.EXID
       <bpmndi:BPMNShape id="Activity_15er2ds_di" bpmnElement="Activity_15er2ds" isExpanded="true">
         <dc:Bounds x="650" y="80" width="1760" height="558" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1upboep_di" bpmnElement="Flow_1upboep">
+        <di:waypoint x="1690" y="240" />
+        <di:waypoint x="2030" y="240" />
+        <di:waypoint x="2030" y="350" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0shaxqn_di" bpmnElement="Flow_0shaxqn">
         <di:waypoint x="950" y="315" />
         <di:waypoint x="1010" y="315" />
@@ -279,11 +285,6 @@ PAYMENT.EXID
         <di:waypoint x="2080" y="390" />
         <di:waypoint x="2180" y="390" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1upboep_di" bpmnElement="Flow_1upboep">
-        <di:waypoint x="1690" y="240" />
-        <di:waypoint x="2030" y="240" />
-        <di:waypoint x="2030" y="350" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_19hntkt_di" bpmnElement="Event_19hntkt">
         <dc:Bounds x="720" y="297" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -308,23 +309,23 @@ PAYMENT.EXID
       <bpmndi:BPMNShape id="Activity_0qtjuyj_di" bpmnElement="Activity_paymentStatus10">
         <dc:Bounds x="1270" y="200" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_19d9hv9_di" bpmnElement="Activity_createCase">
+        <dc:Bounds x="1440" y="200" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_05rl2nm_di" bpmnElement="Activity_response">
         <dc:Bounds x="2180" y="350" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0us54of_di" bpmnElement="Activity_0us54of">
         <dc:Bounds x="850" y="275" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0acmasq_di" bpmnElement="Activity_case">
+        <dc:Bounds x="1590" y="200" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_107t8l2_di" bpmnElement="TextAnnotation_107t8l2">
         <dc:Bounds x="1270" y="100" width="100" height="82" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_1063ols_di" bpmnElement="TextAnnotation_1063ols">
         <dc:Bounds x="1270" y="450" width="100" height="68" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0acmasq_di" bpmnElement="Activity_case">
-        <dc:Bounds x="1590" y="200" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_19d9hv9_di" bpmnElement="Activity_createCase">
-        <dc:Bounds x="1440" y="200" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_1g0nq1h_di" bpmnElement="Association_1g0nq1h">
         <di:waypoint x="1320" y="200" />

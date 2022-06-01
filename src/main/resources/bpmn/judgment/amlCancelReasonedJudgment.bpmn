@@ -157,6 +157,7 @@ execution.setVariable("clientId", clientId)</bpmn:script>
         <bpmn:extensionElements>
           <camunda:in source="${clientId}" target="clientId" />
           <camunda:in source="${reasonedJudgmentId}" target="reasonedJudgmentId" />
+          <camunda:in source="session" target="session" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_14mxq93</bpmn:incoming>
         <bpmn:outgoing>Flow_1ub362d</bpmn:outgoing>
@@ -178,7 +179,7 @@ def jsonData = JSON(jsonStr)
 
 def payloadObject = jsonData.prop("payload").prop("amlCancelReasonedJudgment")
 
-def reasonedJudgmentId = payloadObject.prop("reasonedJudgmentId").numberValue()
+def reasonedJudgmentId = payloadObject.prop("reasonedJudgmentId").numberValue().longValue()
 
 execution.setVariable("reasonedJudgmentId", reasonedJudgmentId)
 </bpmn:script>

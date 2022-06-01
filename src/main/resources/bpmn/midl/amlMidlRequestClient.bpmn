@@ -108,6 +108,7 @@ execution.setVariable("request", request)
           <camunda:in source="${caseData}" target="case" />
           <camunda:in source="${payment}" target="payment" />
           <camunda:in source="case-response" target="messageId" />
+          <camunda:in source="session" target="session" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_041csic</bpmn:incoming>
         <bpmn:outgoing>Flow_09i8h8d</bpmn:outgoing>
@@ -214,9 +215,9 @@ def jsonData = JSON(jsonStr)
 
 def payloadObject = jsonData.prop("payload").prop("amlMidlRequestClient")
 
-def caseId = payloadObject.prop("caseId").numberValue()
+def caseId = payloadObject.prop("caseId").numberValue().longValue()
 def dboRequest = payloadObject.prop("dboRequest").boolValue()
-def requestId = payloadObject.prop("requestId").numberValue()
+def requestId = payloadObject.prop("requestId").numberValue().longValue()
 
 execution.setVariable("caseId", caseId)
 execution.setVariable("dboRequest", dboRequest)
@@ -252,9 +253,6 @@ ID процесса
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlMidlRequestClient">
-      <bpmndi:BPMNShape id="TextAnnotation_0o5xg26_di" bpmnElement="TextAnnotation_0o5xg26">
-        <dc:Bounds x="160" y="80" width="271" height="327" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
         <di:waypoint x="2660" y="450" />
         <di:waypoint x="2712" y="450" />
@@ -403,6 +401,9 @@ ID процесса
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0us54of_di" bpmnElement="Activity_0us54of">
         <dc:Bounds x="670" y="410" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0o5xg26_di" bpmnElement="TextAnnotation_0o5xg26">
+        <dc:Bounds x="160" y="80" width="271" height="327" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_0oki6d2_di" bpmnElement="Association_0oki6d2">
         <di:waypoint x="210" y="432" />

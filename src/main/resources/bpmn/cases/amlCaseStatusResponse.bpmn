@@ -172,6 +172,7 @@ return caseData</bpmn:script>
           <camunda:in source="${caseData}" target="case" />
           <camunda:in source="${payment}" target="payment" />
           <camunda:in source="case-response" target="messageId" />
+          <camunda:in source="session" target="session" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_177ytog</bpmn:incoming>
         <bpmn:outgoing>Flow_0zrr2lg</bpmn:outgoing>
@@ -191,7 +192,7 @@ def jsonData = JSON(jsonStr)
 
 def payloadObject = jsonData.prop("payload").prop("amlCaseStatusResponse")
 
-def caseId = payloadObject.prop("caseId").numberValue()
+def caseId = payloadObject.prop("caseId").numberValue().longValue()
 def caseType = payloadObject.prop("caseType").stringValue()
 def caseStatus = payloadObject.prop("caseStatus").stringValue()
 

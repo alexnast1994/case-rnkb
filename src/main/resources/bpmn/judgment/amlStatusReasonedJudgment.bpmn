@@ -83,7 +83,7 @@ def jsonData = JSON(jsonStr)
 
 def payloadObject = jsonData.prop("payload").prop("amlStatusReasonedJudgment")
 
-def reasonedJudgmentId = payloadObject.prop("reasonedJudgmentId").numberValue()
+def reasonedJudgmentId = payloadObject.prop("reasonedJudgmentId").numberValue().longValue()
 
 execution.setVariable("reasonedJudgmentId", reasonedJudgmentId)
 </bpmn:script>

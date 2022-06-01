@@ -216,8 +216,8 @@ def jsonData = JSON(jsonStr)
 
 def payloadObject = jsonData.prop("payload").prop("amlPaymentRejection")
 
-def caseId = payloadObject.prop("caseId").numberValue()
-def clientId = payloadObject.prop("clientId").numberValue()
+def caseId = payloadObject.prop("caseId").numberValue().longValue()
+def clientId = payloadObject.prop("clientId").numberValue().longValue()
 def dboRequest = payloadObject.prop("dboRequest").boolValue()
 
 execution.setVariable("caseId", caseId)

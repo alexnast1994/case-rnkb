@@ -68,6 +68,7 @@ execution.setVariable("clientId", clientId)</bpmn:script>
         <bpmn:extensionElements>
           <camunda:in source="${clientId}" target="clientId" />
           <camunda:in source="${reasonedJudgmentId}" target="reasonedJudgmentId" />
+          <camunda:in source="session" target="session" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_14mxq93</bpmn:incoming>
         <bpmn:outgoing>Flow_1ub362d</bpmn:outgoing>
@@ -185,6 +186,7 @@ execution.setVariable("callProcesses", callProcesses)
       <bpmn:callActivity id="Activity_processOes4077" name="Создание ОЭС 4077" calledElement="createOes4077">
         <bpmn:extensionElements>
           <camunda:in source="${reasonedJudgmentId}" target="reasonedJudgmentId" />
+          <camunda:in source="session" target="session" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_1h1wfc6</bpmn:incoming>
         <bpmn:outgoing>Flow_1srq03v</bpmn:outgoing>
@@ -192,6 +194,7 @@ execution.setVariable("callProcesses", callProcesses)
       <bpmn:callActivity id="Activity_calculationRiskRating" name="Перерасчет риск-рейтинга" calledElement="calculationRiskRating">
         <bpmn:extensionElements>
           <camunda:in source="${reasonedJudgmentId}" target="reasonedJudgmentId" />
+          <camunda:in source="session" target="session" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_16s2dgq</bpmn:incoming>
         <bpmn:outgoing>Flow_0hn2ysm</bpmn:outgoing>
@@ -210,6 +213,7 @@ execution.setVariable("callProcesses", callProcesses)
       <bpmn:callActivity id="Activity_process13" name="Процесс 13" calledElement="rejectionPaymentReasonedJudgment">
         <bpmn:extensionElements>
           <camunda:in source="${reasonedJudgmentId}" target="reasonedJudgmentId" />
+          <camunda:in source="session" target="session" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_0klph2m</bpmn:incoming>
         <bpmn:outgoing>Flow_0woniyg</bpmn:outgoing>
@@ -230,7 +234,7 @@ def jsonData = JSON(jsonStr)
 
 def payloadObject = jsonData.prop("payload").prop("amlApprovalReasonedJudgment")
 
-def reasonedJudgmentId = payloadObject.prop("reasonedJudgmentId").numberValue()
+def reasonedJudgmentId = payloadObject.prop("reasonedJudgmentId").numberValue().longValue()
 
 execution.setVariable("reasonedJudgmentId", reasonedJudgmentId)
 </bpmn:script>
@@ -249,6 +253,7 @@ execution.setVariable("reasonedJudgmentId", reasonedJudgmentId)
             <camunda:in source="payment" target="payment" />
             <camunda:in source="message-case-out" target="messageId" />
             <camunda:in source="clientId" target="key" />
+            <camunda:in source="session" target="session" />
           </bpmn:extensionElements>
           <bpmn:incoming>Flow_0fcpgll</bpmn:incoming>
           <bpmn:outgoing>Flow_1ir3fkr</bpmn:outgoing>
@@ -334,6 +339,10 @@ payment</bpmn:text>
       <bpmndi:BPMNShape id="Activity_1sa27e2_di" bpmnElement="Activity_1sa27e2" isExpanded="true">
         <dc:Bounds x="530" y="80" width="2230" height="770" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1yt8ljn_di" bpmnElement="Flow_1yt8ljn">
+        <di:waypoint x="2260" y="610" />
+        <di:waypoint x="2322" y="610" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_18dhmk4_di" bpmnElement="Flow_18dhmk4">
         <di:waypoint x="770" y="180" />
         <di:waypoint x="850" y="180" />
@@ -414,10 +423,6 @@ payment</bpmn:text>
         <di:waypoint x="606" y="180" />
         <di:waypoint x="670" y="180" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1yt8ljn_di" bpmnElement="Flow_1yt8ljn">
-        <di:waypoint x="2260" y="610" />
-        <di:waypoint x="2322" y="610" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_0jvz52s_di" bpmnElement="Event_0jvz52s">
         <dc:Bounds x="570" y="162" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -475,15 +480,13 @@ payment</bpmn:text>
       <bpmndi:BPMNShape id="Activity_0us54of_di" bpmnElement="Activity_0us54of">
         <dc:Bounds x="670" y="140" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1dcbjjr_di" bpmnElement="Event_1dcbjjr">
-        <dc:Bounds x="2322" y="592" width="36" height="36" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1677j3a_di" bpmnElement="Activity_1677j3a" isExpanded="true">
         <dc:Bounds x="1760" y="490" width="500" height="290" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="TextAnnotation_1fvsevs_di" bpmnElement="TextAnnotation_1fvsevs">
-        <dc:Bounds x="2085" y="510" width="100" height="68" />
-      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1ir3fkr_di" bpmnElement="Flow_1ir3fkr">
+        <di:waypoint x="2130" y="660" />
+        <di:waypoint x="2182" y="660" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0fcpgll_di" bpmnElement="Flow_0fcpgll">
         <di:waypoint x="1980" y="660" />
         <di:waypoint x="2030" y="660" />
@@ -491,10 +494,6 @@ payment</bpmn:text>
       <bpmndi:BPMNEdge id="Flow_1anh9fb_di" bpmnElement="Flow_1anh9fb">
         <di:waypoint x="1828" y="660" />
         <di:waypoint x="1880" y="660" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1ir3fkr_di" bpmnElement="Flow_1ir3fkr">
-        <di:waypoint x="2130" y="660" />
-        <di:waypoint x="2182" y="660" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_1baw704_di" bpmnElement="Event_1baw704">
         <dc:Bounds x="1792" y="642" width="36" height="36" />
@@ -508,10 +507,16 @@ payment</bpmn:text>
       <bpmndi:BPMNShape id="Activity_17yrqn7_di" bpmnElement="Activity_1lk2vls">
         <dc:Bounds x="1880" y="620" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1fvsevs_di" bpmnElement="TextAnnotation_1fvsevs">
+        <dc:Bounds x="2085" y="510" width="100" height="68" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_0gp96c6_di" bpmnElement="Association_0gp96c6">
         <di:waypoint x="2120" y="620" />
         <di:waypoint x="2120" y="578" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_1dcbjjr_di" bpmnElement="Event_1dcbjjr">
+        <dc:Bounds x="2322" y="592" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0t92369_di" bpmnElement="TextAnnotation_0t92369">
         <dc:Bounds x="129" y="228" width="167" height="30" />
       </bpmndi:BPMNShape>

@@ -149,8 +149,8 @@ def jsonData = JSON(jsonStr)
 
 def payloadObject = jsonData.prop("payload").prop("amlMidlRequestPaymentRejection")
 
-def caseId = payloadObject.prop("caseId").numberValue()
-def requestId = payloadObject.prop("requestId").numberValue()
+def caseId = payloadObject.prop("caseId").numberValue().longValue()
+def requestId = payloadObject.prop("requestId").numberValue().longValue()
 
 execution.setVariable("caseId", caseId)
 execution.setVariable("requestId", requestId)
