@@ -41,5 +41,7 @@
 - {+ KAFKA_SSL_KEYSTORE_LOCATION - Путь к keystore +}
 - {+ KAFKA_SSL_KEYSTORE_PASSWORD - Пароль +}
 - {+ KAFKA_SSL_KEY_PASSWORD - Пароль +}
+
 - {+ TOPIC_MESSAGE_INPUT - Топик для входящих сообщений +}
+- {+ TOPIC_CSM_INPUT - Топик от CSM +} 
 - {+ TOPIC_MESSAGE_OUT - Тип исходящих сообщений +}
