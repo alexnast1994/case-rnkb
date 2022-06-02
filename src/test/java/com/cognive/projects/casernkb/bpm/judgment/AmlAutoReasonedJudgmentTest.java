@@ -31,11 +31,12 @@ public class AmlAutoReasonedJudgmentTest {
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
     private String getPayloadJson(Long caseId, Long clientId) {
-        return "{\"payload\":{\"amlAutoReasonedJudgment\":{\"caseIds\":[" + caseId + "],\"clientId\":" + clientId + "}}}";
+        return "{\"payload\":{\"amlAutoReasonedJudgment\":{\"caseIds\":[" + caseId + "],\"clientId\":" + clientId + ",\"startDate\": \"2022-06-02T00:00:00\"," +
+                "\"offDate\": \"2022-06-03T00:00:00\"}}}";
     }
 
     // TODO
-    //@Test
+    @Test
     public void Should_work() {
         autoMock("bpmn/judgment/amlAutoReasonedJudgment.bpmn");
 
