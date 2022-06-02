@@ -36,13 +36,13 @@
       <bpmn:serviceTask id="Activity_1ml7vgt" name="Select CLientRelation from base" camunda:delegateExpression="${selectOneDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="outputVarName">ClientRelationBase</camunda:inputParameter>
+            <camunda:inputParameter name="outputVarName">clientRelationBase</camunda:inputParameter>
             <camunda:inputParameter name="parameters">
               <camunda:map>
-                <camunda:entry key="ClientBase">${ClientBase}</camunda:entry>
+                <camunda:entry key="clientBase">${clientBase}</camunda:entry>
               </camunda:map>
             </camunda:inputParameter>
-            <camunda:inputParameter name="selectQuery">SELECT c FROM ClientRelation c WHERE c.fromClientId = :ClientBase</camunda:inputParameter>
+            <camunda:inputParameter name="selectQuery">SELECT c FROM ClientRelation c WHERE c.fromClientId = :clientBase</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_06wwcxs</bpmn:incoming>
@@ -58,7 +58,7 @@ import java.sql.Timestamp
 
 def rjLicense = new RjLicense()
 def rjclient = execution.getVariable("rjClient") as RjClient
-def clLicense = execution.getVariable("ClientLicenseBase") as ClLicense
+def clLicense = execution.getVariable("clientLicenseBase") as ClLicense
 rjLicense.client = rjclient
 if(clLicense!=null){
     rjLicense.licensenumber = clLicense.licnumber
@@ -79,13 +79,13 @@ return rjLicense
       <bpmn:serviceTask id="Activity_0t464hl" name="Select case from base" camunda:delegateExpression="${selectOneDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="outputVarName">ClientLicenseBase</camunda:inputParameter>
+            <camunda:inputParameter name="outputVarName">clientLicenseBase</camunda:inputParameter>
             <camunda:inputParameter name="parameters">
               <camunda:map>
-                <camunda:entry key="ClientBase">${ClientBase}</camunda:entry>
+                <camunda:entry key="clientBase">${clientBase}</camunda:entry>
               </camunda:map>
             </camunda:inputParameter>
-            <camunda:inputParameter name="selectQuery">SELECT c FROM ClLicense c WHERE c.clientId= :ClientBase</camunda:inputParameter>
+            <camunda:inputParameter name="selectQuery">SELECT c FROM ClLicense c WHERE c.clientId= :clientBase</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_1fror9l</bpmn:incoming>
@@ -94,13 +94,13 @@ return rjLicense
       <bpmn:serviceTask id="Activity_17i4crs" name="Select case from base" camunda:delegateExpression="${selectOneDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="outputVarName">VerificationDocumentsBase</camunda:inputParameter>
+            <camunda:inputParameter name="outputVarName">verificationDocumentsBase</camunda:inputParameter>
             <camunda:inputParameter name="parameters">
               <camunda:map>
-                <camunda:entry key="ClientBase">${ClientBase}</camunda:entry>
+                <camunda:entry key="clientBase">${clientBase}</camunda:entry>
               </camunda:map>
             </camunda:inputParameter>
-            <camunda:inputParameter name="selectQuery">SELECT v FROM VerificationDocument v WHERE v.client= :ClientBase</camunda:inputParameter>
+            <camunda:inputParameter name="selectQuery">SELECT v FROM VerificationDocument v WHERE v.client= :clientBase</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_1vbmx5t</bpmn:incoming>
@@ -121,7 +121,7 @@ def log = LoggerFactory.getLogger(this.class)
 
 
 def rjclient = execution.getVariable("rjClient") as RjClient
-def verificationDocument = execution.getVariable("VerificationDocumentsBase") as VerificationDocument
+def verificationDocument = execution.getVariable("verificationDocumentsBase") as VerificationDocument
 
 
 def rjVerificationdoc = new RjVerificationdoc()
@@ -154,7 +154,7 @@ def log = LoggerFactory.getLogger(this.class)
 def rjClient = new RjClient()
 def reasonedJudgment = execution.getVariable("reasonedJudgment") as ReasonedJudgment
 
-def client = execution.getVariable("ClientBase") as Client
+def client = execution.getVariable("clientBase") as Client
 
 def clientLegal = new ClientLegal()
 def clientIndividual = new ClientIndividual()
@@ -182,7 +182,7 @@ if(client.ogrnDate!=null){
     rjClient.ogrndate = Timestamp.valueOf(client.ogrnDate)
 }
 
-rjClient.placeofbirth = clientIndividual.placeofbirth
+rjClient.placeofbirth = clientIndividual.placeofbirth != null &amp;&amp; !clientIndividual.placeofbirth.isEmpty() ? clientIndividual.placeofbirth : " "
 rjClient.clientFullname = client.fullName
 rjClient.manager = client.manager
 rjClient.branch = client.exBranch
@@ -208,14 +208,14 @@ import org.slf4j.LoggerFactory
 def log = LoggerFactory.getLogger(this.class)
 
 def rjClient = execution.getVariable("rjClient") as RjClient
-def client = execution.getVariable("ClientBase") as Client
+def client = execution.getVariable("clientBase") as Client
 def clientIndividual = new ClientIndividual()
 def rjClientRe = new RjClientRe()
 if(client.clientIndividual!=null){
     clientIndividual=client.clientIndividual
     rjClientRe.birthDate = clientIndividual.birthdate
 }
-def clientRelation = execution.getVariable("ClientRelationBase") as ClientRelation
+def clientRelation = execution.getVariable("clientRelationBase") as ClientRelation
 
 
 rjClientRe.rjclient = rjClient
@@ -254,7 +254,7 @@ return rjClientRe</bpmn:script>
       <bpmn:serviceTask id="Activity_0qedj4f" name="Select client from base" camunda:delegateExpression="${selectOneDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="outputVarName">ClientBase</camunda:inputParameter>
+            <camunda:inputParameter name="outputVarName">clientBase</camunda:inputParameter>
             <camunda:inputParameter name="parameters">
               <camunda:map>
                 <camunda:entry key="clientId">${clientId}</camunda:entry>
@@ -269,7 +269,7 @@ return rjClientRe</bpmn:script>
       <bpmn:serviceTask id="Activity_1wbjqa5" name="Select case from base" camunda:delegateExpression="${selectOneDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="outputVarName">CaseBase</camunda:inputParameter>
+            <camunda:inputParameter name="outputVarName">caseBase</camunda:inputParameter>
             <camunda:inputParameter name="parameters">
               <camunda:map>
                 <camunda:entry key="caseId">${caseId}</camunda:entry>
@@ -304,7 +304,7 @@ BaseDictionary getTypeOfControl (String code) {
 
 ReasonedJudgment reasonedJudgment = new ReasonedJudgment()
 
-def case1 = execution.getVariable("CaseBase") as Case
+def case1 = execution.getVariable("caseBase") as Case
 def caseDic = case1.caseType as BaseDictionary
 if(caseDic.code == "3"){
     reasonedJudgment.typeOfControl = getTypeOfControl ("1")
@@ -402,13 +402,13 @@ return reasonedJudgment</bpmn:script>
       <bpmn:serviceTask id="Activity_0xbeo8g" name="Select case from base" camunda:delegateExpression="${selectOneDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="outputVarName">RbsBlockBase</camunda:inputParameter>
+            <camunda:inputParameter name="outputVarName">rbsBlockBase</camunda:inputParameter>
             <camunda:inputParameter name="parameters">
               <camunda:map>
-                <camunda:entry key="ClientBase">${ClientBase}</camunda:entry>
+                <camunda:entry key="clientBase">${clientBase}</camunda:entry>
               </camunda:map>
             </camunda:inputParameter>
-            <camunda:inputParameter name="selectQuery">SELECT cb FROM ClientRbsBlock cb left join ClientRbs cr on cr.id=cb.clientRbs WHERE cr.client= :ClientBase</camunda:inputParameter>
+            <camunda:inputParameter name="selectQuery">SELECT cb FROM ClientRbsBlock cb left join ClientRbs cr on cr.id=cb.clientRbs WHERE cr.client= :clientBase</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_123jzlm</bpmn:incoming>
@@ -433,9 +433,9 @@ BaseDictionary getStatus(String code) {
 }
 
 def rjRbs = new RjRbs()
-def client = execution.getVariable("ClientBase") as Client
+def client = execution.getVariable("clientBase") as Client
 def rjClient= execution.getVariable("rjClient") as RjClient
-def clientRbsBlock = execution.getVariable("RbsBlockBase") as ClientRbsBlock
+def clientRbsBlock = execution.getVariable("rbsBlockBase") as ClientRbsBlock
 def clientRbs = new ClientRbs()
 if(clientRbsBlock!=null){
     clientRbs = clientRbsBlock.clientRbs
@@ -480,7 +480,7 @@ return rjRbs
 import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
 import com.prime.db.rnkb.model.Case
 def reasonedJudgment = execution.getVariable("reasonedJudgment") as ReasonedJudgment
-def case1 = execution.getVariable("CaseBase") as Case
+def case1 = execution.getVariable("caseBase") as Case
 def caseReasonedJudgment = new CaseReasonedJudgment()
 caseReasonedJudgment.caseId = case1
 caseReasonedJudgment.idrj = reasonedJudgment

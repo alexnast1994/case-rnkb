@@ -62,9 +62,9 @@ public class AmlAutoReasonedJudgmentTest {
         clientRbs.setStatus(bd3);
 
         Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("CaseBase", caseData);
-        selectResult.put("ClientBase", client);
-        selectResult.put("RbsBlockBase", rbsBlock);
+        selectResult.put("caseBase", caseData);
+        selectResult.put("clientBase", client);
+        selectResult.put("rbsBlockBase", rbsBlock);
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
