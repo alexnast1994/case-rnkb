@@ -106,10 +106,13 @@ server:
     message-pipeline: ${TOPIC_MESSAGE_OUT}
     message-case-out: ${TOPIC_MESSAGE_OUT}
     message-case-response: ${TOPIC_MESSAGE_CASE_RESPONSE}
-  process-name-header: ${PROCESS_NAME_HEADER:aml_camunda_start}
-  camunda-csm-process-name: ${CSM_PROCESS_NAME:amlCsmRequest}
-  csm-process-name-header: ${CSM_PROCESS_NAME_HEADER:processName}
-  csm-process-name: ${CSM_PROCESS_NAME_VALUE:operationProcess}
+
+  kafka:
+    process-name-header: ${PROCESS_NAME_HEADER:aml_camunda_start}
+    camunda-csm-process-name: ${CSM_PROCESS_NAME:amlCsmRequest}
+    csm-process-name-header: ${CSM_PROCESS_NAME_HEADER:processName}
+    csm-process-name: ${CSM_PROCESS_NAME_VALUE:operationProcess}
+    error-topic: ${TOPIC_ERROR_OUT:}
 
 logging:
   level:
