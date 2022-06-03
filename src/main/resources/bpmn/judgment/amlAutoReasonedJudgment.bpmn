@@ -182,13 +182,13 @@ if(client.ogrnDate!=null){
     rjClient.ogrndate = Timestamp.valueOf(client.ogrnDate)
 }
 
-rjClient.placeofbirth = clientIndividual.placeofbirth != null &amp;&amp; !clientIndividual.placeofbirth.isEmpty() ? clientIndividual.placeofbirth : " "
+rjClient.placeofbirth = clientIndividual.placeofbirth
 rjClient.clientFullname = client.fullName
 rjClient.manager = client.manager
 rjClient.branch = client.exBranch
 rjClient.fnsSegment = client.fnsSegment
 rjClient.ogrn = client.ogrn
-
+rjClient.typeOfClient = client.clientType
 
 rjClient.client = client
 rjClient.exClientId = client.exClientId
