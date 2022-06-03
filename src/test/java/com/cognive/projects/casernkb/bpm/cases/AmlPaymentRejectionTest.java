@@ -1,9 +1,9 @@
-package com.cognive.projects.casernkb.bpm.response;
+package com.cognive.projects.casernkb.bpm.cases;
 
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
 import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
-import com.prime.db.rnkb.model.Payment;
+import com.prime.db.rnkb.model.Client;
 import com.prime.db.rnkb.model.commucation.midl.Task;
 import org.assertj.core.api.Condition;
 import org.camunda.bpm.engine.RuntimeService;
@@ -13,6 +13,7 @@ import org.camunda.bpm.engine.test.ProcessEngineRule;
 import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,17 +25,23 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/response/reviewPp.bpmn"
+        "bpmn/cases/amlPaymentRejection.bpmn"
 })
-public class ResponseReviewPpTest {
+public class AmlPaymentRejectionTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
+    private String getPayloadJson(Long caseId, Long clientId, Boolean dboRequest) {
+        return "{\"payload\":{\"amlPaymentRejection\":{\"caseId\":" + caseId + ",\"clientId\":" + clientId + ",\"dboRequest\":" + dboRequest + "}}}";
+    }
+
+    @Disabled
     @Test
     public void Should_save() {
-        autoMock("bpmn/response/reviewPp.bpmn");
+        autoMock("bpmn/cases/amlPaymentRejection.bpmn");
 
         Case caseData = new Case();
+        Client client = new Client();
 
         BaseDictionary bd2 = new BaseDictionary();
         BaseDictionary bd1 = new BaseDictionary();
@@ -50,6 +57,7 @@ public class ResponseReviewPpTest {
 
         Map<String, Object> selectResult = new HashMap<>();
         selectResult.put("caseData", caseData);
+        selectResult.put("client", client);
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
@@ -62,26 +70,19 @@ public class ResponseReviewPpTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(186, "9")).thenReturn(bd9);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("caseId", 123);
+        processParams.put("payload", getPayloadJson(123L, 124L, true));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("reviewPp", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlPaymentRejection", processParams);
 
-        Condition<Object> isCase = new Condition<>(p -> {
-            Case c = (Case)p;
-            return c.getStatus().getCode().equals("5")
-                    && c.getCaseStatus().getCode().equals("2");
-        }, "isNull");
         Condition<Object> isTask = new Condition<>(p -> {
             Task t = (Task)p;
             return t.getStatusId().getCode().equals("1")
-                    && t.getTypeOfTask().getCode().equals("3")
-                    && t.getTaskType().getCode().equals("9");
+                    && t.getTypeOfTask().getCode().equals("3");
         }, "isNull");
         assertThat(processInstance)
-                .hasPassed("Activity_saveCase", "Activity_saveTask")
+                .hasPassed("Activity_saveTask", "Activity_savePerson", "Activity_saveRequest")
                 .variables()
-                .hasEntrySatisfying("caseData", isCase)
                 .hasEntrySatisfying("task", isTask);
     }
 }

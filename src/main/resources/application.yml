@@ -81,39 +81,54 @@ spring:
             key.serializer: org.apache.kafka.common.serialization.StringSerializer
       bindings:
         commonMessageInput-in-0:
-          destination: ${TOPIC_CASE_REQUEST},${TOPIC_CASE_PIPELINE}
+          destination: ${TOPIC_MESSAGE_INPUT}
+          group: case-rnkb
+          binder: kafka
+        csmMessageInput-in-0:
+          destination: ${TOPIC_CSM_INPUT}
           group: case-rnkb
           binder: kafka
         outMessage-out-0:
-          destination: ${TOPIC_CASE_OUT}
+          destination: ${TOPIC_MESSAGE_OUT}
+          group: case-rnkb
+          binder: kafka
+        outMessageCase-out-0:
+          destination: ${TOPIC_MESSAGE_CASE_RESPONSE}
           group: case-rnkb
           binder: kafka
       function:
-        definition: commonMessageInput
+        definition: commonMessageInput;csmMessageInput
 
 server:
   port: ${SERVER_PORT:8193}
   message-mapping:
-    message-case: ${TOPIC_CASE_REQUEST}
-    message-pipeline: ${TOPIC_CASE_PIPELINE}
-    message-case-out: ${TOPIC_CASE_OUT}
+    message-case: ${TOPIC_MESSAGE_OUT}
+    message-pipeline: ${TOPIC_MESSAGE_OUT}
+    message-case-out: ${TOPIC_MESSAGE_OUT}
+    message-case-response: ${TOPIC_MESSAGE_CASE_RESPONSE}
+
+  kafka:
+    process-name-header: ${PROCESS_NAME_HEADER:aml_camunda_start}
+    camunda-csm-process-name: ${CSM_PROCESS_NAME:amlCsmRequest}
+    csm-process-name-header: ${CSM_PROCESS_NAME_HEADER:processName}
+    csm-process-name: ${CSM_PROCESS_NAME_VALUE:operationProcess}
+    error-topic: ${TOPIC_ERROR_OUT:}
 
 logging:
   level:
     org.springframework: ERROR
     org:
       hibernate:
-        type: trace
+        type: info
       camunda:
         bpm: info
     com:
       cognive:
         projects:
-          casernkb: DEBUG
-          kafkaReader: debug
+          casernkb: INFO
+          kafkaReader: INFO
   pattern:
     file: "%d %p %c{1.} [%t] %m%n"
   file:
     name: ${LOG_PATH:app.log}
     clean-history-on-start: false
-

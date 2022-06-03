@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1qgdouj" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="amlRejectionPaymentReasonedJudgment" name="13. Из МС Формирование отказа по платежу + задача МИДЛ + Json при наличии ДБО" isExecutable="true">
+    <bpmn:startEvent id="Event_0qnx3lv">
+      <bpmn:outgoing>Flow_1pu22hm</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Activity_1jae6rb" name="Логирование процесса" camunda:delegateExpression="${loggerDelegate}">
+      <bpmn:incoming>Flow_1pu22hm</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ijxlkz</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
+      <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
+      <bpmn:outgoing>Flow_1sicgmj</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1pu22hm" sourceRef="Event_0qnx3lv" targetRef="Activity_1jae6rb" />
+    <bpmn:sequenceFlow id="Flow_0ijxlkz" sourceRef="Activity_1jae6rb" targetRef="Activity_1qwn6qf" />
+    <bpmn:subProcess id="Activity_0f9qjf6">
+      <bpmn:incoming>Flow_1sicgmj</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pr5w2a</bpmn:outgoing>
+      <bpmn:startEvent id="Event_0tvwdhy">
+        <bpmn:outgoing>Flow_0g6sm5c</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:serviceTask id="Activity_selectJudgment" name="Select judgment" camunda:delegateExpression="${selectOneDelegate}">
+        <bpmn:extensionElements>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="outputVarName">reasonedJudgment</camunda:inputParameter>
+            <camunda:inputParameter name="parameters">
+              <camunda:map>
+                <camunda:entry key="reasonedJudgmentId">${reasonedJudgmentId}</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="selectQuery">SELECT r FROM ReasonedJudgment r WHERE r.id = :reasonedJudgmentId</camunda:inputParameter>
+          </camunda:inputOutput>
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_1l0o8aw</bpmn:incoming>
+        <bpmn:outgoing>Flow_15hhxkg</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="Flow_0g6sm5c" sourceRef="Event_0tvwdhy" targetRef="Activity_0us54of" />
+      <bpmn:sequenceFlow id="Flow_15hhxkg" sourceRef="Activity_selectJudgment" targetRef="Activity_msData" />
+      <bpmn:exclusiveGateway id="Gateway_0pbuuut" default="Flow_06sv0a1">
+        <bpmn:incoming>Flow_1ymbrqv</bpmn:incoming>
+        <bpmn:outgoing>Flow_0ena0zs</bpmn:outgoing>
+        <bpmn:outgoing>Flow_06sv0a1</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_0ena0zs" sourceRef="Gateway_0pbuuut" targetRef="Activity_dboSelect">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${isMs}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:scriptTask id="Activity_msData" name="Получение данных по условию МС" scriptFormat="groovy">
+        <bpmn:incoming>Flow_15hhxkg</bpmn:incoming>
+        <bpmn:outgoing>Flow_1ymbrqv</bpmn:outgoing>
+        <bpmn:script>import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
+import com.prime.db.rnkb.model.BaseDictionary
+import com.prime.db.rnkb.model.Client
+
+ReasonedJudgment judment = execution.getVariable("reasonedJudgment")
+
+def isMs = judment.typeRj.getCode() == "02" &amp;&amp; judment.typeOfControl.getCode() == "1"
+execution.setVariable("isMs", isMs)
+execution.setVariable("clientId", judment.clientId.id)
+
+</bpmn:script>
+      </bpmn:scriptTask>
+      <bpmn:sequenceFlow id="Flow_1ymbrqv" sourceRef="Activity_msData" targetRef="Gateway_0pbuuut" />
+      <bpmn:endEvent id="Event_17qronq">
+        <bpmn:incoming>Flow_06sv0a1</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_06sv0a1" sourceRef="Gateway_0pbuuut" targetRef="Event_17qronq" />
+      <bpmn:scriptTask id="Activity_loopPrepare" name="Для каждого кейса" scriptFormat="groovy">
+        <bpmn:incoming>Flow_0ojzfif</bpmn:incoming>
+        <bpmn:outgoing>Flow_1da6ev0</bpmn:outgoing>
+        <bpmn:script>import com.prime.db.rnkb.model.Case
+import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
+
+ReasonedJudgment judment = execution.getVariable("reasonedJudgment")
+
+processCases = []
+judment.caseReasonedJudgmentsList.each{caseRj -&gt; 
+        if(caseRj.caseId != null) {
+            processCases.add(caseRj.caseId.id)
+        }
+    }
+execution.setVariable("processCases", processCases)
+</bpmn:script>
+      </bpmn:scriptTask>
+      <bpmn:sequenceFlow id="Flow_1da6ev0" sourceRef="Activity_loopPrepare" targetRef="Activity_105rp9w" />
+      <bpmn:sequenceFlow id="Flow_0ojzfif" sourceRef="Activity_dbo" targetRef="Activity_loopPrepare" />
+      <bpmn:scriptTask id="Activity_dbo" name="Определить ДБО" scriptFormat="groovy">
+        <bpmn:incoming>Flow_0o0vvm4</bpmn:incoming>
+        <bpmn:outgoing>Flow_0ojzfif</bpmn:outgoing>
+        <bpmn:script>import com.prime.db.rnkb.model.ClientRbs
+
+def clients = execution.getVariable("dboClients")
+execution.setVariable("dboRequest", clients != null &amp;&amp; clients.size() &gt; 0)
+</bpmn:script>
+      </bpmn:scriptTask>
+      <bpmn:serviceTask id="Activity_dboSelect" name="Select dbo info" camunda:delegateExpression="${selectDelegate}">
+        <bpmn:extensionElements>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="outputVarName">dboClients</camunda:inputParameter>
+            <camunda:inputParameter name="parameters">
+              <camunda:map>
+                <camunda:entry key="clientId">${clientId}</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="selectQuery">SELECT c FROM ClientRbs c WHERE c.dboClientId = :clientId and c.status.code = '1'</camunda:inputParameter>
+          </camunda:inputOutput>
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_0ena0zs</bpmn:incoming>
+        <bpmn:outgoing>Flow_0o0vvm4</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="Flow_0o0vvm4" sourceRef="Activity_dboSelect" targetRef="Activity_dbo" />
+      <bpmn:scriptTask id="Activity_0us54of" name="Payload" scriptFormat="groovy">
+        <bpmn:incoming>Flow_0g6sm5c</bpmn:incoming>
+        <bpmn:outgoing>Flow_1l0o8aw</bpmn:outgoing>
+        <bpmn:script>import static org.camunda.spin.Spin.*
+import static org.camunda.spin.DataFormats.*
+
+def jsonStr = execution.getVariable("payload")
+def jsonData = JSON(jsonStr)
+
+def payloadObject = jsonData.prop("payload").prop("amlRejectionPaymentReasonedJudgment")
+
+def reasonedJudgmentId = payloadObject.prop("reasonedJudgmentId").numberValue().longValue()
+
+execution.setVariable("reasonedJudgmentId", reasonedJudgmentId)
+</bpmn:script>
+      </bpmn:scriptTask>
+      <bpmn:sequenceFlow id="Flow_1l0o8aw" sourceRef="Activity_0us54of" targetRef="Activity_selectJudgment" />
+      <bpmn:subProcess id="Activity_105rp9w">
+        <bpmn:incoming>Flow_1da6ev0</bpmn:incoming>
+        <bpmn:outgoing>Flow_0s84npn</bpmn:outgoing>
+        <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="processCases" camunda:elementVariable="processCaseId" />
+        <bpmn:endEvent id="Event_0j3u9je">
+          <bpmn:incoming>Flow_1bkh2v8</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:callActivity id="Activity_process" name="5 Процесс" calledElement="paymentRejection">
+          <bpmn:extensionElements>
+            <camunda:in source="processCaseId" target="caseId" />
+            <camunda:in source="clientId" target="clientId" />
+            <camunda:in source="dboRequest" target="dboRequest" />
+            <camunda:in source="session" target="session" />
+          </bpmn:extensionElements>
+          <bpmn:incoming>Flow_1grmomt</bpmn:incoming>
+          <bpmn:outgoing>Flow_1bkh2v8</bpmn:outgoing>
+        </bpmn:callActivity>
+        <bpmn:startEvent id="Event_1u4o11u">
+          <bpmn:outgoing>Flow_1grmomt</bpmn:outgoing>
+        </bpmn:startEvent>
+        <bpmn:sequenceFlow id="Flow_1bkh2v8" sourceRef="Activity_process" targetRef="Event_0j3u9je" />
+        <bpmn:sequenceFlow id="Flow_1grmomt" sourceRef="Event_1u4o11u" targetRef="Activity_process" />
+        <bpmn:textAnnotation id="TextAnnotation_11s4j00">
+          <bpmn:text>caseId Case.ID
+clientId Client.ID
+dboRequest Информация о ДБО клиента</bpmn:text>
+        </bpmn:textAnnotation>
+        <bpmn:association id="Association_1oqyuz0" sourceRef="TextAnnotation_11s4j00" targetRef="Activity_process" />
+      </bpmn:subProcess>
+      <bpmn:endEvent id="Event_1ex9dqm">
+        <bpmn:incoming>Flow_0s84npn</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_0s84npn" sourceRef="Activity_105rp9w" targetRef="Event_1ex9dqm" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_1sicgmj" sourceRef="Activity_1qwn6qf" targetRef="Activity_0f9qjf6" />
+    <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию" camunda:delegateExpression="${closeSessionDelegate}">
+      <bpmn:incoming>Flow_0pr5w2a</bpmn:incoming>
+      <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_end">
+      <bpmn:incoming>Flow_13tvrx3</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_13tvrx3" sourceRef="Activity_131dz13" targetRef="Event_end" />
+    <bpmn:sequenceFlow id="Flow_0pr5w2a" sourceRef="Activity_0f9qjf6" targetRef="Activity_131dz13" />
+    <bpmn:textAnnotation id="TextAnnotation_0t92369">
+      <bpmn:text>reasonedJudgmentId</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_19ytaul" sourceRef="Event_0qnx3lv" targetRef="TextAnnotation_0t92369" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlRejectionPaymentReasonedJudgment">
+      <bpmndi:BPMNEdge id="Flow_0pr5w2a_di" bpmnElement="Flow_0pr5w2a">
+        <di:waypoint x="2400" y="290" />
+        <di:waypoint x="2440" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
+        <di:waypoint x="2540" y="290" />
+        <di:waypoint x="2622" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1sicgmj_di" bpmnElement="Flow_1sicgmj">
+        <di:waypoint x="500" y="290" />
+        <di:waypoint x="570" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ijxlkz_di" bpmnElement="Flow_0ijxlkz">
+        <di:waypoint x="362" y="290" />
+        <di:waypoint x="400" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1pu22hm_di" bpmnElement="Flow_1pu22hm">
+        <di:waypoint x="227" y="290" />
+        <di:waypoint x="262" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_0qnx3lv_di" bpmnElement="Event_0qnx3lv">
+        <dc:Bounds x="191" y="272" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jae6rb_di" bpmnElement="Activity_1jae6rb">
+        <dc:Bounds x="262" y="250" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1qwn6qf_di" bpmnElement="Activity_1qwn6qf">
+        <dc:Bounds x="400" y="250" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0f9qjf6_di" bpmnElement="Activity_0f9qjf6" isExpanded="true">
+        <dc:Bounds x="570" y="80" width="1830" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0s84npn_di" bpmnElement="Flow_0s84npn">
+        <di:waypoint x="2230" y="280" />
+        <di:waypoint x="2282" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1l0o8aw_di" bpmnElement="Flow_1l0o8aw">
+        <di:waypoint x="800" y="280" />
+        <di:waypoint x="850" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0o0vvm4_di" bpmnElement="Flow_0o0vvm4">
+        <di:waypoint x="1400" y="280" />
+        <di:waypoint x="1450" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ojzfif_di" bpmnElement="Flow_0ojzfif">
+        <di:waypoint x="1550" y="280" />
+        <di:waypoint x="1590" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1da6ev0_di" bpmnElement="Flow_1da6ev0">
+        <di:waypoint x="1690" y="280" />
+        <di:waypoint x="1760" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06sv0a1_di" bpmnElement="Flow_06sv0a1">
+        <di:waypoint x="1230" y="305" />
+        <di:waypoint x="1230" y="372" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ymbrqv_di" bpmnElement="Flow_1ymbrqv">
+        <di:waypoint x="1120" y="280" />
+        <di:waypoint x="1205" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ena0zs_di" bpmnElement="Flow_0ena0zs">
+        <di:waypoint x="1255" y="280" />
+        <di:waypoint x="1300" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15hhxkg_di" bpmnElement="Flow_15hhxkg">
+        <di:waypoint x="950" y="280" />
+        <di:waypoint x="1020" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0g6sm5c_di" bpmnElement="Flow_0g6sm5c">
+        <di:waypoint x="658" y="280" />
+        <di:waypoint x="700" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_0tvwdhy_di" bpmnElement="Event_0tvwdhy">
+        <dc:Bounds x="622" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_06ngoq7_di" bpmnElement="Activity_selectJudgment">
+        <dc:Bounds x="850" y="240" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0pbuuut_di" bpmnElement="Gateway_0pbuuut" isMarkerVisible="true">
+        <dc:Bounds x="1205" y="255" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ha9vd2_di" bpmnElement="Activity_msData">
+        <dc:Bounds x="1020" y="240" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_17qronq_di" bpmnElement="Event_17qronq">
+        <dc:Bounds x="1212" y="372" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_loopCase_di" bpmnElement="Activity_loopPrepare">
+        <dc:Bounds x="1590" y="240" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_13mnqsc_di" bpmnElement="Activity_dbo">
+        <dc:Bounds x="1450" y="240" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0cpaa29_di" bpmnElement="Activity_dboSelect">
+        <dc:Bounds x="1300" y="240" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0us54of_di" bpmnElement="Activity_0us54of">
+        <dc:Bounds x="700" y="240" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_105rp9w_di" bpmnElement="Activity_105rp9w" isExpanded="true">
+        <dc:Bounds x="1760" y="170" width="470" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1grmomt_di" bpmnElement="Flow_1grmomt">
+        <di:waypoint x="1816" y="250" />
+        <di:waypoint x="1950" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1bkh2v8_di" bpmnElement="Flow_1bkh2v8">
+        <di:waypoint x="2050" y="250" />
+        <di:waypoint x="2172" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_0j3u9je_di" bpmnElement="Event_0j3u9je">
+        <dc:Bounds x="2172" y="232" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1s4vsxi_di" bpmnElement="Activity_process">
+        <dc:Bounds x="1950" y="210" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1u4o11u_di" bpmnElement="Event_1u4o11u">
+        <dc:Bounds x="1780" y="232" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_11s4j00_di" bpmnElement="TextAnnotation_11s4j00">
+        <dc:Bounds x="1934" y="330" width="190" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_1oqyuz0_di" bpmnElement="Association_1oqyuz0">
+        <di:waypoint x="2000" y="330" />
+        <di:waypoint x="2000" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_1ex9dqm_di" bpmnElement="Event_1ex9dqm">
+        <dc:Bounds x="2282" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
+        <dc:Bounds x="2440" y="250" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_end_di" bpmnElement="Event_end">
+        <dc:Bounds x="2622" y="272" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0t92369_di" bpmnElement="TextAnnotation_0t92369">
+        <dc:Bounds x="159" y="133" width="167" height="30" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_19ytaul_di" bpmnElement="Association_19ytaul">
+        <di:waypoint x="209" y="272" />
+        <di:waypoint x="209" y="163" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

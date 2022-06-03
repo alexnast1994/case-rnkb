@@ -28,15 +28,19 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/midl/midlRequestClient.bpmn"
+        "bpmn/midl/amlMidlRequestClient.bpmn"
 })
 public class MidlRequestClientTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
+    private String getPayloadJson(Long caseId, Long requestId, Boolean dboRequest) {
+        return "{\"payload\":{\"amlMidlRequestClient\":{\"caseId\":" + caseId + ",\"requestId\":" + requestId + ",\"dboRequest\":" + dboRequest + "}}}";
+    }
+
     @Test
     public void Should_no_response() {
-        autoMock("bpmn/midl/midlRequestClient.bpmn");
+        autoMock("bpmn/midl/amlMidlRequestClient.bpmn");
 
         Request request = new Request();
         Case caseData = new Case();
@@ -74,16 +78,14 @@ public class MidlRequestClientTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(186, "7")).thenReturn(bd7);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("caseId", 123L);
-        processParams.put("requestId", 125L);
-        processParams.put("requestDbo", false);
+        processParams.put("payload", getPayloadJson(123L, 125L, false));
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseResponse")
                 .deploy(processEngineRule)
         );
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("midlRequestClient", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlMidlRequestClient", processParams);
 
         Condition<Object> isTask = new Condition<>(p -> {
             Task t = (Task)p;
@@ -121,7 +123,7 @@ public class MidlRequestClientTest {
 
     @Test
     public void Should_response() {
-        autoMock("bpmn/midl/midlRequestClient.bpmn");
+        autoMock("bpmn/midl/amlMidlRequestClient.bpmn");
 
         Request request = new Request();
         Case caseData = new Case();
@@ -159,16 +161,14 @@ public class MidlRequestClientTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(186, "8")).thenReturn(bd8);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("caseId", 123L);
-        processParams.put("requestId", 125L);
-        processParams.put("requestDbo", true);
+        processParams.put("payload", getPayloadJson(123L, 125L, true));
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseResponse")
                 .deploy(processEngineRule)
         );
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("midlRequestClient", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlMidlRequestClient", processParams);
 
         Condition<Object> isTask = new Condition<>(p -> {
             Task t = (Task)p;

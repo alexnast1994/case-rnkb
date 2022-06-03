@@ -13,7 +13,9 @@ import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
@@ -22,18 +24,15 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/cases/pipelineCase.bpmn"
+        "bpmn/cases/paymentResponse.bpmn"
 })
-public class PipelineCaseTest {
+public class PaymentResponseTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
-    private static final String payloadJson = "{\"rules\":[\"04\",\"05\"],\"paymentId\":123}";
-    private static final String payloadNoRulesJson = "{\"rules\":[],\"paymentId\":123}";
-
     @Test
     public void Should_response_with_save_case() {
-        autoMock("bpmn/cases/pipelineCase.bpmn");
+        autoMock("bpmn/cases/paymentResponse.bpmn");
 
         BaseDictionary sourceStatus10 = new BaseDictionary();
         sourceStatus10.setCode("10");
@@ -41,7 +40,17 @@ public class PipelineCaseTest {
         BaseDictionary caseType2 = new BaseDictionary();
         caseType2.setCode("2");
 
+        BaseDictionary caseRule04 = new BaseDictionary();
+        caseRule04.setCode("4");
+        caseRule04.setCharCode("04");
+
+        BaseDictionary caseRule05 = new BaseDictionary();
+        caseRule05.setCode("5");
+        caseRule05.setCharCode("05");
+
         Payment payment = new Payment();
+        Case ss = new Case();
+        ss.setId(4);
 
         Map<String, Object> selectResult = new HashMap<>();
         selectResult.put("payment", payment);
@@ -49,19 +58,32 @@ public class PipelineCaseTest {
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
 
+        Map<String, Object> saveCaseData = new HashMap<>();
+        saveCaseData.put("caseDataOut", ss);
+
+        final FluentJavaDelegateMock saveCase = registerJavaDelegateMock("saveObjectDelegate");
+        saveCase.onExecutionSetVariables(saveCaseData);
+
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(45, "10")).thenReturn(sourceStatus10);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(18, "2")).thenReturn(caseType2);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCharCode(272, "04")).thenReturn(caseRule04);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCharCode(272, "05")).thenReturn(caseRule05);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("payload", payloadJson);
+        processParams.put("paymentId", 123L);
+        processParams.put("rules", List.of("04", "05"));
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseResponse")
                 .deploy(processEngineRule)
         );
 
+        processEngineRule.manageDeployment(registerCallActivityMock("caseCreate")
+                .deploy(processEngineRule)
+        );
+
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("pipelineCase", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("paymentResponse", processParams);
 
         Condition<Object> isCaseType = new Condition<>(p -> {
             Case checkCase = (Case)p;
@@ -69,7 +91,7 @@ public class PipelineCaseTest {
         }, "isCaseRules size 2");
 
         assertThat(processInstance)
-            .hasPassed("Activity_createCase", "Activity_saveCase", "Activity_response")
+            .hasPassed("Activity_createCase", "Activity_case", "Activity_response")
             .variables()
             .hasEntrySatisfying("caseData", isCaseType)
         ;
@@ -77,7 +99,7 @@ public class PipelineCaseTest {
 
     @Test
     public void Should_response() {
-        autoMock("bpmn/cases/pipelineCase.bpmn");
+        autoMock("bpmn/cases/paymentResponse.bpmn");
 
         BaseDictionary sourceStatus7 = new BaseDictionary();
         sourceStatus7.setCode("7");
@@ -94,14 +116,15 @@ public class PipelineCaseTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(45, "7")).thenReturn(sourceStatus7);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("payload", payloadNoRulesJson);
+        processParams.put("paymentId", 123L);
+        processParams.put("rules", Collections.emptyList());
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseResponse")
                 .deploy(processEngineRule)
         );
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("pipelineCase", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("paymentResponse", processParams);
 
         Condition<Object> isPaymentSource = new Condition<>(p -> {
             Payment checkPayment = (Payment) p;

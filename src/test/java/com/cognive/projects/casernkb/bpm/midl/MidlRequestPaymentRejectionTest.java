@@ -28,15 +28,19 @@ import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
-        "bpmn/midl/midlRequestPaymentRejection.bpmn"
+        "bpmn/midl/amlMidlRequestPaymentRejection.bpmn"
 })
 public class MidlRequestPaymentRejectionTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
+    private String getPayloadJson(Long caseId, Long requestId) {
+        return "{\"payload\":{\"amlMidlRequestPaymentRejection\":{\"caseId\":" + caseId + ",\"requestId\":" + requestId + "}}}";
+    }
+
     @Test
     public void Should_save() {
-        autoMock("bpmn/midl/midlRequestPaymentRejection.bpmn");
+        autoMock("bpmn/midl/amlMidlRequestPaymentRejection.bpmn");
 
         Case caseData = new Case();
 
@@ -71,11 +75,10 @@ public class MidlRequestPaymentRejectionTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(186, "9")).thenReturn(bd9);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("caseId", 123L);
-        processParams.put("requestId", 125L);
+        processParams.put("payload", getPayloadJson(123L, 125L));
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("midlRequestPaymentRejection", processParams);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlMidlRequestPaymentRejection", processParams);
 
         Condition<Object> isTask = new Condition<>(p -> {
             Task t = (Task)p;
