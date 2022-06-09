@@ -36,7 +36,7 @@ public class AmlAutoReasonedJudgmentTest {
 
     private String getPayloadJson(Long caseId, Long clientId) {
         return "{\"payload\":{\"amlAutoReasonedJudgment\":{\"caseIds\":[" + caseId + "],\"clientId\":" + clientId + ",\"startDate\": \"2022-06-02T00:00:00\"," +
-                "\"offDate\": \"2022-06-03T00:00:00\",\"typeRj\": \"01\"}}}";
+                "\"offDate\": \"2022-06-03T00:00:00\",\"typeRj\": \"3\"}}}";
     }
 
     // TODO
@@ -49,7 +49,7 @@ public class AmlAutoReasonedJudgmentTest {
         BaseDictionary bd3 = createBaseDictionary("3");
         BaseDictionary bd4 = createBaseDictionary("4");
         BaseDictionary bd5 = createBaseDictionary("5");
-        BaseDictionary bdTypeRj = createBaseDictionary("01");
+        BaseDictionary bdTypeRj = createBaseDictionary("3");
 
         Case caseData = new Case();
         caseData.setCaseType(bd4);
@@ -74,7 +74,7 @@ public class AmlAutoReasonedJudgmentTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(266, "1")).thenReturn(bd1);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(269, "3")).thenReturn(bd3);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(181, "2")).thenReturn(bd2);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(277, "01")).thenReturn(bdTypeRj);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(277, "3")).thenReturn(bdTypeRj);
 
         Map<String, Object> processParams = new HashMap<>();
         processParams.put("payload", getPayloadJson(123L, 543L));
