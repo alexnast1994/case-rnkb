@@ -284,57 +284,65 @@ return rjClientRe</bpmn:script>
       <bpmn:scriptTask id="Activity_0zbx4mw" name="ReasonedJudgment" scriptFormat="groovy" camunda:resultVariable="reasonedJudgment">
         <bpmn:incoming>Flow_0n3j0lp</bpmn:incoming>
         <bpmn:outgoing>Flow_1mkvgg4</bpmn:outgoing>
-        <bpmn:script>import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
-import java.time.LocalDateTime
-import com.prime.db.rnkb.model.BaseDictionary
-import com.prime.db.rnkb.model.Case;
+        <bpmn:script>
+            import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
+            import java.time.LocalDateTime
+            import com.prime.db.rnkb.model.BaseDictionary
+            import com.prime.db.rnkb.model.Case;
 
+            BaseDictionary getStatus(String code) {
+                baseDictRepo.getByBaseDictionaryTypeCodeAndCode(213, code);
+            }
 
-BaseDictionary getStatus(String code) {
-    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(213, code);
-}
+            BaseDictionary getJobStatus(String code) {
+                baseDictRepo.getByBaseDictionaryTypeCodeAndCode(266, code);
+            }
 
-BaseDictionary getJobStatus(String code) {
-    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(266, code);
-}
+            BaseDictionary getTypeOfControl(String code) {
+                baseDictRepo.getByBaseDictionaryTypeCodeAndCode(181, code);
+            }
 
-BaseDictionary getTypeOfControl (String code) {
-    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(181, code);
-}
+            BaseDictionary getTypeRj(String code) {
+                baseDictRepo.getByBaseDictionaryTypeCodeAndCode(277, code);
+            }
 
-ReasonedJudgment reasonedJudgment = new ReasonedJudgment()
+            ReasonedJudgment reasonedJudgment = new ReasonedJudgment()
 
-def case1 = execution.getVariable("caseBase") as Case
-def caseDic = case1.caseType as BaseDictionary
-if(caseDic.code == "3"){
-    reasonedJudgment.typeOfControl = getTypeOfControl ("1")
-}
-if(caseDic.code == "4"){
-    reasonedJudgment.typeOfControl = getTypeOfControl ("2")
-}
+            def case1 = execution.getVariable("caseBase") as Case
+            def caseDic = case1.caseType as BaseDictionary
 
-reasonedJudgment.status = getStatus("5")
-reasonedJudgment.clientId = execution.getVariable("clientBase")
-reasonedJudgment.jobStatus = getJobStatus("1")
-try{
-    def startDateLDT = LocalDateTime.parse(execution.getVariable("startDate")) as LocalDateTime
-    reasonedJudgment.startDate = startDateLDT
-}
-catch (Exception e){
-    e.getMessage()
-}
+            if (caseDic.code == "3") {
+                reasonedJudgment.typeOfControl = getTypeOfControl ("1")
+            }
 
-try{
-    def offDateLDT = LocalDateTime.parse(execution.getVariable("offDate")) as LocalDateTime
-    reasonedJudgment.offDate = offDateLDT
-}
-catch (Exception e){
-    e.getMessage()
-}
+            if (caseDic.code == "4") {
+                reasonedJudgment.typeOfControl = getTypeOfControl ("2")
+            }
 
-reasonedJudgment.developmentDate = LocalDateTime.now()
+            def typeRj = execution.getVariable("typeRj")
 
-return reasonedJudgment</bpmn:script>
+            reasonedJudgment.status = getStatus("5")
+            reasonedJudgment.clientId = execution.getVariable("clientBase")
+            reasonedJudgment.jobStatus = getJobStatus("1")
+            reasonedJudgment.typeRj = getTypeRj(typeRj)
+
+            try {
+                def startDateLDT = LocalDateTime.parse(execution.getVariable("startDate")) as LocalDateTime
+                reasonedJudgment.startDate = startDateLDT
+            } catch (Exception e) {
+                e.getMessage()
+            }
+
+            try {
+                def offDateLDT = LocalDateTime.parse(execution.getVariable("offDate")) as LocalDateTime
+                reasonedJudgment.offDate = offDateLDT
+            } catch (Exception e) {
+                e.getMessage()
+            }
+
+            reasonedJudgment.developmentDate = LocalDateTime.now()
+            return reasonedJudgment
+        </bpmn:script>
       </bpmn:scriptTask>
       <bpmn:serviceTask id="Activity_15e283h" name="SaveDelegate" camunda:delegateExpression="${saveObjectDelegate}">
         <bpmn:extensionElements>
@@ -499,10 +507,11 @@ def jsonData = JSON(jsonStr)
 
 def payloadObject = jsonData.prop("payload").prop("amlAutoReasonedJudgment")
 
-def clientId= payloadObject.prop("clientId").numberValue().longValue()
+def clientId = payloadObject.prop("clientId").numberValue().longValue()
 def caseElements = payloadObject.prop("caseIds").elements()
 def startDate = payloadObject.prop("startDate").stringValue()
 def offDate = payloadObject.prop("offDate").stringValue()
+def typeRj = payloadObject.prop("typeRj").stringValue()
 
 def caseIds = []
 caseElements.each{caseElement-&gt; 
@@ -511,8 +520,9 @@ caseElements.each{caseElement-&gt;
 
 execution.setVariable("caseIds", caseIds)
 execution.setVariable("clientId", clientId)
-execution.setVariable("startDate", startDate )
+execution.setVariable("startDate", startDate)
 execution.setVariable("offDate", offDate)
+execution.setVariable("typeRj", typeRj)
 </bpmn:script>
     </bpmn:scriptTask>
     <bpmn:sequenceFlow id="Flow_0vy3tis" sourceRef="Activity_payload" targetRef="Activity_01gnm40" />
