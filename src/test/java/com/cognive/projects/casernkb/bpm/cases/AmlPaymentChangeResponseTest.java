@@ -13,7 +13,6 @@ import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.ProcessEngineRule;
 import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
 import org.camunda.spin.json.SpinJsonNode;
-import org.camunda.spin.plugin.variable.SpinValues;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -199,7 +198,7 @@ public class AmlPaymentChangeResponseTest {
         objectDiffDelegate.onExecutionSetVariables(objectDiffResult);
 
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(178, "10")).thenReturn(caseStatus10);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(131, "10")).thenReturn(caseStatus10);
 
         Map<String, Object> processParams = new HashMap<>();
         processParams.put("payload", getPayloadJson(pOld, pNew));
