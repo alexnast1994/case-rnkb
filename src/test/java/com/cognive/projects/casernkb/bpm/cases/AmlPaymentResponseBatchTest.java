@@ -57,15 +57,15 @@ public class AmlPaymentResponseBatchTest {
             List<CaseRulesDto> payments = (List<CaseRulesDto>)p;
             return payments.size() == 2 &&
                     payments.get(0).getRules().size() == 2 &&
-                    payments.get(0).getPaymentId() == 123L &&
+                    payments.get(0).getPaymentExId().equals("123") &&
                     payments.get(0).getCaseType().equals("2") &&
-                    payments.get(0).getRules().get(0).equals("4") &&
-                    payments.get(0).getRules().get(1).equals("5") &&
+                    payments.get(0).getRules().get(0).getCode().equals("4") &&
+                    payments.get(0).getRules().get(1).getCode().equals("5") &&
 
                     payments.get(1).getRules().size() == 1 &&
-                    payments.get(1).getPaymentId() == 124L &&
+                    payments.get(1).getPaymentExId().equals("124") &&
                     payments.get(1).getCaseType().equals("3") &&
-                    payments.get(1).getRules().get(0).equals("1");
+                    payments.get(1).getRules().get(0).getCode().equals("1");
         }, "isCaseRules size 2");
 
         assertThat(processInstance)

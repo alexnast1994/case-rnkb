@@ -74,7 +74,7 @@ def caseRelationList = []
 
 acceptedRules.each{rule -&gt;
   CaseRules cr = new CaseRules()
-  cr.ruleId = getRule(rule)
+  cr.ruleId = rule // getRule(rule)
   cr.caseId = caseData
   caseRelationList.add(cr)
 }
