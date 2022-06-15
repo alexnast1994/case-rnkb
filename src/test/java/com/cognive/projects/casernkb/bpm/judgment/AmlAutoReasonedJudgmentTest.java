@@ -27,8 +27,6 @@ import static org.mockito.Mockito.when;
 @Deployment(resources = {
         "bpmn/judgment/amlAutoReasonedJudgment.bpmn"
 })
-@Disabled
-// TODO:
 public class AmlAutoReasonedJudgmentTest {
 
     @Rule
@@ -39,7 +37,6 @@ public class AmlAutoReasonedJudgmentTest {
                 "\"offDate\": \"2022-06-03T00:00:00\",\"typeRj\": \"3\"}}}";
     }
 
-    // TODO
     @Test
     public void Should_work() {
         autoMock("bpmn/judgment/amlAutoReasonedJudgment.bpmn");
