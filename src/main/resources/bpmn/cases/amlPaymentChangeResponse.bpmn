@@ -5,7 +5,7 @@
     <bpmn:sequenceFlow id="Flow_0ijxlkz" sourceRef="Activity_1jae6rb" targetRef="Activity_1qwn6qf" />
     <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
       <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
-      <bpmn:outgoing>Flow_01qo4jc</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1w39g1w</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_1jae6rb" name="Логирование процесса" camunda:delegateExpression="${loggerDelegate}">
       <bpmn:incoming>Flow_0hlfsn7</bpmn:incoming>
@@ -16,10 +16,10 @@
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_13tvrx3" sourceRef="Activity_131dz13" targetRef="Event_098yyfy" />
     <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию" camunda:delegateExpression="${closeSessionDelegate}">
-      <bpmn:incoming>Flow_080j4ak</bpmn:incoming>
+      <bpmn:incoming>Flow_0mchax4</bpmn:incoming>
       <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_01qo4jc" sourceRef="Activity_1qwn6qf" targetRef="Activity_1kx0w6a" />
+    <bpmn:sequenceFlow id="Flow_01qo4jc" sourceRef="Activity_15o2wki" targetRef="Activity_1kx0w6a" />
     <bpmn:subProcess id="Activity_1kx0w6a">
       <bpmn:incoming>Flow_01qo4jc</bpmn:incoming>
       <bpmn:outgoing>Flow_080j4ak</bpmn:outgoing>
@@ -98,6 +98,7 @@ if(changed) {
 
 Payment payment = execution.getVariable("payment")
 payment.checkFlag = null
+payment.checkFlagSO = null
 
 execution.setVariable("payment", payment)</bpmn:script>
       </bpmn:scriptTask>
@@ -137,24 +138,35 @@ execution.setVariable("payment", payment)</bpmn:script>
       <bpmn:scriptTask id="Activity_0btrvdq" name="Установить&#10;Case.Status" scriptFormat="groovy" camunda:resultVariable="caseData">
         <bpmn:incoming>Flow_1mpwn19</bpmn:incoming>
         <bpmn:outgoing>Flow_19j8evu</bpmn:outgoing>
-        <bpmn:script>import com.prime.db.rnkb.model.Case
+        <bpmn:script>
+import com.prime.db.rnkb.model.Case
 import com.prime.db.rnkb.model.BaseDictionary
 
-BaseDictionary getCaseStatus(String code) {
-   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(16, code);
+BaseDictionary getBd(int type, String code) {
+   baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
 
 def caseType = caseData.getCaseType() != null ? caseData.getCaseType().getCode() : ""
-
-if(caseType == "1" || caseType == "3") {
-caseData.status = getCaseStatus("9");
-} else if(caseType == "2") {
-caseData.status = getCaseStatus("10");
-} else if(caseType == "4") {
-caseData.status = getCaseStatus("12");
+if(mainTagsChanged) {
+    if(caseType == "1") {
+        caseData.status = getBd(174, "12");
+    } else if(caseType == "2") {
+        caseData.status = getBd(130, "9");
+    } else if(caseType == "3") {
+        caseData.status = getBd(131, "10");
+    } else if(caseType == "4") {
+        caseData.status = getBd(140, "9");
+    }
+} else {
+    if(caseType == "1") {
+        caseData.status = getBd(174, "12");
+    } else if(caseType == "3") {
+        caseData.status = getBd(131, "6");
+    }
 }
 
-return caseData</bpmn:script>
+return caseData
+</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:serviceTask id="Activity_saveCase" name="Сохранить&#10;Case" camunda:delegateExpression="${saveObjectDelegate}">
         <bpmn:extensionElements>
@@ -213,10 +225,20 @@ return caseData</bpmn:script>
       </bpmn:textAnnotation>
       <bpmn:association id="Association_1n9cvef" sourceRef="Activity_0btrvdq" targetRef="TextAnnotation_00efmxm" />
     </bpmn:subProcess>
-    <bpmn:sequenceFlow id="Flow_080j4ak" sourceRef="Activity_1kx0w6a" targetRef="Activity_131dz13" />
+    <bpmn:sequenceFlow id="Flow_080j4ak" sourceRef="Activity_1kx0w6a" targetRef="Activity_1ljabnt" />
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_0hlfsn7</bpmn:outgoing>
     </bpmn:startEvent>
+    <bpmn:serviceTask id="Activity_15o2wki" name="StartTransactionDelegate" camunda:delegateExpression="${startTransactionDelegate}">
+      <bpmn:incoming>Flow_1w39g1w</bpmn:incoming>
+      <bpmn:outgoing>Flow_01qo4jc</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_1ljabnt" name="EndTransactionDelegate" camunda:delegateExpression="${endTransactionDelegate}">
+      <bpmn:incoming>Flow_080j4ak</bpmn:incoming>
+      <bpmn:outgoing>Flow_0mchax4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1w39g1w" sourceRef="Activity_1qwn6qf" targetRef="Activity_15o2wki" />
+    <bpmn:sequenceFlow id="Flow_0mchax4" sourceRef="Activity_1ljabnt" targetRef="Activity_131dz13" />
     <bpmn:textAnnotation id="TextAnnotation_0utvcpa">
       <bpmn:text>OldPayment
 NewPayment
@@ -230,12 +252,12 @@ PAYMENT.EXID
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlPaymentChangeResponse">
       <bpmndi:BPMNEdge id="Flow_080j4ak_di" bpmnElement="Flow_080j4ak">
-        <di:waypoint x="1950" y="345" />
-        <di:waypoint x="1950" y="270" />
+        <di:waypoint x="1810" y="345" />
+        <di:waypoint x="1810" y="270" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_01qo4jc_di" bpmnElement="Flow_01qo4jc">
-        <di:waypoint x="450" y="270" />
-        <di:waypoint x="450" y="345" />
+        <di:waypoint x="600" y="270" />
+        <di:waypoint x="600" y="345" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
         <di:waypoint x="2000" y="230" />
@@ -249,6 +271,14 @@ PAYMENT.EXID
         <di:waypoint x="220" y="230" />
         <di:waypoint x="262" y="230" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1w39g1w_di" bpmnElement="Flow_1w39g1w">
+        <di:waypoint x="500" y="230" />
+        <di:waypoint x="550" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mchax4_di" bpmnElement="Flow_0mchax4">
+        <di:waypoint x="1860" y="230" />
+        <di:waypoint x="1900" y="230" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Activity_1pd1jmg_di" bpmnElement="Activity_1qwn6qf">
         <dc:Bounds x="400" y="190" width="100" height="80" />
       </bpmndi:BPMNShape>
@@ -260,6 +290,12 @@ PAYMENT.EXID
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1bbce08_di" bpmnElement="Activity_131dz13">
         <dc:Bounds x="1900" y="190" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15o2wki_di" bpmnElement="Activity_15o2wki">
+        <dc:Bounds x="550" y="190" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ljabnt_di" bpmnElement="Activity_1ljabnt">
+        <dc:Bounds x="1760" y="190" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1kx0w6a_di" bpmnElement="Activity_1kx0w6a" isExpanded="true">
         <dc:Bounds x="170" y="345" width="2000" height="305" />

@@ -13,7 +13,6 @@ import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.ProcessEngineRule;
 import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
 import org.camunda.spin.json.SpinJsonNode;
-import org.camunda.spin.plugin.variable.SpinValues;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -123,6 +122,7 @@ public class AmlPaymentChangeResponseTest {
 
         Payment payment = new Payment();
         payment.setCheckFlag(2);
+        payment.setCheckFlagSO(true);
 
         Map<String, Object> selectResult = new HashMap<>();
         selectResult.put("payment", payment);
@@ -146,7 +146,10 @@ public class AmlPaymentChangeResponseTest {
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlPaymentChangeResponse", processParams);
 
-        Condition<Object> isNull = new Condition<>(p -> ((Payment)p).getCheckFlag() == null, "isNull");
+        Condition<Object> isNull = new Condition<>(p ->
+                ((Payment)p).getCheckFlag() == null
+                && ((Payment)p).getCheckFlagSO() == null
+                , "isNull");
         assertThat(processInstance)
                 .hasPassed("Activity_selectCase", "Activity_clearFlag")
                 .variables().hasEntrySatisfying("payment", isNull);
@@ -157,11 +160,11 @@ public class AmlPaymentChangeResponseTest {
         autoMock("bpmn/cases/amlPaymentChangeResponse.bpmn");
 
         BaseDictionary caseType3 = new BaseDictionary();
-        BaseDictionary caseStatus9 = new BaseDictionary();
+        BaseDictionary caseStatus10 = new BaseDictionary();
         BaseDictionary caseStatus1 = new BaseDictionary();
 
         caseType3.setCode("3");
-        caseStatus9.setCode("9");
+        caseStatus10.setCode("10");
         caseStatus1.setCode("1");
 
         PaymentDto pOld = new PaymentDto();
@@ -195,7 +198,7 @@ public class AmlPaymentChangeResponseTest {
         objectDiffDelegate.onExecutionSetVariables(objectDiffResult);
 
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(16, "9")).thenReturn(caseStatus9);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(131, "10")).thenReturn(caseStatus10);
 
         Map<String, Object> processParams = new HashMap<>();
         processParams.put("payload", getPayloadJson(pOld, pNew));
@@ -204,7 +207,7 @@ public class AmlPaymentChangeResponseTest {
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlPaymentChangeResponse", processParams);
 
         Condition<Object> isNull = new Condition<>(p -> ((Payment)p).getCheckFlag() == null, "isNull");
-        Condition<Object> isStatus = new Condition<>(p -> ((Case)p).getStatus().getCode().equals("9"), "is9");
+        Condition<Object> isStatus = new Condition<>(p -> ((Case)p).getStatus().getCode().equals("10"), "is10");
         assertThat(processInstance)
                 .hasPassed("Activity_selectCase", "Activity_clearFlag", "Activity_saveCase")
                 .variables()

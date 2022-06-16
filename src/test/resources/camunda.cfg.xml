@@ -9,5 +9,11 @@
         <property name="jdbcPassword" value="sa" />
         <property name="databaseSchemaUpdate" value="true" />
         <property name="jobExecutorActivate" value="false" />
+
+        <property name="processEnginePlugins">
+            <list>
+                <bean id="spinPlugin" class="org.camunda.spin.plugin.impl.SpinProcessEnginePlugin" />
+            </list>
+        </property>
     </bean>
 </beans>

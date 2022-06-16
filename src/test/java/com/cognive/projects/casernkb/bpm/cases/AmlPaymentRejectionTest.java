@@ -13,14 +13,12 @@ import org.camunda.bpm.engine.test.ProcessEngineRule;
 import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.jupiter.api.Disabled;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
-import static org.camunda.bpm.extension.mockito.CamundaMockito.registerJavaDelegateMock;
-import static org.camunda.bpm.extension.mockito.CamundaMockito.registerMockInstance;
+import static org.camunda.bpm.extension.mockito.CamundaMockito.*;
 import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
 
@@ -35,7 +33,6 @@ public class AmlPaymentRejectionTest {
         return "{\"payload\":{\"amlPaymentRejection\":{\"caseId\":" + caseId + ",\"clientId\":" + clientId + ",\"dboRequest\":" + dboRequest + "}}}";
     }
 
-    @Disabled
     @Test
     public void Should_save() {
         autoMock("bpmn/cases/amlPaymentRejection.bpmn");

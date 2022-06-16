@@ -7,63 +7,9 @@
       <bpmn:startEvent id="Event_068l0e6">
         <bpmn:outgoing>Flow_1qme100</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:scriptTask id="Activity_parsePayload" name="Parse payload" scriptFormat="groovy">
-        <bpmn:incoming>Flow_1qme100</bpmn:incoming>
-        <bpmn:outgoing>Flow_12b0cih</bpmn:outgoing>
-        <bpmn:script>import static org.camunda.spin.Spin.*
-import static org.camunda.spin.DataFormats.*
-import com.cognive.projects.casernkb.model.CaseRulesDto
-import com.prime.db.rnkb.model.BaseDictionary
-
-BaseDictionary getRule(String code) {
-   baseDictRepo.getByBaseDictionaryTypeCodeAndCharCode(272, code);
-}
-
-boolean isCodeAccepted(String code) {
-   def bdRule = getRule(code)
-   def intCode = (bdRule.code as int)
-   return intCode &lt; 34 &amp;&amp; intCode &gt; 2;
-}
-
-def jsonStr = execution.getVariable("payload")
-def jsonData = JSON(jsonStr)
-
-def payloadObject = jsonData.prop("payload").prop("amlPaymentCasePostBatch")
-
-def batch = payloadObject.prop("operation").elements()
-def payments = [:]
-
-
-// Group by payment
-batch.each{batchRule -&gt; 
-    def paymentId = batchRule.prop("PaymentId").numberValue().longValue()
-    def caseRules = payments[paymentId]
-    if(caseRules == null) {
-        caseRules = new CaseRulesDto()
-    }
-
-
-    def ruleCode = batchRule.prop("UID").stringValue()
-    if(isCodeAccepted(ruleCode)) {
-      caseRules.rules.add(ruleCode)
-    }
-
-    caseRules.paymentId = paymentId
-    caseRules.caseType = batchRule.prop("CaseType").stringValue()
-
-
-    payments[paymentId] = caseRules
-}
-
-def paymentsList = payments.collect { it.value }
-
-execution.setVariable("payments", paymentsList)
-</bpmn:script>
-      </bpmn:scriptTask>
-      <bpmn:sequenceFlow id="Flow_12b0cih" sourceRef="Activity_parsePayload" targetRef="Activity_1sm9ekd" />
-      <bpmn:sequenceFlow id="Flow_1qme100" sourceRef="Event_068l0e6" targetRef="Activity_parsePayload" />
+      <bpmn:sequenceFlow id="Flow_1qme100" sourceRef="Event_068l0e6" targetRef="Activity_0pogohz" />
       <bpmn:subProcess id="Activity_1sm9ekd">
-        <bpmn:incoming>Flow_12b0cih</bpmn:incoming>
+        <bpmn:incoming>Flow_13g5anu</bpmn:incoming>
         <bpmn:outgoing>Flow_148jwd6</bpmn:outgoing>
         <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="payments" camunda:elementVariable="paymentItem" />
         <bpmn:startEvent id="Event_0yrcxyv">
@@ -75,9 +21,9 @@ execution.setVariable("payments", paymentsList)
           <bpmn:outgoing>Flow_0q0e80a</bpmn:outgoing>
           <bpmn:script>import com.cognive.projects.casernkb.model.CaseRulesDto
 
-def paymentItem = execution.getVariable("payments")
+def paymentItem = execution.getVariable("paymentItem")
 
-execution.setVariable("paymentId", paymentItem.paymentId)
+execution.setVariable("paymentExId", paymentItem.paymentExId)
 execution.setVariable("rules", paymentItem.rules)
 execution.setVariable("createCase", !paymentItem.rules.isEmpty())
 execution.setVariable("caseType", "4")
@@ -116,10 +62,10 @@ execution.setVariable("caseType", "4")
               <camunda:inputParameter name="outputVarName">payment</camunda:inputParameter>
               <camunda:inputParameter name="parameters">
                 <camunda:map>
-                  <camunda:entry key="paymentId">${paymentId}</camunda:entry>
+                  <camunda:entry key="paymentExId">${paymentExId}</camunda:entry>
                 </camunda:map>
               </camunda:inputParameter>
-              <camunda:inputParameter name="selectQuery">SELECT p FROM Payment p WHERE p.id = :paymentId</camunda:inputParameter>
+              <camunda:inputParameter name="selectQuery">SELECT p FROM Payment p WHERE p.exId = :paymentExId</camunda:inputParameter>
             </camunda:inputOutput>
           </bpmn:extensionElements>
           <bpmn:incoming>Flow_11v04bj</bpmn:incoming>
@@ -131,6 +77,61 @@ execution.setVariable("caseType", "4")
         <bpmn:incoming>Flow_148jwd6</bpmn:incoming>
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_148jwd6" sourceRef="Activity_1sm9ekd" targetRef="Event_19ffz89" />
+      <bpmn:serviceTask id="Activity_0pogohz" name="Select pipeline response payment" camunda:delegateExpression="${selectDelegate}">
+        <bpmn:extensionElements>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="selectQuery">SELECT p FROM PipelineResponsePayment p</camunda:inputParameter>
+            <camunda:inputParameter name="outputVarName">pipeLineData</camunda:inputParameter>
+            <camunda:inputParameter name="parameters">
+              <camunda:map />
+            </camunda:inputParameter>
+          </camunda:inputOutput>
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_1qme100</bpmn:incoming>
+        <bpmn:outgoing>Flow_0uzcnte</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="Flow_0uzcnte" sourceRef="Activity_0pogohz" targetRef="Activity_pipelineData" />
+      <bpmn:scriptTask id="Activity_pipelineData" name="Parse pipeline data" scriptFormat="groovy">
+        <bpmn:incoming>Flow_0uzcnte</bpmn:incoming>
+        <bpmn:outgoing>Flow_13g5anu</bpmn:outgoing>
+        <bpmn:script>import static org.camunda.spin.Spin.*
+import static org.camunda.spin.DataFormats.*
+import com.cognive.projects.casernkb.model.CaseRulesDto
+import com.prime.db.rnkb.model.BaseDictionary
+
+boolean isCodeAccepted(String code) {
+   def intCode = (code as int)
+   return intCode &lt; 34 &amp;&amp; intCode &gt; 2;
+}
+
+def payments = [:]
+def pipeLineData = execution.getVariable("pipeLineData")
+
+pipeLineData.each{pipeLineItem -&gt;
+    def caseRules = payments[pipeLineItem.paymentExId]
+    if(caseRules == null) {
+        caseRules = new CaseRulesDto()
+    }
+
+
+    def ruleCode = pipeLineItem.uId.code
+    if(isCodeAccepted(ruleCode)) {
+      caseRules.rules.add(pipeLineItem.uId)
+    }
+
+    caseRules.paymentExId = pipeLineItem.paymentExId
+    caseRules.caseType = "" // TODO batchRule.prop("CaseType").stringValue()
+
+    payments[pipeLineItem.paymentExId] = caseRules
+}
+
+
+def paymentsList = payments.collect { it.value }
+
+execution.setVariable("payments", paymentsList)
+</bpmn:script>
+      </bpmn:scriptTask>
+      <bpmn:sequenceFlow id="Flow_13g5anu" sourceRef="Activity_pipelineData" targetRef="Activity_1sm9ekd" />
     </bpmn:subProcess>
     <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
       <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
@@ -168,16 +169,16 @@ PAYMENT.EXID
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlPaymentCasePostBatch">
       <bpmndi:BPMNEdge id="Flow_1am9ihu_di" bpmnElement="Flow_1am9ihu">
-        <di:waypoint x="1960" y="260" />
         <di:waypoint x="2020" y="260" />
+        <di:waypoint x="2080" y="260" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
-        <di:waypoint x="2120" y="260" />
-        <di:waypoint x="2182" y="260" />
+        <di:waypoint x="2180" y="260" />
+        <di:waypoint x="2242" y="260" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_16o1bkj_di" bpmnElement="Flow_16o1bkj">
         <di:waypoint x="620" y="250" />
-        <di:waypoint x="685" y="250" />
+        <di:waypoint x="660" y="250" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0hlfsn7_di" bpmnElement="Flow_0hlfsn7">
         <di:waypoint x="340" y="250" />
@@ -188,76 +189,83 @@ PAYMENT.EXID
         <di:waypoint x="520" y="250" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Activity_17psnrn_di" bpmnElement="Activity_17psnrn" isExpanded="true">
-        <dc:Bounds x="685" y="80" width="1275" height="340" />
+        <dc:Bounds x="660" y="80" width="1360" height="340" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_13g5anu_di" bpmnElement="Flow_13g5anu">
+        <di:waypoint x="1020" y="260" />
+        <di:waypoint x="1070" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0uzcnte_di" bpmnElement="Flow_0uzcnte">
+        <di:waypoint x="880" y="260" />
+        <di:waypoint x="920" y="260" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_148jwd6_di" bpmnElement="Flow_148jwd6">
-        <di:waypoint x="1780" y="260" />
-        <di:waypoint x="1862" y="260" />
+        <di:waypoint x="1840" y="260" />
+        <di:waypoint x="1922" y="260" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1qme100_di" bpmnElement="Flow_1qme100">
-        <di:waypoint x="761" y="260" />
-        <di:waypoint x="840" y="260" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_12b0cih_di" bpmnElement="Flow_12b0cih">
-        <di:waypoint x="940" y="260" />
-        <di:waypoint x="1010" y="260" />
+        <di:waypoint x="728" y="260" />
+        <di:waypoint x="780" y="260" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_068l0e6_di" bpmnElement="Event_068l0e6">
-        <dc:Bounds x="725" y="242" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1upk4ti_di" bpmnElement="Activity_parsePayload">
-        <dc:Bounds x="840" y="220" width="100" height="80" />
+        <dc:Bounds x="692" y="242" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1sm9ekd_di" bpmnElement="Activity_1sm9ekd" isExpanded="true">
-        <dc:Bounds x="1010" y="135" width="770" height="250" />
+        <dc:Bounds x="1070" y="135" width="770" height="250" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1qv2joc_di" bpmnElement="Flow_1qv2joc">
-        <di:waypoint x="1490" y="235" />
-        <di:waypoint x="1540" y="235" />
+        <di:waypoint x="1550" y="235" />
+        <di:waypoint x="1600" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_19jlaw0_di" bpmnElement="Flow_19jlaw0">
-        <di:waypoint x="1640" y="235" />
-        <di:waypoint x="1692" y="235" />
+        <di:waypoint x="1700" y="235" />
+        <di:waypoint x="1752" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_085k0wh_di" bpmnElement="Flow_085k0wh">
-        <di:waypoint x="1320" y="260" />
-        <di:waypoint x="1320" y="307" />
+        <di:waypoint x="1380" y="260" />
+        <di:waypoint x="1380" y="307" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_11v04bj_di" bpmnElement="Flow_11v04bj">
-        <di:waypoint x="1345" y="235" />
-        <di:waypoint x="1390" y="235" />
+        <di:waypoint x="1405" y="235" />
+        <di:waypoint x="1450" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0q0e80a_di" bpmnElement="Flow_0q0e80a">
-        <di:waypoint x="1240" y="235" />
-        <di:waypoint x="1295" y="235" />
+        <di:waypoint x="1300" y="235" />
+        <di:waypoint x="1355" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0drp6tg_di" bpmnElement="Flow_0drp6tg">
-        <di:waypoint x="1086" y="235" />
-        <di:waypoint x="1140" y="235" />
+        <di:waypoint x="1146" y="235" />
+        <di:waypoint x="1200" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_0yrcxyv_di" bpmnElement="Event_0yrcxyv">
-        <dc:Bounds x="1050" y="217" width="36" height="36" />
+        <dc:Bounds x="1110" y="217" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0b5lrt0_di" bpmnElement="Activity_09fu3uq">
-        <dc:Bounds x="1140" y="195" width="100" height="80" />
+        <dc:Bounds x="1200" y="195" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0i0fdee_di" bpmnElement="Activity_createCase">
-        <dc:Bounds x="1540" y="195" width="100" height="80" />
+        <dc:Bounds x="1600" y="195" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_08m8030_di" bpmnElement="Gateway_08m8030" isMarkerVisible="true">
-        <dc:Bounds x="1295" y="210" width="50" height="50" />
+        <dc:Bounds x="1355" y="210" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1vfrz1i_di" bpmnElement="Event_1vfrz1i">
-        <dc:Bounds x="1302" y="307" width="36" height="36" />
+        <dc:Bounds x="1362" y="307" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0bwbgyt_di" bpmnElement="Event_0bwbgyt">
-        <dc:Bounds x="1692" y="217" width="36" height="36" />
+        <dc:Bounds x="1752" y="217" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_17jv3nv_di" bpmnElement="Activity_selectPayment">
-        <dc:Bounds x="1390" y="195" width="100" height="80" />
+        <dc:Bounds x="1450" y="195" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_19ffz89_di" bpmnElement="Event_19ffz89">
-        <dc:Bounds x="1862" y="242" width="36" height="36" />
+        <dc:Bounds x="1922" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0pogohz_di" bpmnElement="Activity_0pogohz">
+        <dc:Bounds x="780" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1a070dy_di" bpmnElement="Activity_pipelineData">
+        <dc:Bounds x="920" y="220" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1qwn6qf_di" bpmnElement="Activity_1qwn6qf">
         <dc:Bounds x="520" y="210" width="100" height="80" />
@@ -272,10 +280,10 @@ PAYMENT.EXID
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_098yyfy_di" bpmnElement="Event_098yyfy">
-        <dc:Bounds x="2182" y="242" width="36" height="36" />
+        <dc:Bounds x="2242" y="242" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
-        <dc:Bounds x="2020" y="220" width="100" height="80" />
+        <dc:Bounds x="2080" y="220" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_049rt3r_di" bpmnElement="TextAnnotation_049rt3r">
         <dc:Bounds x="160" y="80" width="323" height="125" />
