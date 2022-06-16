@@ -200,8 +200,8 @@ execution.setVariable("reasonedJudgmentId", reasonedJudgmentId)
     <bpmn:sequenceFlow id="Flow_1pzming" sourceRef="Activity_0us8edk" targetRef="Activity_131dz13" />
     <bpmn:sequenceFlow id="Flow_0svaz96" sourceRef="StartEvent_1" targetRef="Activity_1jae6rb" />
     <bpmn:textAnnotation id="TextAnnotation_0o5xg26">
-      <bpmn:text>reasonedJudgmentId
-
+      <bpmn:text>(payload)
+reasonedJudgmentId
 
 ID МС (reasonedJudgmentId)
 ID клиента
