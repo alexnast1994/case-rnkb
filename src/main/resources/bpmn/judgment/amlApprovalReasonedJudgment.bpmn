@@ -95,7 +95,7 @@ BaseDictionary getBd(Integer typeCode, String code) {
    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(typeCode, code);
 }
 
-ReasonedJudgment judment = execution.getVariable("reasonedJudgment")
+ReasonedJudgment judgment = execution.getVariable("reasonedJudgment")
 
 def cases = []
 def caseUsers = []
@@ -104,19 +104,19 @@ def callProcesses = false
 BaseDictionary status = null
 BaseDictionary caseStatus = null
 
-if(judment.typeRj.getCode() == "2" &amp;&amp; judment.typeOfControl.getCode() == "1") { 
+if(judgment.typeRj.getCode() == "2" &amp;&amp; judgment.typeOfControl.getCode() == "1") { 
     status = getBd(131, "7")
     caseStatus = getBd(178, "4")
     callProcesses = true
-} else if(judment.typeRj.getCode() == "2" &amp;&amp; judment.typeOfControl.getCode() == "2") {
+} else if(judgment.typeRj.getCode() == "2" &amp;&amp; judgment.typeOfControl.getCode() == "2") {
     status = getBd(140, "6")
     caseStatus = getBd(179, "4")
-} else if(judment.typeRj.getCode() == "1" &amp;&amp; judment.typeOfControl.getCode() == "2") {
+} else if(judgment.typeRj.getCode() == "1" &amp;&amp; judgment.typeOfControl.getCode() == "2") {
     status = getBd(140, "7")
     caseStatus = getBd(179, "4")
 }
 
-judment.caseReasonedJudgmentsList.each{caseRj -&gt; 
+judgment.caseReasonedJudgmentsList.each{caseRj -&gt; 
   if(caseRj.caseId != null) {
     if(status != null &amp;&amp; caseStatus != null) {
 
@@ -132,7 +132,7 @@ judment.caseReasonedJudgmentsList.each{caseRj -&gt;
         if(judgment.confirmingDate != null &amp;&amp; judgment.approvalDate == null) {
             caseUser.responsible = judment.assignedTo
         } else if(judgment.confirmingDate != null) {
-            caseUser.responsible = judment.responsibleUser
+            caseUser.responsible = judgment.responsibleUser
         }
         
         caseUsers.add(caseUser)
