@@ -30,9 +30,11 @@ public class AmlCasePostAndNecessarilyTest {
     @Rule
     public ProcessEngineRule processEngineRule = new ProcessEngineRule();
 
-    private String getPayloadJson(Long paymentId, String caseType, List<String> rules) {
+    private String getPayloadJson(Long paymentId, String caseType, List<String> rules, String comment, Long userId) {
         String rulesString = rules.stream().map(x -> "\"" + x + "\"").collect(Collectors.joining(","));
-        return "{\"payload\":{\"amlCasePostAndNecessarily\":{\"paymentId\":" + paymentId + ",\"caseType\":\"" + caseType + "\",\"rules\":[" + rulesString + "]}}}";
+        return "{\"payload\":{\"amlCasePostAndNecessarily\":{\"paymentId\":" + paymentId + ",\"caseType\":\"" + caseType + "\",\"rules\":[" + rulesString + "]," +
+                "\"comment\":\"" + comment + "\",\"userId\":" + userId +
+                "}}}";
     }
 
     @Test
@@ -67,7 +69,7 @@ public class AmlCasePostAndNecessarilyTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(272, "66")).thenReturn(rule66);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("payload", getPayloadJson(123L, "2", List.of("44", "55", "66")));
+        processParams.put("payload", getPayloadJson(123L, "2", List.of("44", "55", "66"), "comment", 54321L));
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseCreate")
                 .deploy(processEngineRule)
@@ -120,7 +122,7 @@ public class AmlCasePostAndNecessarilyTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(272, "66")).thenReturn(rule66);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("payload", getPayloadJson(123L, "4", List.of("44", "55", "66")));
+        processParams.put("payload", getPayloadJson(123L, "4", List.of("44", "55", "66"), "comment", 54321L));
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseCreate")
                 .deploy(processEngineRule)
