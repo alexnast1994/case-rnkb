@@ -131,7 +131,7 @@ public class AmlApprovalReasonedJudgmentTest {
 
         ReasonedJudgment rj = getRj();
 
-        rj.setTypeRj(getBaseDictionary("02"));
+        rj.setTypeRj(getBaseDictionary("2"));
         rj.setTypeOfControl(getBaseDictionary("1"));
 
         Map<String, Object> selectResult = new HashMap<>();
@@ -207,7 +207,7 @@ public class AmlApprovalReasonedJudgmentTest {
 
         BaseDictionary bd1 = new BaseDictionary();
 
-        rj.setTypeRj(getBaseDictionary("02"));
+        rj.setTypeRj(getBaseDictionary("2"));
         rj.setTypeOfControl(getBaseDictionary("2"));
 
         Map<String, Object> selectResult = new HashMap<>();
@@ -219,6 +219,7 @@ public class AmlApprovalReasonedJudgmentTest {
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(140, "6")).thenReturn(baseDictionary6);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(179, "4")).thenReturn(baseDictionary4);
+
 
         Map<String, Object> processParams = new HashMap<>();
         processParams.put("payload", getPayloadJson(4L));
@@ -264,9 +265,7 @@ public class AmlApprovalReasonedJudgmentTest {
 
         ReasonedJudgment rj = getRj();
 
-        BaseDictionary bd1 = new BaseDictionary();
-
-        rj.setTypeRj(getBaseDictionary("01"));
+        rj.setTypeRj(getBaseDictionary("1"));
         rj.setTypeOfControl(getBaseDictionary("2"));
 
         Map<String, Object> selectResult = new HashMap<>();

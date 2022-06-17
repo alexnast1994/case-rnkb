@@ -59,7 +59,8 @@ BaseDictionary getBd(Integer typeCode, String code) {
 }
 
 CaseUser findLast(List&lt;CaseUser&gt; caseUsers, BaseDictionary status) {
-   caseUsers.findAll{it.status.equals(status)}
+    if(status == null) return null
+    caseUsers.findAll{it.status != null &amp;&amp; it.status.code == status.code}
         .max{a, b -&gt; a.decisionDate.compareTo(b.decisionDate)}
 }
 

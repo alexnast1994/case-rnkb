@@ -29,6 +29,7 @@
 import static org.camunda.spin.DataFormats.*
 import com.cognive.projects.casernkb.model.PaymentDto
 
+// payload
 def jsonStr = execution.getVariable("payload")
 def jsonData = JSON(jsonStr)
 
@@ -38,10 +39,16 @@ def paymentId = payloadObject.prop("paymentId").numberValue().longValue()
 def caseType = payloadObject.prop("caseType").stringValue()
 def rulesProp = payloadObject.prop("rules").elements()
 def comment = payloadObject.prop("comment").stringValue()
-def userId = payloadObject.prop("userId").numberValue().longValue()
 
 def ruleCodes = []
 rulesProp.each{r -&gt; ruleCodes.add(r.stringValue())}
+
+def userId = null
+
+// usercontext 
+if(jsonData.hasProp("userContext")) {
+    userId = jsonData.prop("userContext").prop("userId").numberValue().longValue()
+}
 
 execution.setVariable("paymentId", paymentId)
 execution.setVariable("caseType", caseType)
