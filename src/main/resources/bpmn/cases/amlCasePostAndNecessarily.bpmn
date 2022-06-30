@@ -29,22 +29,32 @@
 import static org.camunda.spin.DataFormats.*
 import com.cognive.projects.casernkb.model.PaymentDto
 
+// payload
 def jsonStr = execution.getVariable("payload")
 def jsonData = JSON(jsonStr)
 
 def payloadObject = jsonData.prop("payload").prop("amlCasePostAndNecessarily")
 
-def paymentId = payloadObject.prop("paymentId")numberValue().longValue()
+def paymentId = payloadObject.prop("paymentId").numberValue().longValue()
 def caseType = payloadObject.prop("caseType").stringValue()
 def rulesProp = payloadObject.prop("rules").elements()
-
+def comment = payloadObject.prop("comment").stringValue()
 
 def ruleCodes = []
 rulesProp.each{r -&gt; ruleCodes.add(r.stringValue())}
 
+def userId = null
+
+// usercontext 
+if(jsonData.hasProp("userContext")) {
+    userId = jsonData.prop("userContext").prop("userId").numberValue().longValue()
+}
+
 execution.setVariable("paymentId", paymentId)
 execution.setVariable("caseType", caseType)
 execution.setVariable("ruleCodes", ruleCodes)
+execution.setVariable("comment", comment)
+execution.setVariable("userId", userId)
 </bpmn:script>
       </bpmn:scriptTask>
       <bpmn:sequenceFlow id="Flow_0uq8ogu" sourceRef="Event_1vun6yd" targetRef="Activity_payload" />
@@ -178,6 +188,8 @@ execution.setVariable("payment", payment)
           <camunda:in source="payment" target="payment" />
           <camunda:in source="caseType" target="caseType" />
           <camunda:in source="session" target="session" />
+          <camunda:in source="comment" target="comment" />
+          <camunda:in source="userId" target="userId" />
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_1da6cvq</bpmn:incoming>
         <bpmn:outgoing>Flow_1b4jbax</bpmn:outgoing>
@@ -215,7 +227,9 @@ execution.setVariable("payment", payment)
         <bpmn:text>acceptedRules
 payment
 caseType
-session</bpmn:text>
+session
+comment
+userId</bpmn:text>
       </bpmn:textAnnotation>
       <bpmn:association id="Association_02wo1cq" sourceRef="Activity_createCase" targetRef="TextAnnotation_1n6i6k1" />
     </bpmn:subProcess>
@@ -291,7 +305,7 @@ rules</bpmn:text>
         <dc:Bounds x="1410" y="190" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1kx0w6a_di" bpmnElement="Activity_1kx0w6a" isExpanded="true">
-        <dc:Bounds x="170" y="345" width="1250" height="415" />
+        <dc:Bounds x="170" y="345" width="1250" height="480" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1femrg7_di" bpmnElement="Flow_1femrg7">
         <di:waypoint x="950" y="480" />
@@ -381,7 +395,7 @@ rules</bpmn:text>
         <dc:Bounds x="1312" y="462" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_1n6i6k1_di" bpmnElement="TextAnnotation_1n6i6k1">
-        <dc:Bounds x="1140" y="650" width="99.99510188087774" height="68" />
+        <dc:Bounds x="1140" y="650" width="100" height="96" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_02wo1cq_di" bpmnElement="Association_02wo1cq">
         <di:waypoint x="1198" y="640" />

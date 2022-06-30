@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.bpm.judgment;
 
+import com.cognive.projects.casernkb.bpm.TestUtils;
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
 import com.prime.db.rnkb.model.*;
 import com.prime.db.rnkb.model.commucation.judgment.CaseReasonedJudgment;
@@ -43,29 +44,6 @@ public class AmlCancelReasonedJudgmentTest {
     public void Should_work() {
         autoMock("bpmn/judgment/amlCancelReasonedJudgment.bpmn");
 
-        BaseDictionary bd2 = new BaseDictionary();
-        BaseDictionary bd22 = new BaseDictionary();
-        BaseDictionary bd3 = new BaseDictionary();
-        BaseDictionary bd4 = new BaseDictionary();
-
-        BaseDictionary bdCaseType3 = new BaseDictionary();
-        BaseDictionary bdCaseType4 = new BaseDictionary();
-
-        bdCaseType3.setCode("3");
-        bdCaseType4.setCode("4");
-
-        bd2.setCode("2");
-        bd2.setId(1L);
-        bd22.setCode("2");
-        bd22.setId(2L);
-        bd3.setCode("3");
-        bd4.setCode("4");
-
-        BaseDictionary caseType1 = new BaseDictionary();
-        BaseDictionary caseStatus2 = new BaseDictionary();
-        caseType1.setCode("1");
-        caseStatus2.setCode("2");
-
         SysUser user1 = new SysUser();
         SysUser user2 = new SysUser();
 
@@ -73,26 +51,25 @@ public class AmlCancelReasonedJudgmentTest {
         user1.setName("user1");
 
         user2.setId(1L);
-        user2.setName("user1");
+        user2.setName("user2");
 
         CaseUser caseUser11 = new CaseUser();
         CaseUser caseUser12 = new CaseUser();
 
-        caseUser11.setStatus(bd2);
+        caseUser11.setStatus(TestUtils.getBaseDictionary("2"));
         caseUser11.setDecisionDate(LocalDateTime.of(LocalDate.of(2022, 10, 1), LocalTime.of(10, 10, 20)));
         caseUser11.setResponsible(user1);
 
-        caseUser12.setStatus(bd2);
+        caseUser12.setStatus(TestUtils.getBaseDictionary("2"));
         caseUser12.setDecisionDate(LocalDateTime.of(LocalDate.of(2022, 10, 1), LocalTime.of(14, 10, 20)));
         caseUser12.setResponsible(user2);
 
         Case case1 = new Case();
         Case case2 = new Case();
 
-        case1.setCaseType(bdCaseType3);
+        case1.setCaseType(TestUtils.getBaseDictionary("3"));
         case1.setCaseUserList(Arrays.asList(caseUser11, caseUser12));
-
-        case2.setCaseType(bdCaseType4);
+        case2.setCaseType(TestUtils.getBaseDictionary("4"));
 
         CaseReasonedJudgment caseReasonedJudgment1 = new CaseReasonedJudgment();
         CaseReasonedJudgment caseReasonedJudgment2 = new CaseReasonedJudgment();
@@ -114,10 +91,10 @@ public class AmlCancelReasonedJudgmentTest {
         selectOneDelegate.onExecutionSetVariables(selectResult);
 
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(131, "2")).thenReturn(bd2);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(140, "2")).thenReturn(bd22);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(178, "2")).thenReturn(bd2);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(179, "2")).thenReturn(bd22);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(131, "2")).thenReturn(TestUtils.getBaseDictionary("2"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(140, "2")).thenReturn(TestUtils.getBaseDictionary("2"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(178, "2")).thenReturn(TestUtils.getBaseDictionary("2"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(179, "1")).thenReturn(TestUtils.getBaseDictionary("1"));
 
         Map<String, Object> processParams = new HashMap<>();
         processParams.put("payload", getPayloadJson(4L));
@@ -137,7 +114,7 @@ public class AmlCancelReasonedJudgmentTest {
                     checkCase.get(0).getCaseStatus().getCode().equals("2") &&
                     checkCase.get(1).getCaseType().getCode().equals("4") &&
                     checkCase.get(1).getStatus().getCode().equals("2") &&
-                    checkCase.get(1).getCaseStatus().getCode().equals("2");
+                    checkCase.get(1).getCaseStatus().getCode().equals("1");
         }, "isCases");
 
         Condition<Object> isCaseUsers = new Condition<>(p -> {
