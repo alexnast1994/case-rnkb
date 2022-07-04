@@ -52,11 +52,11 @@ public class PaymentResponseTest {
         Case ss = new Case();
         ss.setId(4);
 
-        Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("payment", payment);
+//        Map<String, Object> selectResult = new HashMap<>();
+//        selectResult.put("payment", payment);
 
-        final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
-        selectOneDelegate.onExecutionSetVariables(selectResult);
+//        final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
+//        selectOneDelegate.onExecutionSetVariables(selectResult);
 
         Map<String, Object> saveCaseData = new HashMap<>();
         saveCaseData.put("caseDataOut", ss);
@@ -71,7 +71,7 @@ public class PaymentResponseTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCharCode(272, "05")).thenReturn(caseRule05);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("paymentId", 123L);
+        processParams.put("payment", payment);
         processParams.put("rules", List.of("04", "05"));
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseResponse")
