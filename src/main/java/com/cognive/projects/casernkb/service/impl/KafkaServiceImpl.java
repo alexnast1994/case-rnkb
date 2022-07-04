@@ -3,8 +3,11 @@ package com.cognive.projects.casernkb.service.impl;
 import com.cognive.projects.casernkb.config.BindingMappingConfig;
 import com.cognive.projects.casernkb.config.MessageMappingConfig;
 import com.cognive.projects.casernkb.model.ErrorDto;
+import com.cognive.projects.casernkb.model.PipelineResponse;
 import com.cognive.projects.casernkb.service.BPMProcessService;
 import com.cognive.projects.casernkb.service.KafkaService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +25,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -53,11 +57,20 @@ public class KafkaServiceImpl implements KafkaService {
     @Value("${server.kafka.csm-process-name}")
     public String CSM_PROCESS_NAME;
 
+
     @Value("${server.kafka.camunda-csm-process-name}")
     public String CAMUNDA_CSM_PROCESS;
 
+    @Value("${server.kafka.camunda-pipeline-process-name}")
+    public String CAMUNDA_PIPELINE_PROCESS;
+
+    @Value("${server.kafka.pipeline-workflow-id}")
+    public String PIPELINE_WORKFLOW_ID;
+
     @Value("${server.kafka.error-topic}")
     public String ERROR_TOPIC;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Bean
     public Consumer<Message<String>> commonMessageInput(){
@@ -112,6 +125,34 @@ public class KafkaServiceImpl implements KafkaService {
                 variables.put("payload", jsonData);
 
                 String id = bpmService.startProcess(CAMUNDA_CSM_PROCESS, key, variables);
+                log.debug("Process started: {}", id);
+            });
+        };
+    }
+
+
+    @Bean
+    public Consumer<Message<String>> pipelineMessageInput() {
+        return x-> {
+            String key = x.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
+            String topic = x.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
+
+            runWithError(CAMUNDA_PIPELINE_PROCESS, key, () -> {
+                log.info("Kafka pipeline message key={}, from={}", key, topic);
+
+                PipelineResponse pipelineResponse = getPipelineResponse(x.getPayload());
+                log.info("Pipeline workflow id: {}, status: {}", pipelineResponse.getWorkflowId(), pipelineResponse.getStatus());
+
+                if(!pipelineResponse.isWorkflowId(PIPELINE_WORKFLOW_ID)) {
+                    return;
+                }
+
+                if(!pipelineResponse.isDone()) {
+                    throw new RuntimeException("Pipeline failed with error " + pipelineResponse.getErrorMessage());
+                }
+
+                Map<String, Object> variables = Collections.emptyMap();
+                String id = bpmService.startProcess(CAMUNDA_PIPELINE_PROCESS, key, variables);
                 log.debug("Process started: {}", id);
             });
         };
@@ -188,5 +229,34 @@ public class KafkaServiceImpl implements KafkaService {
         } catch (Exception sendEx) {
             log.warn("Failed send error: {}", sendEx.getMessage(), sendEx);
         }
+    }
+
+    private PipelineResponse getPipelineResponse(String data) {
+
+        PipelineResponse response = new PipelineResponse();
+
+        try {
+           JsonNode root = objectMapper.readTree(data);
+           if(root.has("runEventResponse")) {
+               JsonNode runEventResponse = root.get("runEventResponse");
+               if(runEventResponse.has("workflowId")) {
+                   response.setWorkflowId(runEventResponse.get("workflowId").textValue());
+               }
+               if(runEventResponse.has("status")) {
+                   response.setStatus(runEventResponse.get("status").textValue());
+               }
+               if(runEventResponse.has("error")) {
+
+                   JsonNode error = runEventResponse.get("error");
+                   if(error.has("message")) {
+                       response.setErrorMessage(error.get("message").textValue());
+                   }
+               }
+           }
+        } catch (JsonProcessingException ex) {
+            throw new RuntimeException("Failed parse pipeline response", ex);
+        }
+
+        return response;
     }
 }
