@@ -54,7 +54,7 @@
         <bpmn:script>import com.prime.db.rnkb.model.ClLicense
 import com.prime.db.rnkb.model.commucation.judgment.RjClient
 import com.prime.db.rnkb.model.commucation.judgment.RjLicense
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
 def rjLicense = new RjLicense()
 def rjclient = execution.getVariable("rjClient") as RjClient
@@ -63,9 +63,9 @@ rjLicense.client = rjclient
 if(clLicense!=null){
     rjLicense.licensenumber = clLicense.licnumber
     rjLicense.licenseissueby = clLicense.issueby
-    if(clLicense.issuedate!=null){rjLicense.licenseissuedate = Timestamp.valueOf(clLicense.issuedate)}
+    if(clLicense.issuedate!=null){rjLicense.licenseissuedate = clLicense.issuedate}
     if(clLicense.expirationdate!=null){
-        rjLicense.licenseExpirationDate = Timestamp.valueOf(clLicense.expirationdate)}
+        rjLicense.licenseExpirationDate = clLicense.expirationdate}
     rjLicense.licenseactivitylist = clLicense.activitylist
     rjLicense.licenseType = clLicense.type
 
@@ -147,7 +147,7 @@ import com.prime.db.rnkb.model.ClientIndividual
 import com.prime.db.rnkb.model.ClientLegal
 import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
 import com.prime.db.rnkb.model.commucation.judgment.RjClient
-import java.sql.Timestamp
+import java.time.LocalDateTime
 import org.slf4j.LoggerFactory
 def log = LoggerFactory.getLogger(this.class)
 
@@ -172,14 +172,15 @@ rjClient.rjId = reasonedJudgment
 rjClient.clientInn = client.inn
 
 if(client.clientOfBankFromDate!=null){
-    rjClient.clientOfBankFromDate = (Timestamp.valueOf(client.clientOfBankFromDate))}
+    rjClient.clientOfBankFromDate = client.clientOfBankFromDate
+}
 
 if(clientIndividual.birthdate!=null){
-    rjClient.clientBirthdate = (Timestamp.valueOf(clientIndividual.birthdate))
+    rjClient.clientBirthdate = clientIndividual.birthdate
 }
 
 if(client.ogrnDate!=null){
-    rjClient.ogrndate = Timestamp.valueOf(client.ogrnDate)
+    rjClient.ogrndate = client.ogrnDate
 }
 
 rjClient.placeofbirth = clientIndividual.placeofbirth

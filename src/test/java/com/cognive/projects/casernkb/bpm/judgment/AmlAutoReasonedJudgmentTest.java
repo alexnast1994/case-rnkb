@@ -15,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Disabled;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,6 +52,7 @@ public class AmlAutoReasonedJudgmentTest {
         Case caseData = new Case();
         caseData.setCaseType(bd4);
         Client client = new Client();
+        client.setClientOfBankFromDate(LocalDateTime.now());
 
         ClientRbs clientRbs = new ClientRbs();
         ClientRbsBlock rbsBlock = new ClientRbsBlock(); // TODO implements Serializable
