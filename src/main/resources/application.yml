@@ -114,9 +114,12 @@ server:
   kafka:
     process-name-header: ${PROCESS_NAME_HEADER:aml_camunda_start}
     camunda-csm-process-name: ${CSM_PROCESS_NAME:amlCsmRequest}
-    camunda-pipeline-process-name: ${PIPELINE_PROCESS_NAME_VALUE:amlPaymentResponseBatch}
     csm-process-name-header: ${CSM_PROCESS_NAME_HEADER:processName}
     csm-process-name: ${CSM_PROCESS_NAME_VALUE:operationProcess}
+    csm-kyc-online-client-process-name: ${CSM_KYC_ONLINE_CLIENT_PROCESS_NAME:clientProcess}
+    csm-kyc-offline-client-process-name: ${CSM_KYC_OFFLINE_CLIENT_PROCESS_NAME:offlineCreateCase}
+    camunda-csm-kyc-client-process-name: ${CSM_PROCESS_NAME:amlCsmKycClientRequest}
+    camunda-pipeline-process-name: ${PIPELINE_PROCESS_NAME_VALUE:amlPaymentResponseBatch}
     pipeline-workflow-id: ${PIPELINE_WORKFLOW_ID:2b605119-16db-47d9-a087-cd1ad87731f3}
     error-topic: ${TOPIC_ERROR_OUT:}
 
@@ -133,3 +136,8 @@ logging:
         projects:
           casernkb: INFO
           kafkaReader: INFO
+  pattern:
+    file: "%d %p %c{1.} [%t] %m%n"
+  file:
+    name: ${LOG_PATH:app.log}
+    clean-history-on-start: false
