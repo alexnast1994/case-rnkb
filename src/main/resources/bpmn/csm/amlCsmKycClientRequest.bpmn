@@ -90,7 +90,7 @@ if (clientCheckResults.size() &gt; 0) {
                 <camunda:entry key="nums">${nums}</camunda:entry>
               </camunda:map>
             </camunda:inputParameter>
-            <camunda:inputParameter name="selectQuery">SELECT c.* FROM "CASE" c INNER JOIN KYCCASECLIENTLIST1 l1 ON l1.caseid = c.id INNER JOIN KYCCASECLIENTLIST2 l2 ON l2.caseid = c.id WHERE l1.clientid = :clientId AND l2.typelist IN :typeList AND l2.exid IN :exIds AND l2.num IN :nums AND c.CREATIONDATE = (SELECT max(c.CREATIONDATE) FROM "CASE" c INNER JOIN KYCCASECLIENTLIST1 l1 ON l1.caseid = c.id INNER JOIN KYCCASECLIENTLIST2 l2 ON l2.caseid = c.id WHERE l1.clientid = :clientId AND l2.typelist IN :typeList AND l2.exid IN :exIds AND l2.num IN :nums) ORDER BY c.CREATIONDATE desc</camunda:inputParameter>
+            <camunda:inputParameter name="selectQuery">SELECT c.* FROM \"CASE\" c INNER JOIN KYCCASECLIENTLIST1 l1 ON l1.caseid = c.id INNER JOIN KYCCASECLIENTLIST2 l2 ON l2.caseid = c.id WHERE l1.clientid = :clientId AND l2.typelist IN :typeList AND l2.exid IN :exIds AND l2.num IN :nums AND c.CREATIONDATE = (SELECT max(c.CREATIONDATE) FROM \"CASE\" c INNER JOIN KYCCASECLIENTLIST1 l1 ON l1.caseid = c.id INNER JOIN KYCCASECLIENTLIST2 l2 ON l2.caseid = c.id WHERE l1.clientid = :clientId AND l2.typelist IN :typeList AND l2.exid IN :exIds AND l2.num IN :nums) ORDER BY c.CREATIONDATE desc</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_1umk5kd</bpmn:incoming>
