@@ -47,14 +47,14 @@ public class KafkaServiceImpl implements KafkaService {
 
     private final KafkaServerProperties properties;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Bean
     public Consumer<Message<String>> commonMessageInput() {
         return x -> {
             String key = x.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
             String topic = x.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
-            String amlHeader = getHeaderData(x.getHeaders().get(properties.getProcessNameHeader()));
+            String amlHeader = getHeaderData(x.getHeaders().get(properties.getCamunda().getHeaderName()));
 
             runWithError(amlHeader, key, () -> {
                 if (amlHeader == null) {
@@ -81,71 +81,27 @@ public class KafkaServiceImpl implements KafkaService {
         return x -> {
             String key = x.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
             String topic = x.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
-            String operationHeader = getHeaderData(x.getHeaders().get(properties.getCsmProcessNameHeader()));
+            String operationHeader = getHeaderData(x.getHeaders().get(properties.getCsm().getHeaderName()));
 
-            runWithError(properties.getCsmProcessName(), key, () -> {
+            runWithError(operationHeader, key, () -> {
                 if (operationHeader == null) {
                     log.warn("Input message with null operationHeader header, key={}, topic={}. Skip message", key, topic);
                     return;
                 }
 
                 log.info("Kafka csm message key={}, from={}, header={}", key, topic, operationHeader);
-                if (!operationHeader.equals(properties.getCsmProcessName())) {
-                    log.info("Skip operation: {}", operationHeader);
-                    return;
-                }
-
                 Map<String, Object> variables = new HashMap<>();
 
                 // Store value as json, prevent Camunda String limitation (4000 and 2000 for Oracle)
                 ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
                 variables.put("payload", jsonData);
+                variables.put("processName", operationHeader);
 
-                String id = bpmService.startProcess(properties.getCamundaCsmProcessName(), key, variables);
+                String id = bpmService.startProcess(properties.getCsm().getProcessName(), key, variables);
                 log.debug("Process started: {}", id);
             });
         };
     }
-
-
-    @Bean
-    public Consumer<Message<String>> csmKycClientMessageInput() {
-        return x -> {
-            final var key = x.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
-            final var topic = x.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
-            final var onlineHeader = getHeaderData(x.getHeaders().get(properties.getCsmKycOnlineClientProcessName()));
-            final var offlineHeader = getHeaderData(x.getHeaders().get(properties.getCsmKycOfflineClientProcessName()));
-            final var processName = onlineHeader == null
-                    ? properties.getCsmKycOfflineClientProcessName()
-                    : properties.getCsmKycOnlineClientProcessName();
-
-            runWithError(processName, key, () -> {
-                if ((processName.equals(properties.getCsmKycOnlineClientProcessName()) && onlineHeader == null)
-                        || (processName.equals(properties.getCsmKycOfflineClientProcessName()) && offlineHeader == null)) {
-                    log.warn("Input message with null header, key={}, topic={}. Skip message", key, topic);
-                    return;
-                }
-
-                log.info("Kafka csm message key={}, from={}, onlineClientHeader={}, offlineClientHeader={}",
-                        key, topic, onlineHeader, offlineHeader);
-
-                final var variables = new HashMap<String, Object>();
-
-                // Store value as json, prevent Camunda String limitation (4000 and 2000 for Oracle)
-                final var jsonData = Variables
-                        .objectValue(x.getPayload())
-                        .serializationDataFormat(MediaType.APPLICATION_JSON_VALUE)
-                        .create();
-
-                variables.put("payload", jsonData);
-                variables.put("processName", processName); // Determine type of kyc client (online/offline)
-
-                final var id = bpmService.startProcess(properties.getCamundaCsmProcessName(), key, variables);
-                log.debug("Process started: {}", id);
-            });
-        };
-    }
-
 
     @Bean
     public Consumer<Message<String>> pipelineMessageInput() {
@@ -153,22 +109,20 @@ public class KafkaServiceImpl implements KafkaService {
             String key = x.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
             String topic = x.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
 
-            runWithError(properties.getCamundaPipelineProcessName(), key, () -> {
+            runWithError(properties.getPipeline().getProcessName(), key, () -> {
                 log.info("Kafka pipeline message key={}, from={}", key, topic);
 
                 PipelineResponse pipelineResponse = getPipelineResponse(x.getPayload());
                 log.info("Pipeline workflow id: {}, status: {}", pipelineResponse.getWorkflowId(), pipelineResponse.getStatus());
 
-                if (!pipelineResponse.isWorkflowId(properties.getPipelineWorkflowId())) {
-                    return;
-                }
-
                 if (!pipelineResponse.isDone()) {
-                    throw new RuntimeException("Pipeline failed with error " + pipelineResponse.getErrorMessage());
+                    log.warn("Pipeline failed with error " + pipelineResponse.getErrorMessage());
                 }
 
-                Map<String, Object> variables = Collections.emptyMap();
-                String id = bpmService.startProcess(properties.getCamundaPipelineProcessName(), key, variables);
+                Map<String, Object> variables = new HashMap<>();
+                variables.put("workflowId", pipelineResponse.getWorkflowId());
+
+                String id = bpmService.startProcess(properties.getPipeline().getProcessName(), key, variables);
                 log.debug("Process started: {}", id);
             });
         };

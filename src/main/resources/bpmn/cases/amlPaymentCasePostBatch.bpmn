@@ -120,7 +120,7 @@ pipeLineData.each{pipeLineItem -&gt;
     }
 
     caseRules.paymentExId = pipeLineItem.paymentExId
-    caseRules.caseType = "" // TODO batchRule.prop("CaseType").stringValue()
+    caseRules.caseType = pipeLineItem.caseType
 
     payments[pipeLineItem.paymentExId] = caseRules
 }
