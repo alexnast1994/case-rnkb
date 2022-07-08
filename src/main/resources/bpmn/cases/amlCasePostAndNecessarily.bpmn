@@ -38,7 +38,11 @@ def payloadObject = jsonData.prop("payload").prop("amlCasePostAndNecessarily")
 def paymentId = payloadObject.prop("paymentId").numberValue().longValue()
 def caseType = payloadObject.prop("caseType").stringValue()
 def rulesProp = payloadObject.prop("rules").elements()
-def comment = payloadObject.prop("comment").stringValue()
+def comment = null
+
+if(payloadObject.hasProp("comment")) {
+    comment = payloadObject.prop("comment").stringValue()
+}
 
 def ruleCodes = []
 rulesProp.each{r -&gt; ruleCodes.add(r.stringValue())}
