@@ -122,7 +122,7 @@ payment.caseOperationList.each{caseOp -&gt;
 
             def newRules = []
             rules.each{r -&gt;
-                if(!caseData.caseRules.filter.any{cr -&gt; cr.ruleId != null &amp;&amp; r == cr.ruleId.code}) {
+                if(!caseData.caseRules.any{cr -&gt; cr.ruleId != null &amp;&amp; r == cr.ruleId.code}) {
                     newRules.add(r)
                 }
             }
