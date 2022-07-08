@@ -2,27 +2,27 @@ package com.cognive.projects.casernkb.bpm.csm;
 
 import com.cognive.projects.casernkb.bpm.common.ResourceHelper;
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
+import com.cognive.projects.casernkb.repo.CaseRepo;
 import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
-import com.prime.db.rnkb.model.Payment;
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.runtime.ProcessInstance;
+import com.prime.db.rnkb.model.Client;
 import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.ProcessEngineRule;
 import org.camunda.bpm.engine.variable.Variables;
-import org.camunda.bpm.engine.variable.value.ObjectValue;
 import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
 import static org.camunda.bpm.extension.mockito.CamundaMockito.registerJavaDelegateMock;
 import static org.camunda.bpm.extension.mockito.CamundaMockito.registerMockInstance;
 import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @Deployment(resources = {
@@ -44,13 +44,20 @@ public class AmlCsmKycClientRequestTest {
         final var sourceStatus7 = new BaseDictionary();
         sourceStatus7.setCode("7");
 
+        final var client = new Client();
         final var cs = new Case();
+        cs.setStatus(new BaseDictionary().setCode("1"));
+
         final var selectResult = new HashMap<String, Object>() {{
-            put("case", cs);
+            put("client", client);
         }};
 
-        final var selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
+        final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
+
+        final var caseRepoMock = registerMockInstance(CaseRepo.class);
+        when(caseRepoMock.getLatestCaseByClientIdAndExIdAndNumAndTypeList(any(), any(), any(), any()))
+                .thenReturn(List.of(cs));
 
         final var baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(45, "7"))
@@ -69,7 +76,7 @@ public class AmlCsmKycClientRequestTest {
         final var processInstance = runtimeService.startProcessInstanceByKey("amlCsmKycClientRequest", processParams);
 
         assertThat(processInstance)
-                .hasPassed("Activity_saveKyc", "Activity_saveResultPayment", "Activity_saveResultPaymentDetails")
+                .hasPassed("Activity_Case_Saving", "Activity_List1_Saving", "Activity_List2_Saving", "Activity_Save_Lists")
                 .variables();
     }
 
