@@ -19,7 +19,7 @@
       <bpmn:outgoing>Flow_0zpiiqg</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0qdxjhj" sourceRef="Gateway_0wtdm85" targetRef="Activity_callPaymentPostBatch">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${workflowId == "2b605119-16db-47d9-a087-cd1ad87731f3"}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${processName == "pipeline-payment-response"}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:endEvent id="Event_noActivity">
       <bpmn:incoming>Flow_0zpiiqg</bpmn:incoming>

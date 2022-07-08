@@ -9,8 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 @ConfigurationProperties(prefix = "server.kafka")
 public class KafkaServerProperties {
-    private ServiceProperties camunda;
-    private ServiceProperties csm;
-    private ServiceProperties pipeline;
+    private ServiceTopicProperties camunda;
+    private ServiceTopicProperties csm;
+    private ServiceTopicProperties pipeline;
     private String errorTopic;
 }

@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class PipelineResponse {
     private String workflowId;
+    private String mappingName;
     private String status;
     private String errorMessage;
 
