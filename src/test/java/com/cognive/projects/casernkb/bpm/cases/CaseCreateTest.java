@@ -101,6 +101,7 @@ public class CaseCreateTest {
 
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(18, "4")).thenReturn(TestUtils.getBaseDictionary("4"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(75, "6001")).thenReturn(TestUtils.getBaseDictionary("6001"));
 
         Map<String, Object> selectResult = new HashMap<>();
         selectResult.put("user", sysUser);
@@ -133,6 +134,7 @@ public class CaseCreateTest {
                     ((CaseRules)list.get(0)).getRuleId().getCode().equals("5") &&
                     ((CaseRules)list.get(1)).getRuleId().getCode().equals("4") &&
                     ((CaseRules)list.get(2)).getRuleId().getCode().equals("3") &&
+                    ((CaseRules)list.get(2)).getCode().getCode().equals("6001") &&
                     ((CaseOperation)list.get(3)).getAmount().equals(BigDecimal.valueOf(500)) &&
                     ((CaseComment)list.get(4)).getComment().equals("<comment>") &&
                     ((CaseComment)list.get(4)).getAuthor().getName().equals("Test")
