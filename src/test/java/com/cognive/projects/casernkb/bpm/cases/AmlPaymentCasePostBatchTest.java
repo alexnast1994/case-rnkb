@@ -3,6 +3,7 @@ package com.cognive.projects.casernkb.bpm.cases;
 import com.cognive.projects.casernkb.model.CaseRulesDto;
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
 import com.prime.db.rnkb.model.BaseDictionary;
+import com.prime.db.rnkb.model.Payment;
 import com.prime.db.rnkb.model.PipelineResponsePayment;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Condition;
@@ -34,16 +35,19 @@ public class AmlPaymentCasePostBatchTest {
         return "{\"payload\":{\"amlPaymentCasePostBatch\":{}}}";
     }
 
-    private PipelineResponsePayment getPaymentRule(String caseType, String paymentId, String rule) {
+    private PipelineResponsePayment getPaymentRule(Long paymentId, String rule) {
+
+        Payment p = new Payment();
+        p.setId(paymentId);
 
         BaseDictionary b = new BaseDictionary();
         b.setCode(rule);
 
-        PipelineResponsePayment p = new PipelineResponsePayment();
-        p.setPaymentExId(paymentId);
-        p.setUId(b);
+        PipelineResponsePayment pr = new PipelineResponsePayment();
+        pr.setPaymentId(p);
+        pr.setUId(b);
 
-        return p;
+        return pr;
     }
 
     @Test
@@ -77,9 +81,9 @@ public class AmlPaymentCasePostBatchTest {
 
         Map<String, Object> selectResult = new HashMap<>();
         selectResult.put("pipeLineData", List.of(
-                getPaymentRule("1", "123", "4"),
-                getPaymentRule("2", "124", "1"),
-                getPaymentRule("3", "123", "3")
+                getPaymentRule(123L, "4"),
+                getPaymentRule(124L, "1"),
+                getPaymentRule(123L, "3")
         ));
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectDelegate");
@@ -92,16 +96,16 @@ public class AmlPaymentCasePostBatchTest {
             List<CaseRulesDto> payments = (List<CaseRulesDto>)p;
             return payments.size() == 2 &&
                     payments.get(0).getRules().size() == 2 &&
-                    payments.get(0).getPaymentExId().equals("123") &&
+                    payments.get(0).getPaymentId().getId().equals(123L) &&
                     payments.get(0).getRules().get(0).getCode().equals("4") &&
                     payments.get(0).getRules().get(1).getCode().equals("3") &&
 
                     payments.get(1).getRules().size() == 0 &&
-                    payments.get(1).getPaymentExId().equals("124");
+                    payments.get(1).getPaymentId().getId().equals(124L);
         }, "isCaseRules size 2");
 
         assertThat(processInstance)
-                .hasPassed("Activity_pipelineData", "Activity_selectPayment", "Activity_createCase")
+                .hasPassed("Activity_pipelineData", "Activity_createCase")
                 .variables()
                 .hasEntrySatisfying("payments", isPayments);
     }

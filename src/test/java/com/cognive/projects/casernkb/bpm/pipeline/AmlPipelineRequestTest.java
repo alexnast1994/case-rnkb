@@ -27,7 +27,7 @@ public class AmlPipelineRequestTest {
         autoMock("bpmn/pipeline/amlPipelineRequest.bpmn");
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("workflowId", "unknown");
+        processParams.put("processName", "unknown");
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlPipelineRequest", processParams);
@@ -40,7 +40,7 @@ public class AmlPipelineRequestTest {
         autoMock("bpmn/pipeline/amlPipelineRequest.bpmn");
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("workflowId", "2b605119-16db-47d9-a087-cd1ad87731f3");
+        processParams.put("processName", "pipeline-payment-response");
 
         processEngineRule.manageDeployment(registerCallActivityMock("amlPaymentCasePostBatch")
                 .deploy(processEngineRule)

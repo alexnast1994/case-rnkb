@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.bpm.cases;
 
+import com.cognive.projects.casernkb.bpm.TestUtils;
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
 import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
@@ -105,18 +106,14 @@ public class PaymentResponseTest {
         sourceStatus7.setCode("7");
 
         Payment payment = new Payment();
-
-        Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("payment", payment);
-
-        final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
-        selectOneDelegate.onExecutionSetVariables(selectResult);
+        payment.setPaymentSourceStatus(TestUtils.getBaseDictionary("1"));
+        payment.setId(123L);
 
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(45, "7")).thenReturn(sourceStatus7);
 
         Map<String, Object> processParams = new HashMap<>();
-        processParams.put("paymentId", 123L);
+        processParams.put("payment", payment);
         processParams.put("rules", Collections.emptyList());
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseResponse")
