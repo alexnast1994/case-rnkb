@@ -325,7 +325,7 @@ execution.setVariable("saveObjects", saveObjects)</bpmn:script>
           <bpmn:serviceTask id="Activity_saveResultPaymentDetails" name="Сохранить PAYMENTPARTICIPANTLIST" camunda:delegateExpression="${saveObjectListDelegate}">
             <bpmn:extensionElements>
               <camunda:inputOutput>
-                <camunda:inputParameter name="saveObject">${saveObjects}</camunda:inputParameter>
+                <camunda:inputParameter name="saveObjectList">${saveObjects}</camunda:inputParameter>
               </camunda:inputOutput>
             </bpmn:extensionElements>
             <bpmn:incoming>Flow_0amh954</bpmn:incoming>

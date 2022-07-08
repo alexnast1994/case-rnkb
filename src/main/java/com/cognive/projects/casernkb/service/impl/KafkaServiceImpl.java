@@ -11,13 +11,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.engine.variable.value.ObjectValue;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.MediaType;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -27,10 +28,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
@@ -52,17 +53,10 @@ public class KafkaServiceImpl implements KafkaService {
     @Bean
     public Consumer<Message<String>> commonMessageInput() {
         return x -> {
-            String key = x.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
-            String topic = x.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
-            String amlHeader = getHeaderData(x.getHeaders().get(properties.getCamunda().getHeaderName()));
+            runProcess(x, () -> {
+                String amlHeader = getHeaderData(x.getHeaders().get(properties.getCamunda().getHeaderName()));
 
-            runWithError(amlHeader, key, () -> {
-                if (amlHeader == null) {
-                    log.warn("Input message with null processId header, key={}, topic={}. Skip message", key, topic);
-                    return;
-                }
-
-                log.info("Kafka message key={}, from={}, processId={}", key, topic, amlHeader);
+                log.info("Common message amlHeader={}", amlHeader);
 
                 Map<String, Object> variables = new HashMap<>();
 
@@ -70,35 +64,30 @@ public class KafkaServiceImpl implements KafkaService {
                 ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
                 variables.put("payload", jsonData);
 
-                String id = bpmService.startProcess(amlHeader, key, variables);
-                log.debug("Process started: {}", id);
-            });
+                return new Process(amlHeader,
+                        amlHeader == null,
+                        variables);
+                    });
         };
     }
 
     @Bean
     public Consumer<Message<String>> csmMessageInput() {
         return x -> {
-            String key = x.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
-            String topic = x.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
-            String operationHeader = getHeaderData(x.getHeaders().get(properties.getCsm().getHeaderName()));
+            runProcess(x, () -> {
+                String operationHeader = getHeaderData(x.getHeaders().get(properties.getCsm().getHeaderName()));
 
-            runWithError(operationHeader, key, () -> {
-                if (operationHeader == null) {
-                    log.warn("Input message with null operationHeader header, key={}, topic={}. Skip message", key, topic);
-                    return;
-                }
+                log.info("CSM message operationHeader={}", operationHeader);
 
-                log.info("Kafka csm message key={}, from={}, header={}", key, topic, operationHeader);
                 Map<String, Object> variables = new HashMap<>();
-
                 // Store value as json, prevent Camunda String limitation (4000 and 2000 for Oracle)
                 ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
                 variables.put("payload", jsonData);
                 variables.put("processName", operationHeader);
 
-                String id = bpmService.startProcess(properties.getCsm().getProcessName(), key, variables);
-                log.debug("Process started: {}", id);
+                return new Process(properties.getCsm().getProcessName(),
+                        operationHeader == null,
+                        variables);
             });
         };
     }
@@ -106,24 +95,19 @@ public class KafkaServiceImpl implements KafkaService {
     @Bean
     public Consumer<Message<String>> pipelineMessageInput() {
         return x -> {
-            String key = x.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
-            String topic = x.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
-
-            runWithError(properties.getPipeline().getProcessName(), key, () -> {
-                log.info("Kafka pipeline message key={}, from={}", key, topic);
-
+            runProcess(x, () -> {
                 PipelineResponse pipelineResponse = getPipelineResponse(x.getPayload());
-                log.info("Pipeline workflow id: {}, status: {}", pipelineResponse.getWorkflowId(), pipelineResponse.getStatus());
-
-                if (!pipelineResponse.isDone()) {
-                    log.warn("Pipeline failed with error " + pipelineResponse.getErrorMessage());
-                }
+                log.info("Pipeline workflow id: {}, mapping: {}, status: {}",
+                        pipelineResponse.getWorkflowId(),
+                        pipelineResponse.getMappingName(),
+                        pipelineResponse.getStatus());
 
                 Map<String, Object> variables = new HashMap<>();
-                variables.put("workflowId", pipelineResponse.getWorkflowId());
+                variables.put("processName", pipelineResponse.getMappingName());
 
-                String id = bpmService.startProcess(properties.getPipeline().getProcessName(), key, variables);
-                log.debug("Process started: {}", id);
+                return new Process(properties.getPipeline().getProcessName(),
+                        !pipelineResponse.isDone(),
+                        variables);
             });
         };
     }
@@ -165,18 +149,37 @@ public class KafkaServiceImpl implements KafkaService {
         return null;
     }
 
-    private void runWithError(String processName, String key, Runnable runnable) {
+    private void runProcess(Message<String> message, Supplier<Process> function) {
         try {
-            runnable.run();
-        } catch (Exception ex) {
-            log.error("Failed run process: {}", processName, ex);
-            if (properties.getErrorTopic() != null && !properties.getErrorTopic().isEmpty()) {
-                sendError(processName, key, ex);
+            String key = message.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
+            String topic = message.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
+
+            log.info("Input message from: {}, key={}", topic, key);
+
+            Process process = function.get();
+            try {
+                if(process.isSkip()) {
+                    log.info("Skip run: {}", process.getName());
+                    return;
+                }
+
+                log.info("Start process: {}", process.getName());
+                String id = bpmService.startProcess(process.getName(), key, process.getVariables());
+                log.info("Process success: {}, id={}", process.getName(), id);
+            } catch (Exception ex) {
+                log.error("Failed run process: {}", process.getName(), ex);
+                sendError(process.getName(), key, ex);
             }
+        } catch (Exception ex) {
+            sendError("", "", ex);
         }
     }
 
     private void sendError(String processName, String key, Exception ex) {
+        if (!(properties.getErrorTopic() != null && !properties.getErrorTopic().isEmpty())) {
+            return;
+        }
+
         try {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
@@ -212,6 +215,12 @@ public class KafkaServiceImpl implements KafkaService {
                 JsonNode runEventResponse = root.get("runEventResponse");
                 if (runEventResponse.has("workflowId")) {
                     response.setWorkflowId(runEventResponse.get("workflowId").textValue());
+                    if(this.properties.getPipeline().getMapping() != null) {
+                        this.properties.getPipeline().getMapping().entrySet()
+                                .stream().filter(x -> x.getValue().equals(response.getWorkflowId())).findFirst().ifPresent(mapping -> {
+                            response.setMappingName(mapping.getKey());
+                        });
+                    }
                 }
                 if (runEventResponse.has("status")) {
                     response.setStatus(runEventResponse.get("status").textValue());
@@ -229,5 +238,13 @@ public class KafkaServiceImpl implements KafkaService {
         }
 
         return response;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class Process {
+        private String name;
+        private boolean skip;
+        private Map<String, Object> variables;
     }
 }

@@ -83,23 +83,23 @@ spring:
       bindings:
         commonMessageInput-in-0:
           destination: ${TOPIC_MESSAGE_INPUT}
-          group: case-rnkb
+          group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         csmMessageInput-in-0:
           destination: ${TOPIC_CSM_INPUT}
-          group: case-rnkb
+          group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         pipelineMessageInput-in-0:
           destination: ${TOPIC_PIPELINE_INPUT}
-          group: case-rnkb
+          group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         outMessage-out-0:
           destination: ${TOPIC_MESSAGE_OUT}
-          group: case-rnkb
+          group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         outMessageCase-out-0:
           destination: ${TOPIC_MESSAGE_CASE_RESPONSE}
-          group: case-rnkb
+          group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
       function:
         definition: commonMessageInput;csmMessageInput;pipelineMessageInput
@@ -120,6 +120,8 @@ server:
       process-name: ${CSM_PROCESS_NAME:amlCsmRequest}
     pipeline:
       process-name: ${PIPELINE_PROCESS_NAME:amlPipelineRequest}
+      mapping:
+        pipeline-payment-response: ${PIPELINE_PAYMENT_RESPONSE_ID:2b605119-16db-47d9-a087-cd1ad87731f3}
     error-topic: ${TOPIC_ERROR_OUT:}
 
 logging:
