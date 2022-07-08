@@ -12,10 +12,7 @@ import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
@@ -47,15 +44,13 @@ public class AmlCasePostAndNecessarilyTest {
         autoMock("bpmn/cases/amlCasePostAndNecessarily.bpmn");
 
         BaseDictionary caseType2 = TestUtils.getBaseDictionary("2");
-        BaseDictionary rule44 = TestUtils.getBaseDictionary("44");
-        BaseDictionary rule66 = TestUtils.getBaseDictionary("66");
 
         Case caseData = new Case();
         CaseOperation caseOperation = new CaseOperation();
         Payment payment = new Payment();
 
         CaseRules r1 = new CaseRules();
-        r1.setCode(TestUtils.getBaseDictionary("55"));
+        r1.setRuleId(TestUtils.getBaseDictionary("55"));
 
         caseData.setCaseRules(Collections.singletonList(r1));
         caseData.setCaseType(caseType2);
@@ -70,8 +65,9 @@ public class AmlCasePostAndNecessarilyTest {
         selectOneDelegate.onExecutionSetVariables(selectResult);
 
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(272, "44")).thenReturn(rule44);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(272, "66")).thenReturn(rule66);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(272, "44")).thenReturn(TestUtils.getBaseDictionary("44"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(272, "66")).thenReturn(TestUtils.getBaseDictionary("66"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(75, "6001")).thenReturn(TestUtils.getBaseDictionary("6001"));
 
         Map<String, Object> processParams = new HashMap<>();
         processParams.put("payload", getPayloadJson(123L, "2", List.of("44", "55", "66"), "comment"));
@@ -91,8 +87,9 @@ public class AmlCasePostAndNecessarilyTest {
         Condition<Object> isRules = new Condition<>(p -> {
             List<CaseRules> caseRules = (List<CaseRules>)p;
             return caseRules.size() == 2 &&
-                    caseRules.get(0).getCode().getCode().equals("44") &&
-                    caseRules.get(1).getCode().getCode().equals("66")
+                    caseRules.get(0).getRuleId().getCode().equals("44") &&
+                    caseRules.get(1).getRuleId().getCode().equals("66") &&
+                    caseRules.get(1).getCode().getCode().equals("6001")
                     ;
         }, "isRules");
 
@@ -174,9 +171,12 @@ public class AmlCasePostAndNecessarilyTest {
         BaseDictionary rule66 = TestUtils.getBaseDictionary("66");
 
         Payment payment = new Payment();
+        SysUser user = new SysUser();
+        user.setId(1L);
 
         Map<String, Object> selectResult = new HashMap<>();
         selectResult.put("payment", payment);
+        selectResult.put("user", user);
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
@@ -215,7 +215,7 @@ public class AmlCasePostAndNecessarilyTest {
             return pp.getCheckFlagSO();
         }, "isCaseRules size 2");
 
-        Condition<Object> isUserId = new Condition<>(p -> ((Long) p).longValue() == 55, "isUserId");
+        Condition<Object> isUser = new Condition<>(Objects::nonNull, "isUser");
 
         assertThat(processInstance)
                 .hasPassed("Activity_payload", "Activity_selectPayment", "Activity_checkData", "Activity_setPaymentFlags", "Activity_savePayment", "Activity_createCase")
@@ -224,7 +224,7 @@ public class AmlCasePostAndNecessarilyTest {
                 .hasEntrySatisfying("caseData", isCase)
                 .hasEntrySatisfying("acceptedRules", isRules)
                 .hasEntrySatisfying("payment", isPayment)
-                .hasEntrySatisfying("userId", isUserId)
+                .hasEntrySatisfying("user", isUser)
         ;
     }
 }
