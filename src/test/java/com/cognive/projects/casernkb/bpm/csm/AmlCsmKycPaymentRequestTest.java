@@ -49,6 +49,8 @@ public class AmlCsmKycPaymentRequestTest {
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
 
+        final FluentJavaDelegateMock saveQueryDelegate = registerJavaDelegateMock("saveQueryDelegate");
+
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(45, "7")).thenReturn(sourceStatus7);
 
@@ -60,7 +62,7 @@ public class AmlCsmKycPaymentRequestTest {
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlCsmKycPaymentRequest", processParams);
 
         assertThat(processInstance)
-                .hasPassed("Activity_saveKyc", "Activity_saveResultPayment", "Activity_saveResultPaymentDetails")
+                .hasPassed("Activity_saveKyc", "Activity_cleanAll", "Activity_saveResultPayment", "Activity_saveResultPaymentDetails")
                 .variables()
         ;
     }
