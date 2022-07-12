@@ -76,7 +76,13 @@ public class AmlCsmKycClientRequestTest {
         final var processInstance = runtimeService.startProcessInstanceByKey("amlCsmKycClientRequest", processParams);
 
         assertThat(processInstance)
-                .hasPassed("Activity_Case_Saving", "Activity_List1_Saving", "Activity_List2_Saving", "Activity_Save_Lists")
+                .hasPassed(
+                        "Activity_Case_Saving",
+                        "Activity_KycClient_Saving",
+                        "Activity_Individual_or_Legal_Saving",
+                        "Activity_List1_Saving",
+                        "Activity_List2_Saving",
+                        "Activity_Save_Lists")
                 .variables();
     }
 
