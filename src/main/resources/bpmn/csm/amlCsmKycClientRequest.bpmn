@@ -717,7 +717,7 @@ execution.setVariable("saveObjects", saveObjects)</bpmn:script>
 import static org.camunda.spin.DataFormats.*
 import com.prime.db.rnkb.model.kyc.KycCaseClient
 import com.prime.db.rnkb.model.BaseDictionary
-import java.time.LocalDateTime
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 BaseDictionary getBd(Integer type, String code) {
@@ -729,28 +729,41 @@ def checkResult = execution.getVariable("clientCheckResult")
 def client = execution.getVariable("client")
 def caseItem = execution.getVariable("caseItem")
 
-DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 def kycCaseClient = new KycCaseClient()
 kycCaseClient.sourceId = clientItem.prop("SourceId").stringValue()
 kycCaseClient.clientId = client
 kycCaseClient.caseId = caseItem
-kycCaseClient.branchCode = clientItem.prop("BranchCode").stringValue()
-kycCaseClient.branchName = clientItem.prop("BranchName").stringValue()
-kycCaseClient.cManagerName = clientItem.prop("CManagerName").stringValue()
 kycCaseClient.clientType = getBd(24, clientItem.prop("ClientType").stringValue())
 
-if (clientItem.hasProp("FullName"))
+if (clientItem.hasProp("BranchCode")) {
+    kycCaseClient.branchCode = clientItem.prop("BranchCode").stringValue()
+}
+
+if (clientItem.hasProp("BranchName")) {
+    kycCaseClient.branchName = clientItem.prop("BranchName").stringValue()
+}
+
+if (clientItem.hasProp("BranchName")) {
+    kycCaseClient.cManagerName = clientItem.prop("CManagerName").stringValue()
+}
+
+if (clientItem.hasProp("FullName")) {
     kycCaseClient.fullName = clientItem.prop("FullName").stringValue()
+}
 
-if (clientItem.hasProp("INN"))
+if (clientItem.hasProp("INN")) {
     kycCaseClient.inn = clientItem.prop("INN").stringValue()
+}
 
-if (clientItem.hasProp("OGRN"))
+if (clientItem.hasProp("OGRN")) {
     kycCaseClient.ogrn = clientItem.prop("OGRN").stringValue()
+}
 
-if (clientItem.hasProp("OGRNDate"))
-    kycCaseClient.ogrnDate = LocalDateTime.parse(clientItem.prop("OGRNDate").stringValue(), formatter)
+if (clientItem.hasProp("OGRNDate")) {
+    kycCaseClient.ogrnDate = LocalDate.parse(clientItem.prop("OGRNDate").stringValue(), formatter).atStartOfDay()
+}
 
 execution.setVariable("kycCaseClientItem", kycCaseClient)</bpmn:script>
             </bpmn:scriptTask>
@@ -822,11 +835,10 @@ if (clientItem.hasProp("ClientIndividual")) {
     legal.bankId = legalProp.prop("BankId").stringValue()
     legal.registrationCity = legalProp.prop("RegistrationCity").stringValue()
     legal.okfs = getBd(39, legalProp.prop("OKFS").stringValue())
-    legal.taxSerialIssueDate =     LocalDateTime.parse(legalProp.prop("TaxSerialIssueDate").stringValue(), formatter)
+    legal.taxSerialIssueDate =     LocalDate.parse(legalProp.prop("TaxSerialIssueDate").stringValue(), dateFormatter).atStartOfDay()
     legal.registrationUnit = legalProp.prop("RegistrationUnit").stringValue()
-    legal.dateOfRegistrationBeforeOgrn =         LocalDateTime.parse(legalProp.prop("DateOfRegistrationBeforeOGRN").stringValue(), formatter)
+    legal.dateOfRegistrationBeforeOgrn =         LocalDate.parse(legalProp.prop("DateOfRegistrationBeforeOGRN").stringValue(), dateFormatter).atStartOfDay()
     legal.okato = legalProp.prop("OKATO").stringValue()
-    legal.registrationCity = legalProp.prop("RegistrationCity").stringValue()
     legal.legalForm = getBd(76, legalProp.prop("LegalForm").stringValue())
     legal.giin = legalProp.prop("GIIN").stringValue()
     legal.registrationUnitAddress = legalProp.prop("RegistrationUnitAddress").stringValue()
