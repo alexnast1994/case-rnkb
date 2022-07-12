@@ -90,6 +90,7 @@ BaseDictionary getBd(int type, String code) {
 }
 
 def acceptedRules = execution.getVariable("acceptedRules")
+def acceptedCodes = execution.getVariable("acceptedCodes")
 def payment = execution.getVariable("payment")
 def caseData = execution.getVariable("caseDataOut")
 
@@ -99,12 +100,19 @@ def user = execution.getVariable("user")
 // Case rules
 def caseRelationList = []
 
-acceptedRules.each{rule -&gt;
-  CaseRules cr = new CaseRules()
-  cr.ruleId = rule
-  cr.caseId = caseData
-  cr.code = getBd(75, "6001")
-  caseRelationList.add(cr)
+acceptedRules.each{r -&gt;
+    CaseRules cr = new CaseRules()
+    cr.ruleId = r
+    cr.caseId = caseData
+    cr.code = getBd(75, "6001")
+    caseRelationList.add(cr)
+}
+
+acceptedCodes.each{r -&gt;
+    CaseRules cr = new CaseRules()
+    cr.caseId = caseData
+    cr.code = r
+    caseRelationList.add(cr)
 }
 
 // Case operation
@@ -156,6 +164,7 @@ execution.setVariable("caseRelationList", caseRelationList);
     <bpmn:sequenceFlow id="Flow_135bhhb" sourceRef="Activity_createCase" targetRef="Activity_saveCase" />
     <bpmn:textAnnotation id="TextAnnotation_0rheqm6">
       <bpmn:text>acceptedRules
+acceptedCodes
 payment
 caseType
 comment
@@ -166,9 +175,14 @@ session</bpmn:text>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="caseCreate">
-      <bpmndi:BPMNShape id="TextAnnotation_0rheqm6_di" bpmnElement="TextAnnotation_0rheqm6">
-        <dc:Bounds x="160" y="80" width="100" height="96" />
-      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_135bhhb_di" bpmnElement="Flow_135bhhb">
+        <di:waypoint x="400" y="247" />
+        <di:waypoint x="440" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jocl65_di" bpmnElement="Flow_0jocl65">
+        <di:waypoint x="540" y="247" />
+        <di:waypoint x="580" y="247" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1vak5gg_di" bpmnElement="Flow_1vak5gg">
         <di:waypoint x="820" y="247" />
         <di:waypoint x="869" y="247" />
@@ -177,18 +191,22 @@ session</bpmn:text>
         <di:waypoint x="680" y="247" />
         <di:waypoint x="720" y="247" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0jocl65_di" bpmnElement="Flow_0jocl65">
-        <di:waypoint x="540" y="247" />
-        <di:waypoint x="580" y="247" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0ft4dh9_di" bpmnElement="Flow_0ft4dh9">
         <di:waypoint x="228" y="247" />
         <di:waypoint x="300" y="247" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_135bhhb_di" bpmnElement="Flow_135bhhb">
-        <di:waypoint x="400" y="247" />
-        <di:waypoint x="440" y="247" />
-      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="192" y="229" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="181.5" y="275" width="57" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_createCase_di" bpmnElement="Activity_createCase">
+        <dc:Bounds x="300" y="207" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_saveCase_di" bpmnElement="Activity_saveCase">
+        <dc:Bounds x="440" y="207" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_saveCaseRelations_di" bpmnElement="Activity_saveCaseRelations">
         <dc:Bounds x="720" y="207" width="100" height="80" />
       </bpmndi:BPMNShape>
@@ -198,21 +216,12 @@ session</bpmn:text>
       <bpmndi:BPMNShape id="Event_0z85w8w_di" bpmnElement="Event_0z85w8w">
         <dc:Bounds x="869" y="229" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_saveCase_di" bpmnElement="Activity_saveCase">
-        <dc:Bounds x="440" y="207" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_createCase_di" bpmnElement="Activity_createCase">
-        <dc:Bounds x="300" y="207" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
-        <dc:Bounds x="192" y="229" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="181.5" y="275" width="57" height="14" />
-        </bpmndi:BPMNLabel>
+      <bpmndi:BPMNShape id="TextAnnotation_0rheqm6_di" bpmnElement="TextAnnotation_0rheqm6">
+        <dc:Bounds x="160" y="80" width="100" height="111" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_1vm388c_di" bpmnElement="Association_1vm388c">
         <di:waypoint x="210" y="229" />
-        <di:waypoint x="210" y="176" />
+        <di:waypoint x="210" y="191" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

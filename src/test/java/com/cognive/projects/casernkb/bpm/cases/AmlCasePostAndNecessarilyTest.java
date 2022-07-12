@@ -43,17 +43,15 @@ public class AmlCasePostAndNecessarilyTest {
     public void Should_save_new_codes() {
         autoMock("bpmn/cases/amlCasePostAndNecessarily.bpmn");
 
-        BaseDictionary caseType2 = TestUtils.getBaseDictionary("2");
-
         Case caseData = new Case();
         CaseOperation caseOperation = new CaseOperation();
         Payment payment = new Payment();
 
         CaseRules r1 = new CaseRules();
-        r1.setRuleId(TestUtils.getBaseDictionary("55"));
+        r1.setCode(TestUtils.getBaseDictionary("55"));
 
         caseData.setCaseRules(Collections.singletonList(r1));
-        caseData.setCaseType(caseType2);
+        caseData.setCaseType(TestUtils.getBaseDictionary("2"));
         caseData.setStatus(TestUtils.getBaseDictionary("2"));
         caseOperation.setCaseId(caseData);
         payment.setCaseOperationList(Collections.singletonList(caseOperation));
@@ -65,9 +63,8 @@ public class AmlCasePostAndNecessarilyTest {
         selectOneDelegate.onExecutionSetVariables(selectResult);
 
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(272, "44")).thenReturn(TestUtils.getBaseDictionary("44"));
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(272, "66")).thenReturn(TestUtils.getBaseDictionary("66"));
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(75, "6001")).thenReturn(TestUtils.getBaseDictionary("6001"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(75, "44")).thenReturn(TestUtils.getBaseDictionary("44"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(75, "66")).thenReturn(TestUtils.getBaseDictionary("66"));
 
         Map<String, Object> processParams = new HashMap<>();
         processParams.put("payload", getPayloadJson(123L, "2", List.of("44", "55", "66"), "comment"));
@@ -85,11 +82,11 @@ public class AmlCasePostAndNecessarilyTest {
         }, "isCaseRules size 2");
 
         Condition<Object> isRules = new Condition<>(p -> {
-            List<CaseRules> caseRules = (List<CaseRules>)p;
-            return caseRules.size() == 2 &&
-                    caseRules.get(0).getRuleId().getCode().equals("44") &&
-                    caseRules.get(1).getRuleId().getCode().equals("66") &&
-                    caseRules.get(1).getCode().getCode().equals("6001")
+            List<Object> caseRules = (List<Object>)p;
+            return caseRules.size() == 3 &&
+                    ((CaseRules)caseRules.get(0)).getCode().getCode().equals("44") &&
+                    ((CaseRules)caseRules.get(1)).getCode().getCode().equals("66") &&
+                    ((CaseComment)caseRules.get(2)).getComment().equals("comment")
                     ;
         }, "isRules");
 
@@ -98,7 +95,7 @@ public class AmlCasePostAndNecessarilyTest {
                 .hasNotPassed("Activity_setPaymentFlags", "Activity_savePayment", "Activity_createCase")
                 .variables()
                 .hasEntrySatisfying("caseData", isCase)
-                .hasEntrySatisfying("caseRules", isRules)
+                .hasEntrySatisfying("caseRelationList", isRules)
         ;
     }
 
