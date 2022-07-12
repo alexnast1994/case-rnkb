@@ -43,6 +43,7 @@ public class CaseCreateTest {
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(18, "4")).thenReturn(TestUtils.getBaseDictionary("4"));
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(140, "1")).thenReturn(TestUtils.getBaseDictionary("1"));
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(179, "1")).thenReturn(TestUtils.getBaseDictionary("1"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(75, "6001")).thenReturn(TestUtils.getBaseDictionary("6001"));
 
         Map<String, Object> processParameters = new HashMap<>();
         processParameters.put("acceptedRules",
@@ -70,6 +71,65 @@ public class CaseCreateTest {
                     ((CaseRules)list.get(0)).getRuleId().getCode().equals("5") &&
                     ((CaseRules)list.get(1)).getRuleId().getCode().equals("4") &&
                     ((CaseRules)list.get(2)).getRuleId().getCode().equals("3") &&
+
+                    ((CaseRules)list.get(0)).getCode().getCode().equals("6001") &&
+                    ((CaseRules)list.get(1)).getCode().getCode().equals("6001") &&
+                    ((CaseRules)list.get(2)).getCode().getCode().equals("6001") &&
+
+                    ((CaseOperation)list.get(3)).getAmount().equals(BigDecimal.valueOf(500))
+                    ;
+        }, "isCaseRules size 2");
+
+        assertThat(processInstance)
+                .hasPassed("Activity_createCase", "Activity_saveCase", "Activity_caseRelations", "Activity_saveCaseRelations")
+                .variables()
+                .hasEntrySatisfying("caseData", isCase)
+                .hasEntrySatisfying("caseRelationList", isCaseRelation);
+    }
+
+    @Test
+    @SneakyThrows
+    public void Should_create_case_codes() {
+        autoMock("bpmn/cases/caseCreate.bpmn");
+
+        Payment payment = new Payment();
+        payment.setName("Test");
+        payment.setAmountNationalCurrency(BigDecimal.valueOf(500));
+
+        final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(18, "4")).thenReturn(TestUtils.getBaseDictionary("4"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(140, "1")).thenReturn(TestUtils.getBaseDictionary("1"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(179, "1")).thenReturn(TestUtils.getBaseDictionary("1"));
+
+        Map<String, Object> processParameters = new HashMap<>();
+        processParameters.put("acceptedCodes",
+                Arrays.asList(TestUtils.getBaseDictionary("5"),
+                        TestUtils.getBaseDictionary("4"),
+                        TestUtils.getBaseDictionary("3")));
+        processParameters.put("payment", payment);
+        processParameters.put("caseType", "4");
+
+        RuntimeService runtimeService = processEngineRule.getRuntimeService();
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseCreate", processParameters);
+
+        Condition<Object> isCase = new Condition<>(p -> {
+            Case c = (Case)p;
+            return c.getCaseType().getCode().equals("4")
+                    && c.getCaseStatus().getCode().equals("1")
+                    && c.getStatus().getCode().equals("1")
+                    ;
+        }, "isCase");
+
+
+        Condition<Object> isCaseRelation = new Condition<>(p -> {
+            List<Object> list = (List<Object>)p;
+            return list.size() == 4 &&
+                    ((CaseRules)list.get(0)).getCode().getCode().equals("5") &&
+                    ((CaseRules)list.get(1)).getCode().getCode().equals("4") &&
+                    ((CaseRules)list.get(2)).getCode().getCode().equals("3") &&
+
+                    ((CaseRules)list.get(2)).getRuleId() == null &&
+
                     ((CaseOperation)list.get(3)).getAmount().equals(BigDecimal.valueOf(500))
                     ;
         }, "isCaseRules size 2");
