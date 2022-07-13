@@ -89,6 +89,8 @@ public class AmlPaymentCasePostBatchTest {
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
 
+        final FluentJavaDelegateMock saveObjectDelegate = registerJavaDelegateMock("saveObjectDelegate");
+
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("amlPaymentCasePostBatch", processParams);
 
@@ -105,7 +107,7 @@ public class AmlPaymentCasePostBatchTest {
         }, "isCaseRules size 2");
 
         assertThat(processInstance)
-                .hasPassed("Activity_pipelineData", "Activity_createCase")
+                .hasPassed("Activity_pipelineData", "Activity_savePayment", "Activity_createCase")
                 .variables()
                 .hasEntrySatisfying("payments", isPayments);
     }
