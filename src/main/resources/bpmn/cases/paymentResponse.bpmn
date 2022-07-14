@@ -32,7 +32,7 @@
       <bpmn:sequenceFlow id="Flow_1y9rsy0" sourceRef="Activity_savePayment" targetRef="Activity_response" />
       <bpmn:sequenceFlow id="Flow_18bo35a" sourceRef="Event_19hntkt" targetRef="Activity_0us54of" />
       <bpmn:exclusiveGateway id="Gateway_00dx1bx" name="Операция попала под правила?" default="Flow_1b5ikfj">
-        <bpmn:incoming>Flow_1dk8c55</bpmn:incoming>
+        <bpmn:incoming>Flow_0shaxqn</bpmn:incoming>
         <bpmn:outgoing>Flow_1b5ikfj</bpmn:outgoing>
         <bpmn:outgoing>Flow_18s1b05</bpmn:outgoing>
       </bpmn:exclusiveGateway>
@@ -52,22 +52,6 @@ payment.paymentSourceStatus = getStatus("7")
 
 execution.setVariable("payment", payment)</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:serviceTask id="Activity_06ngoq7" name="Select payment work" camunda:delegateExpression="${selectOneDelegate}">
-        <bpmn:extensionElements>
-          <camunda:inputOutput>
-            <camunda:inputParameter name="outputVarName">payment</camunda:inputParameter>
-            <camunda:inputParameter name="parameters">
-              <camunda:map>
-                <camunda:entry key="paymentId">${paymentId}</camunda:entry>
-              </camunda:map>
-            </camunda:inputParameter>
-            <camunda:inputParameter name="selectQuery">SELECT p FROM Payment p WHERE p.id = :paymentId</camunda:inputParameter>
-          </camunda:inputOutput>
-        </bpmn:extensionElements>
-        <bpmn:incoming>Flow_0shaxqn</bpmn:incoming>
-        <bpmn:outgoing>Flow_1dk8c55</bpmn:outgoing>
-      </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_1dk8c55" sourceRef="Activity_06ngoq7" targetRef="Gateway_00dx1bx" />
       <bpmn:sequenceFlow id="Flow_18s1b05" sourceRef="Gateway_00dx1bx" targetRef="Activity_paymentStatus10">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${createCase}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
@@ -161,7 +145,7 @@ execution.setVariable("createCase", !acceptedRules.isEmpty())
 execution.setVariable("acceptedRules", acceptedRules)
 </bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:sequenceFlow id="Flow_0shaxqn" sourceRef="Activity_0us54of" targetRef="Activity_06ngoq7" />
+      <bpmn:sequenceFlow id="Flow_0shaxqn" sourceRef="Activity_0us54of" targetRef="Gateway_00dx1bx" />
       <bpmn:callActivity id="Activity_case" name="Формирование кейса" calledElement="caseCreate">
         <bpmn:extensionElements>
           <camunda:in source="payment" target="payment" />
@@ -197,7 +181,7 @@ execution.setVariable("acceptedRules", acceptedRules)
       <bpmn:outgoing>Flow_1ao5q4b</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:textAnnotation id="TextAnnotation_16wea2u">
-      <bpmn:text>paymentId
+      <bpmn:text>payment
 rules
 
 
@@ -245,7 +229,7 @@ PAYMENT.EXID
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0shaxqn_di" bpmnElement="Flow_0shaxqn">
         <di:waypoint x="950" y="315" />
-        <di:waypoint x="1010" y="315" />
+        <di:waypoint x="1155" y="315" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_17a5k7l_di" bpmnElement="Flow_17a5k7l">
         <di:waypoint x="2280" y="390" />
@@ -267,10 +251,6 @@ PAYMENT.EXID
         <di:waypoint x="1180" y="290" />
         <di:waypoint x="1180" y="240" />
         <di:waypoint x="1270" y="240" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1dk8c55_di" bpmnElement="Flow_1dk8c55">
-        <di:waypoint x="1110" y="315" />
-        <di:waypoint x="1155" y="315" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1b5ikfj_di" bpmnElement="Flow_1b5ikfj">
         <di:waypoint x="1180" y="340" />
@@ -302,9 +282,6 @@ PAYMENT.EXID
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1bgq5uh_di" bpmnElement="Activity_paymentStatus7">
         <dc:Bounds x="1270" y="350" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_06ngoq7_di" bpmnElement="Activity_06ngoq7">
-        <dc:Bounds x="1010" y="275" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0qtjuyj_di" bpmnElement="Activity_paymentStatus10">
         <dc:Bounds x="1270" y="200" width="100" height="80" />

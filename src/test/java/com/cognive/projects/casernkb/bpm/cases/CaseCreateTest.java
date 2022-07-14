@@ -1,6 +1,5 @@
 package com.cognive.projects.casernkb.bpm.cases;
 
-import camundajar.impl.scala.util.parsing.json.JSON;
 import com.cognive.projects.casernkb.bpm.TestUtils;
 import com.cognive.projects.casernkb.repo.BaseDictRepo;
 import com.prime.db.rnkb.model.*;
@@ -10,12 +9,6 @@ import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.ProcessEngineRule;
-import org.camunda.bpm.engine.variable.Variables;
-import org.camunda.bpm.engine.variable.value.ObjectValue;
-import org.camunda.bpm.extension.mockito.mock.FluentJavaDelegateMock;
-import org.camunda.spin.Spin;
-import org.camunda.spin.plugin.variable.SpinValues;
-import org.camunda.spin.plugin.variable.value.JsonValue;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -26,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
-import static org.camunda.bpm.extension.mockito.CamundaMockito.registerJavaDelegateMock;
 import static org.camunda.bpm.extension.mockito.CamundaMockito.registerMockInstance;
 import static org.camunda.bpm.extension.mockito.DelegateExpressions.autoMock;
 import static org.mockito.Mockito.when;
@@ -49,8 +41,9 @@ public class CaseCreateTest {
 
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(18, "4")).thenReturn(TestUtils.getBaseDictionary("4"));
-
-
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(140, "1")).thenReturn(TestUtils.getBaseDictionary("1"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(179, "1")).thenReturn(TestUtils.getBaseDictionary("1"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(75, "6001")).thenReturn(TestUtils.getBaseDictionary("6001"));
 
         Map<String, Object> processParameters = new HashMap<>();
         processParameters.put("acceptedRules",
@@ -65,7 +58,10 @@ public class CaseCreateTest {
 
         Condition<Object> isCase = new Condition<>(p -> {
             Case c = (Case)p;
-            return c.getCaseType().getCode().equals("4");
+            return c.getCaseType().getCode().equals("4")
+                    && c.getCaseStatus().getCode().equals("1")
+                    && c.getStatus().getCode().equals("1")
+                    ;
         }, "isCase");
 
 
@@ -75,6 +71,65 @@ public class CaseCreateTest {
                     ((CaseRules)list.get(0)).getRuleId().getCode().equals("5") &&
                     ((CaseRules)list.get(1)).getRuleId().getCode().equals("4") &&
                     ((CaseRules)list.get(2)).getRuleId().getCode().equals("3") &&
+
+                    ((CaseRules)list.get(0)).getCode().getCode().equals("6001") &&
+                    ((CaseRules)list.get(1)).getCode().getCode().equals("6001") &&
+                    ((CaseRules)list.get(2)).getCode().getCode().equals("6001") &&
+
+                    ((CaseOperation)list.get(3)).getAmount().equals(BigDecimal.valueOf(500))
+                    ;
+        }, "isCaseRules size 2");
+
+        assertThat(processInstance)
+                .hasPassed("Activity_createCase", "Activity_saveCase", "Activity_caseRelations", "Activity_saveCaseRelations")
+                .variables()
+                .hasEntrySatisfying("caseData", isCase)
+                .hasEntrySatisfying("caseRelationList", isCaseRelation);
+    }
+
+    @Test
+    @SneakyThrows
+    public void Should_create_case_codes() {
+        autoMock("bpmn/cases/caseCreate.bpmn");
+
+        Payment payment = new Payment();
+        payment.setName("Test");
+        payment.setAmountNationalCurrency(BigDecimal.valueOf(500));
+
+        final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(18, "4")).thenReturn(TestUtils.getBaseDictionary("4"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(140, "1")).thenReturn(TestUtils.getBaseDictionary("1"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(179, "1")).thenReturn(TestUtils.getBaseDictionary("1"));
+
+        Map<String, Object> processParameters = new HashMap<>();
+        processParameters.put("acceptedCodes",
+                Arrays.asList(TestUtils.getBaseDictionary("5"),
+                        TestUtils.getBaseDictionary("4"),
+                        TestUtils.getBaseDictionary("3")));
+        processParameters.put("payment", payment);
+        processParameters.put("caseType", "4");
+
+        RuntimeService runtimeService = processEngineRule.getRuntimeService();
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseCreate", processParameters);
+
+        Condition<Object> isCase = new Condition<>(p -> {
+            Case c = (Case)p;
+            return c.getCaseType().getCode().equals("4")
+                    && c.getCaseStatus().getCode().equals("1")
+                    && c.getStatus().getCode().equals("1")
+                    ;
+        }, "isCase");
+
+
+        Condition<Object> isCaseRelation = new Condition<>(p -> {
+            List<Object> list = (List<Object>)p;
+            return list.size() == 4 &&
+                    ((CaseRules)list.get(0)).getCode().getCode().equals("5") &&
+                    ((CaseRules)list.get(1)).getCode().getCode().equals("4") &&
+                    ((CaseRules)list.get(2)).getCode().getCode().equals("3") &&
+
+                    ((CaseRules)list.get(2)).getRuleId() == null &&
+
                     ((CaseOperation)list.get(3)).getAmount().equals(BigDecimal.valueOf(500))
                     ;
         }, "isCaseRules size 2");
@@ -100,13 +155,10 @@ public class CaseCreateTest {
         sysUser.setName("Test");
 
         final BaseDictRepo baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
-        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(18, "4")).thenReturn(TestUtils.getBaseDictionary("4"));
-
-        Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("user", sysUser);
-
-        final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
-        selectOneDelegate.onExecutionSetVariables(selectResult);
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(18, "3")).thenReturn(TestUtils.getBaseDictionary("3"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(75, "6001")).thenReturn(TestUtils.getBaseDictionary("6001"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(131, "1")).thenReturn(TestUtils.getBaseDictionary("1"));
+        when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(178, "1")).thenReturn(TestUtils.getBaseDictionary("1"));
 
         Map<String, Object> processParameters = new HashMap<>();
         processParameters.put("acceptedRules",
@@ -114,16 +166,19 @@ public class CaseCreateTest {
                         TestUtils.getBaseDictionary("4"),
                         TestUtils.getBaseDictionary("3")));
         processParameters.put("payment", payment);
-        processParameters.put("caseType", "4");
+        processParameters.put("caseType", "3");
         processParameters.put("comment", "<comment>");
-        processParameters.put("userId", 5L);
+        processParameters.put("user", sysUser);
 
         RuntimeService runtimeService = processEngineRule.getRuntimeService();
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("caseCreate", processParameters);
 
         Condition<Object> isCase = new Condition<>(p -> {
             Case c = (Case)p;
-            return c.getCaseType().getCode().equals("4");
+            return c.getCaseType().getCode().equals("3") &&
+                    c.getStatus().getCode().equals("1") &&
+                    c.getCaseStatus().getCode().equals("1")
+                    ;
         }, "isCase");
 
 
@@ -133,6 +188,7 @@ public class CaseCreateTest {
                     ((CaseRules)list.get(0)).getRuleId().getCode().equals("5") &&
                     ((CaseRules)list.get(1)).getRuleId().getCode().equals("4") &&
                     ((CaseRules)list.get(2)).getRuleId().getCode().equals("3") &&
+                    ((CaseRules)list.get(2)).getCode().getCode().equals("6001") &&
                     ((CaseOperation)list.get(3)).getAmount().equals(BigDecimal.valueOf(500)) &&
                     ((CaseComment)list.get(4)).getComment().equals("<comment>") &&
                     ((CaseComment)list.get(4)).getAuthor().getName().equals("Test")
@@ -140,8 +196,7 @@ public class CaseCreateTest {
         }, "isCaseRules size 2");
 
         assertThat(processInstance)
-                .hasPassed("Activity_createCase", "Activity_saveCase", "Activity_caseRelations", "Activity_saveCaseRelations",
-                        "Activity_selectUser")
+                .hasPassed("Activity_createCase", "Activity_saveCase", "Activity_caseRelations", "Activity_saveCaseRelations")
                 .variables()
                 .hasEntrySatisfying("caseData", isCase)
                 .hasEntrySatisfying("caseRelationList", isCaseRelation);

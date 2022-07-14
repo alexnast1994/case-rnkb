@@ -20,14 +20,19 @@
           <bpmn:incoming>Flow_0drp6tg</bpmn:incoming>
           <bpmn:outgoing>Flow_0q0e80a</bpmn:outgoing>
           <bpmn:script>import com.cognive.projects.casernkb.model.CaseRulesDto
+import com.prime.db.rnkb.model.Payment;
 
 def paymentItem = execution.getVariable("paymentItem")
+def acceptedCodes = []
+def payment = paymentItem.paymentId
 
-execution.setVariable("paymentExId", paymentItem.paymentExId)
-execution.setVariable("rules", paymentItem.rules)
+payment.checkFlagSO = true
+
+execution.setVariable("payment", payment)
 execution.setVariable("createCase", !paymentItem.rules.isEmpty())
 execution.setVariable("caseType", "4")
-</bpmn:script>
+execution.setVariable("acceptedRules", paymentItem.rules)
+execution.setVariable("acceptedCodes", acceptedCodes)</bpmn:script>
         </bpmn:scriptTask>
         <bpmn:callActivity id="Activity_createCase" name="Формирование кейса" calledElement="caseCreate">
           <bpmn:extensionElements>
@@ -35,17 +40,18 @@ execution.setVariable("caseType", "4")
             <camunda:in source="session" target="session" />
             <camunda:in source="acceptedRules" target="acceptedRules" />
             <camunda:in sourceExpression="caseType" target="caseType" />
+            <camunda:in source="acceptedCodes" target="acceptedCodes" />
           </bpmn:extensionElements>
-          <bpmn:incoming>Flow_1qv2joc</bpmn:incoming>
+          <bpmn:incoming>Flow_11v04bj</bpmn:incoming>
           <bpmn:outgoing>Flow_19jlaw0</bpmn:outgoing>
         </bpmn:callActivity>
-        <bpmn:sequenceFlow id="Flow_0q0e80a" sourceRef="Activity_09fu3uq" targetRef="Gateway_08m8030" />
+        <bpmn:sequenceFlow id="Flow_0q0e80a" sourceRef="Activity_09fu3uq" targetRef="Activity_15o2wki" />
         <bpmn:exclusiveGateway id="Gateway_08m8030" default="Flow_085k0wh">
-          <bpmn:incoming>Flow_0q0e80a</bpmn:incoming>
+          <bpmn:incoming>Flow_1m52uru</bpmn:incoming>
           <bpmn:outgoing>Flow_11v04bj</bpmn:outgoing>
           <bpmn:outgoing>Flow_085k0wh</bpmn:outgoing>
         </bpmn:exclusiveGateway>
-        <bpmn:sequenceFlow id="Flow_11v04bj" sourceRef="Gateway_08m8030" targetRef="Activity_selectPayment">
+        <bpmn:sequenceFlow id="Flow_11v04bj" sourceRef="Gateway_08m8030" targetRef="Activity_createCase">
           <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${createCase}</bpmn:conditionExpression>
         </bpmn:sequenceFlow>
         <bpmn:endEvent id="Event_1vfrz1i">
@@ -56,22 +62,27 @@ execution.setVariable("caseType", "4")
           <bpmn:incoming>Flow_19jlaw0</bpmn:incoming>
         </bpmn:endEvent>
         <bpmn:sequenceFlow id="Flow_19jlaw0" sourceRef="Activity_createCase" targetRef="Event_0bwbgyt" />
-        <bpmn:serviceTask id="Activity_selectPayment" name="Select payment work" camunda:delegateExpression="${selectOneDelegate}">
+        <bpmn:serviceTask id="Activity_15o2wki" name="StartTransactionDelegate" camunda:delegateExpression="${startTransactionDelegate}">
+          <bpmn:incoming>Flow_0q0e80a</bpmn:incoming>
+          <bpmn:outgoing>Flow_05a9824</bpmn:outgoing>
+        </bpmn:serviceTask>
+        <bpmn:sequenceFlow id="Flow_05a9824" sourceRef="Activity_15o2wki" targetRef="Activity_savePayment" />
+        <bpmn:serviceTask id="Activity_1ljabnt" name="EndTransactionDelegate" camunda:delegateExpression="${endTransactionDelegate}">
+          <bpmn:incoming>Flow_11xr8x9</bpmn:incoming>
+          <bpmn:outgoing>Flow_1m52uru</bpmn:outgoing>
+        </bpmn:serviceTask>
+        <bpmn:sequenceFlow id="Flow_1m52uru" sourceRef="Activity_1ljabnt" targetRef="Gateway_08m8030" />
+        <bpmn:serviceTask id="Activity_savePayment" name="Сохранить&#10;Payment" camunda:delegateExpression="${saveObjectDelegate}">
           <bpmn:extensionElements>
             <camunda:inputOutput>
               <camunda:inputParameter name="outputVarName">payment</camunda:inputParameter>
-              <camunda:inputParameter name="parameters">
-                <camunda:map>
-                  <camunda:entry key="paymentExId">${paymentExId}</camunda:entry>
-                </camunda:map>
-              </camunda:inputParameter>
-              <camunda:inputParameter name="selectQuery">SELECT p FROM Payment p WHERE p.exId = :paymentExId</camunda:inputParameter>
+              <camunda:inputParameter name="saveObject">${payment}</camunda:inputParameter>
             </camunda:inputOutput>
           </bpmn:extensionElements>
-          <bpmn:incoming>Flow_11v04bj</bpmn:incoming>
-          <bpmn:outgoing>Flow_1qv2joc</bpmn:outgoing>
+          <bpmn:incoming>Flow_05a9824</bpmn:incoming>
+          <bpmn:outgoing>Flow_11xr8x9</bpmn:outgoing>
         </bpmn:serviceTask>
-        <bpmn:sequenceFlow id="Flow_1qv2joc" sourceRef="Activity_selectPayment" targetRef="Activity_createCase" />
+        <bpmn:sequenceFlow id="Flow_11xr8x9" sourceRef="Activity_savePayment" targetRef="Activity_1ljabnt" />
       </bpmn:subProcess>
       <bpmn:endEvent id="Event_19ffz89">
         <bpmn:incoming>Flow_148jwd6</bpmn:incoming>
@@ -108,21 +119,21 @@ def payments = [:]
 def pipeLineData = execution.getVariable("pipeLineData")
 
 pipeLineData.each{pipeLineItem -&gt;
-    def caseRules = payments[pipeLineItem.paymentExId]
+    def caseRules = payments[pipeLineItem.paymentId.id]
     if(caseRules == null) {
         caseRules = new CaseRulesDto()
     }
 
-
-    def ruleCode = pipeLineItem.uId.code
-    if(isCodeAccepted(ruleCode)) {
-      caseRules.rules.add(pipeLineItem.uId)
+    if(pipeLineItem.uId != null) {
+        def ruleCode = pipeLineItem.uId.code
+        if(isCodeAccepted(ruleCode)) {
+            caseRules.rules.add(pipeLineItem.uId)
+        }
     }
 
-    caseRules.paymentExId = pipeLineItem.paymentExId
-    caseRules.caseType = "" // TODO batchRule.prop("CaseType").stringValue()
+    caseRules.paymentId = pipeLineItem.paymentId
 
-    payments[pipeLineItem.paymentExId] = caseRules
+    payments[pipeLineItem.paymentId.id] = caseRules
 }
 
 
@@ -169,12 +180,8 @@ PAYMENT.EXID
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlPaymentCasePostBatch">
       <bpmndi:BPMNEdge id="Flow_1am9ihu_di" bpmnElement="Flow_1am9ihu">
-        <di:waypoint x="2020" y="260" />
-        <di:waypoint x="2080" y="260" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
-        <di:waypoint x="2180" y="260" />
-        <di:waypoint x="2242" y="260" />
+        <di:waypoint x="2300" y="250" />
+        <di:waypoint x="2370" y="250" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_16o1bkj_di" bpmnElement="Flow_16o1bkj">
         <di:waypoint x="620" y="250" />
@@ -188,8 +195,18 @@ PAYMENT.EXID
         <di:waypoint x="482" y="250" />
         <di:waypoint x="520" y="250" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
+        <di:waypoint x="2470" y="250" />
+        <di:waypoint x="2532" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_098yyfy_di" bpmnElement="Event_098yyfy">
+        <dc:Bounds x="2532" y="232" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
+        <dc:Bounds x="2370" y="210" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_17psnrn_di" bpmnElement="Activity_17psnrn" isExpanded="true">
-        <dc:Bounds x="660" y="80" width="1360" height="340" />
+        <dc:Bounds x="660" y="80" width="1640" height="340" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_13g5anu_di" bpmnElement="Flow_13g5anu">
         <di:waypoint x="1020" y="260" />
@@ -200,8 +217,8 @@ PAYMENT.EXID
         <di:waypoint x="920" y="260" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_148jwd6_di" bpmnElement="Flow_148jwd6">
-        <di:waypoint x="1840" y="260" />
-        <di:waypoint x="1922" y="260" />
+        <di:waypoint x="2180" y="260" />
+        <di:waypoint x="2222" y="260" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1qme100_di" bpmnElement="Flow_1qme100">
         <di:waypoint x="728" y="260" />
@@ -210,32 +227,43 @@ PAYMENT.EXID
       <bpmndi:BPMNShape id="Event_068l0e6_di" bpmnElement="Event_068l0e6">
         <dc:Bounds x="692" y="242" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1sm9ekd_di" bpmnElement="Activity_1sm9ekd" isExpanded="true">
-        <dc:Bounds x="1070" y="135" width="770" height="250" />
+      <bpmndi:BPMNShape id="Event_19ffz89_di" bpmnElement="Event_19ffz89">
+        <dc:Bounds x="2222" y="242" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_1qv2joc_di" bpmnElement="Flow_1qv2joc">
-        <di:waypoint x="1550" y="235" />
-        <di:waypoint x="1600" y="235" />
-      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Activity_1sm9ekd_di" bpmnElement="Activity_1sm9ekd" isExpanded="true">
+        <dc:Bounds x="1070" y="135" width="1110" height="250" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_19jlaw0_di" bpmnElement="Flow_19jlaw0">
-        <di:waypoint x="1700" y="235" />
-        <di:waypoint x="1752" y="235" />
+        <di:waypoint x="2070" y="235" />
+        <di:waypoint x="2112" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_085k0wh_di" bpmnElement="Flow_085k0wh">
-        <di:waypoint x="1380" y="260" />
-        <di:waypoint x="1380" y="307" />
+        <di:waypoint x="1900" y="260" />
+        <di:waypoint x="1900" y="307" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_11v04bj_di" bpmnElement="Flow_11v04bj">
-        <di:waypoint x="1405" y="235" />
-        <di:waypoint x="1450" y="235" />
+        <di:waypoint x="1925" y="235" />
+        <di:waypoint x="1970" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0q0e80a_di" bpmnElement="Flow_0q0e80a">
         <di:waypoint x="1300" y="235" />
-        <di:waypoint x="1355" y="235" />
+        <di:waypoint x="1370" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0drp6tg_di" bpmnElement="Flow_0drp6tg">
         <di:waypoint x="1146" y="235" />
         <di:waypoint x="1200" y="235" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05a9824_di" bpmnElement="Flow_05a9824">
+        <di:waypoint x="1470" y="235" />
+        <di:waypoint x="1530" y="235" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1m52uru_di" bpmnElement="Flow_1m52uru">
+        <di:waypoint x="1790" y="235" />
+        <di:waypoint x="1875" y="235" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11xr8x9_di" bpmnElement="Flow_11xr8x9">
+        <di:waypoint x="1630" y="235" />
+        <di:waypoint x="1690" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_0yrcxyv_di" bpmnElement="Event_0yrcxyv">
         <dc:Bounds x="1110" y="217" width="36" height="36" />
@@ -243,23 +271,26 @@ PAYMENT.EXID
       <bpmndi:BPMNShape id="Activity_0b5lrt0_di" bpmnElement="Activity_09fu3uq">
         <dc:Bounds x="1200" y="195" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0bwbgyt_di" bpmnElement="Event_0bwbgyt">
+        <dc:Bounds x="2112" y="217" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0i0fdee_di" bpmnElement="Activity_createCase">
-        <dc:Bounds x="1600" y="195" width="100" height="80" />
+        <dc:Bounds x="1970" y="195" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_08m8030_di" bpmnElement="Gateway_08m8030" isMarkerVisible="true">
-        <dc:Bounds x="1355" y="210" width="50" height="50" />
+        <dc:Bounds x="1875" y="210" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1vfrz1i_di" bpmnElement="Event_1vfrz1i">
-        <dc:Bounds x="1362" y="307" width="36" height="36" />
+        <dc:Bounds x="1882" y="307" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0bwbgyt_di" bpmnElement="Event_0bwbgyt">
-        <dc:Bounds x="1752" y="217" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_saveCase_di" bpmnElement="Activity_savePayment">
+        <dc:Bounds x="1530" y="195" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_17jv3nv_di" bpmnElement="Activity_selectPayment">
-        <dc:Bounds x="1450" y="195" width="100" height="80" />
+      <bpmndi:BPMNShape id="Activity_15o2wki_di" bpmnElement="Activity_15o2wki">
+        <dc:Bounds x="1370" y="195" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_19ffz89_di" bpmnElement="Event_19ffz89">
-        <dc:Bounds x="1922" y="242" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_1ljabnt_di" bpmnElement="Activity_1ljabnt">
+        <dc:Bounds x="1690" y="195" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0pogohz_di" bpmnElement="Activity_0pogohz">
         <dc:Bounds x="780" y="220" width="100" height="80" />
@@ -278,12 +309,6 @@ PAYMENT.EXID
         <bpmndi:BPMNLabel>
           <dc:Bounds x="279" y="275" width="87" height="27" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_098yyfy_di" bpmnElement="Event_098yyfy">
-        <dc:Bounds x="2242" y="242" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
-        <dc:Bounds x="2080" y="220" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_049rt3r_di" bpmnElement="TextAnnotation_049rt3r">
         <dc:Bounds x="160" y="80" width="323" height="125" />

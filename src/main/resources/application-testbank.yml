@@ -67,9 +67,3 @@ logging:
       cognive:
         projects:
           casernkb: DEBUG
-  pattern:
-    file: "%d %p %c{1.} [%t] %m%n"
-  file:
-    name: ${LOG_PATH:/home/af_butenkoav/casernkb/log/app.log}
-    clean-history-on-start: false
-

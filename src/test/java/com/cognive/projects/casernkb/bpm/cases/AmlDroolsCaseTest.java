@@ -29,18 +29,25 @@ public class AmlDroolsCaseTest {
 
     private static final String payloadJson = "{\"payload\":{\"amlDroolsCase\":{}}}";
 
-    private List<DroolsResponsePayment> getDroolsResponse(String paymentExId, List<String> codes) {
+    private Payment getPayment(Long id) {
+        Payment payment = new Payment();
+        payment.setId(id);
+        payment.setName("Name " + id.toString());
+        return payment;
+    }
+
+    private List<DroolsResponsePayment> getDroolsResponse(Payment payment, List<String> codes) {
         List<DroolsResponsePayment> rules = new ArrayList<>();
         codes.forEach(x -> {
             DroolsResponsePayment d = new DroolsResponsePayment();
-            d.setPaymentExId(paymentExId);
+            d.setPaymentId(payment);
             d.setUId(TestUtils.getBaseDictionaryCharCode("no", x));
             rules.add(d);
         });
 
         if(codes.isEmpty()) {
             DroolsResponsePayment dNoRules = new DroolsResponsePayment();
-            dNoRules.setPaymentExId(paymentExId);
+            dNoRules.setPaymentId(payment);
             rules.add(dNoRules);
         }
 
@@ -52,10 +59,7 @@ public class AmlDroolsCaseTest {
     public void Should_nothing() {
         autoMock("bpmn/cases/amlDroolsCase.bpmn");
 
-        Payment payment = new Payment();
-
         Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("payment", payment);
         selectResult.put("droolsData", Collections.emptyList());
 
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
@@ -84,16 +88,10 @@ public class AmlDroolsCaseTest {
         Payment payment = new Payment();
 
         Map<String, Object> selectResultMany = new HashMap<>();
-        selectResultMany.put("droolsData", getDroolsResponse("1234", Collections.emptyList()));
+        selectResultMany.put("droolsData", getDroolsResponse(payment, Collections.emptyList()));
 
         final FluentJavaDelegateMock selectDelegate = registerJavaDelegateMock("selectDelegate");
         selectDelegate.onExecutionSetVariables(selectResultMany);
-
-        Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("payment", payment);
-
-        final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
-        selectOneDelegate.onExecutionSetVariables(selectResult);
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseCreate")
                 .onExecutionAddVariable("test", "test")
@@ -118,16 +116,10 @@ public class AmlDroolsCaseTest {
         Payment payment = new Payment();
 
         Map<String, Object> selectResultMany = new HashMap<>();
-        selectResultMany.put("droolsData", getDroolsResponse("123", List.of("01", "74")));
+        selectResultMany.put("droolsData", getDroolsResponse(payment, List.of("01", "74")));
 
         final FluentJavaDelegateMock selectDelegate = registerJavaDelegateMock("selectDelegate");
         selectDelegate.onExecutionSetVariables(selectResultMany);
-
-        Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("payment", payment);
-
-        final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
-        selectOneDelegate.onExecutionSetVariables(selectResult);
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseCreate")
                 .deploy(processEngineRule)
@@ -166,16 +158,10 @@ public class AmlDroolsCaseTest {
         payment.setCaseOperationList(Collections.singletonList(caseOperation));
 
         Map<String, Object> selectResultMany = new HashMap<>();
-        selectResultMany.put("droolsData", getDroolsResponse("123", List.of("01", "74")));
+        selectResultMany.put("droolsData", getDroolsResponse(payment, List.of("01", "74")));
 
         final FluentJavaDelegateMock selectDelegate = registerJavaDelegateMock("selectDelegate");
         selectDelegate.onExecutionSetVariables(selectResultMany);
-
-        Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("payment", payment);
-
-        final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
-        selectOneDelegate.onExecutionSetVariables(selectResult);
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseCreate")
             .deploy(processEngineRule)
@@ -212,16 +198,10 @@ public class AmlDroolsCaseTest {
         payment.setCaseOperationList(Collections.singletonList(caseOperation));
 
         Map<String, Object> selectResultMany = new HashMap<>();
-        selectResultMany.put("droolsData", getDroolsResponse("123", List.of("01", "64", "74")));
+        selectResultMany.put("droolsData", getDroolsResponse(payment, List.of("01", "64", "74")));
 
         final FluentJavaDelegateMock selectDelegate = registerJavaDelegateMock("selectDelegate");
         selectDelegate.onExecutionSetVariables(selectResultMany);
-
-        Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("payment", payment);
-
-        final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
-        selectOneDelegate.onExecutionSetVariables(selectResult);
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseCreate")
                 .deploy(processEngineRule)
@@ -264,16 +244,10 @@ public class AmlDroolsCaseTest {
         payment.setCaseOperationList(Collections.singletonList(caseOperation));
 
         Map<String, Object> selectResultMany = new HashMap<>();
-        selectResultMany.put("droolsData", getDroolsResponse("1234", List.of("01", "64", "65")));
+        selectResultMany.put("droolsData", getDroolsResponse(payment, List.of("01", "64", "65")));
 
         final FluentJavaDelegateMock selectDelegate = registerJavaDelegateMock("selectDelegate");
         selectDelegate.onExecutionSetVariables(selectResultMany);
-
-        Map<String, Object> selectResult = new HashMap<>();
-        selectResult.put("payment", payment);
-
-        final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
-        selectOneDelegate.onExecutionSetVariables(selectResult);
 
         processEngineRule.manageDeployment(registerCallActivityMock("caseCreate")
                 .deploy(processEngineRule)
