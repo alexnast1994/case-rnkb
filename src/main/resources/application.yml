@@ -93,6 +93,10 @@ spring:
           destination: ${TOPIC_PIPELINE_INPUT}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
+        savePipelineResponsePaymentMessageInput-in-0:
+          destination: ${TOPIC_PIPELINE_RESPONSE_SAVER_INPUT:rnkb-so-check-result}
+          group: ${KAFKA_GROUP:case-rnkb}
+          binder: kafka
         outMessage-out-0:
           destination: ${TOPIC_MESSAGE_OUT}
           group: ${KAFKA_GROUP:case-rnkb}
@@ -102,7 +106,7 @@ spring:
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
       function:
-        definition: commonMessageInput;csmMessageInput;pipelineMessageInput
+        definition: commonMessageInput;csmMessageInput;pipelineMessageInput;savePipelineResponsePaymentMessageInput
 
 server:
   port: ${SERVER_PORT:8193}

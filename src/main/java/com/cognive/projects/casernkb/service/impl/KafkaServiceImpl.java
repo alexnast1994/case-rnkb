@@ -136,6 +136,21 @@ public class KafkaServiceImpl implements KafkaService {
         streamBridge.send(binding, message);
     }
 
+    @Bean
+    public Consumer<Message<String>> savePipelineResponsePaymentMessageInput() {
+        return x -> {
+            runProcess(x, () -> {
+                Map<String, Object> variables = new HashMap<>();
+                ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
+                variables.put("payload", jsonData);
+
+                return new Process("savePipelineResponsePayment",
+                        false,
+                        variables);
+            });
+        };
+    }
+
     private String getHeaderData(Object value) {
         if (value == null)
             return null;
