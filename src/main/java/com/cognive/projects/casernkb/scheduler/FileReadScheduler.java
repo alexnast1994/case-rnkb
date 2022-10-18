@@ -71,6 +71,8 @@ public class FileReadScheduler {
     public void readJsonFromFile() throws IOException {
         //File file = new File(jsonPath);
         ObjectMapper mapper = new ObjectMapper();
+        log.info("Название бакета минио: {}", minioBucketName);
+        log.info("Проверка на существование бакета: {}", minioService.bucketExists(minioBucketName));
         if (minioService.bucketExists(minioBucketName) && minioService.objectExists(minioBucketName,minioFolderName,minioFileName)) {
             InputStream inputStreamObject = minioService.downloadObject(minioBucketName,minioFolderName,minioFileName);
             InputStream inputStreamForSave = minioService.downloadObject(minioBucketName,minioFolderName,minioFileName);
