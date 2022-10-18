@@ -33,7 +33,7 @@ minio:
   accessKey: ${MINIO_ACCESS_KEY:test-user}
   secretKey: ${MINIO_SECRET_KEY:%T4r#E2w!Q}
   secure: ${MINIO_SECURE:false}
-  bucket-name: ${MINIO_BUCKET_NAME:test-bucket}
+  bucket-name: ${MINIO_BUCKET_NAME:rnkb-so}
   file-size: ${MINIO_FILE_SIZE:1073741824} #  Here is the maximum file size
   errorCaseFolder: ${MINIO_ERR0R_CASE_FOLDER:errortmp}
   successCaseFolder: ${MINIO_SUCCESS_CASE_FOLDER:successtmp}
