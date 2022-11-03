@@ -29,16 +29,16 @@ app:
 
 minio:
   endpoint: ${MINIO_ENDPOINT:https://s3.cognive.com/}
-  caseFolder: ${MINIO_CASE_FOLDER:tmp}
-  fileName: ${MINIO_FILE_NAME:result.json}
+  port: ${MINIO_PORT:443}
+  accessKey: ${MINIO_ACCESS_KEY:rnkb-so}
+  secretKey: ${MINIO_SECRET_KEY:952c4678-7867-4fec-b407-e0ba0c02c150}
+  secure: ${MINIO_SECURE:true}
+  bucket-name: ${MINIO_BUCKET_NAME:rnkb-so}
+  file-size: ${MINIO_FILE_SIZE:1073741824} #  Here is the maximum file size
   errorCaseFolder: ${MINIO_ERR0R_CASE_FOLDER:errortmp}
   successCaseFolder: ${MINIO_SUCCESS_CASE_FOLDER:successtmp}
-  port: ${MINIO_PORT:9000}
-  accessKey: ${MINIO_ACCESS_KEY:test-user}
-  secretKey: ${MINIO_SECRET_KEY:%T4r#E2w!Q}
-  secure: false
-  bucket-name: ${MINIO_BUCKET_NAME:test-bucket}
-  file-size: ${MINIO_FILE_SIZE:1073741824} #  Here is the maximum file size
+  caseFolder: ${MINIO_CASE_FOLDER:tmp}
+  fileName: ${MINIO_FILE_NAME:result.json}
 
 spring:
   liquibase:
@@ -93,6 +93,10 @@ spring:
           destination: ${TOPIC_PIPELINE_INPUT}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
+        savePipelineResponsePaymentMessageInput-in-0:
+          destination: ${TOPIC_PIPELINE_RESPONSE_SAVER_INPUT:rnkb-so-check-result}
+          group: ${KAFKA_GROUP:case-rnkb}
+          binder: kafka
         outMessage-out-0:
           destination: ${TOPIC_MESSAGE_OUT}
           group: ${KAFKA_GROUP:case-rnkb}
@@ -102,7 +106,7 @@ spring:
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
       function:
-        definition: commonMessageInput;csmMessageInput;pipelineMessageInput
+        definition: commonMessageInput;csmMessageInput;pipelineMessageInput;savePipelineResponsePaymentMessageInput
 
 server:
   port: ${SERVER_PORT:8193}

@@ -20,7 +20,7 @@ app:
     readTime: ${FILES_SCHEDULER_RETENTION:100}
 
 minio:
-  endpoint: ${MINIO_ENDPOINT:http://10.86.26.209:9000/}
+  endpoint: ${MINIO_ENDPOINT:https://s3.cognive.com/}
   caseFolder: ${MINIO_CASE_FOLDER:tmp}
   fileName: ${MINIO_FILE_NAME:result.json}
   errorCaseFolder: ${MINIO_ERR0R_CASE_FOLDER:errortmp}

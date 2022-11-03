@@ -101,7 +101,7 @@ public class MidlRequestClientTest {
 
         Condition<Object> isRequest = new Condition<>(p -> {
             Request t = (Request) p;
-            return t.getTask() != null;
+            return t != null;
         }, "isRequest");
 
         Condition<Object> isTaskCases = new Condition<>(p -> {
@@ -184,7 +184,7 @@ public class MidlRequestClientTest {
 
         Condition<Object> isRequest = new Condition<>(p -> {
             Request t = (Request) p;
-            return t.getTask() != null;
+            return t != null;
         }, "isRequest");
 
         Condition<Object> isTaskCases = new Condition<>(p -> {

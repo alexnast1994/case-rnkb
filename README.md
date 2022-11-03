@@ -28,6 +28,7 @@
 - {+ MINIO_ERR0R_CASE_FOLDER - папка на складывание ошибочных файлов +}
 - {+ MINIO_SUCCESS_CASE_FOLDER - папка для успешно отработтаных фйалов +}
 - {+ MINIO_PORT - +}
+- {+ MINIO_SECURE - использовать https [true, false] +}
 - {+ MINIO_ACCESS_KEY - +}
 - {+ MINIO_SECRET_KEY - +}
 - {+ MINIO_BUCKET_NAME - +}
