@@ -144,7 +144,7 @@ public class KafkaServiceImpl implements KafkaService {
                 ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
                 variables.put("payload", jsonData);
 
-                return new Process("savePipelineResponsePayment",
+                return new Process("amlPaymentCasePostBatch",
                         false,
                         variables);
             });
