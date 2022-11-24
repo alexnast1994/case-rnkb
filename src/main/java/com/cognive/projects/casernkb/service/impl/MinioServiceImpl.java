@@ -4,7 +4,9 @@ import com.cognive.projects.casernkb.config.MinioConfig;
 import com.cognive.projects.casernkb.service.MinioService;
 import com.cognive.projects.casernkb.utils.MinioUtil;
 import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
 import io.minio.messages.Bucket;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,9 +16,9 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Service
+@Slf4j
 public class MinioServiceImpl implements MinioService {
 
     private final MinioUtil minioUtil;
@@ -64,7 +66,7 @@ public class MinioServiceImpl implements MinioService {
 
 
     @Override
-    public String putObject(MultipartFile file, String bucketName,String folderName,String fileType) {
+    public String putObject(MultipartFile file, String bucketName, String folderName, String fileType) {
         try {
             bucketName = StringUtils.isNotBlank(bucketName) ? bucketName : minioProperties.getBucketName();
             if (!this.bucketExists(bucketName)) {
@@ -73,15 +75,16 @@ public class MinioServiceImpl implements MinioService {
             String fileName = file.getOriginalFilename();
             SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy-HH.mm.ss");
             Date date = new Date();
-            String objectName = fileName.substring(0,fileName.lastIndexOf(".")) + "-" + formatter.format(date)
+            String objectName = fileName.substring(0, fileName.lastIndexOf(".")) + "-" + formatter.format(date)
                     + fileName.substring(fileName.lastIndexOf("."));
-            minioUtil.putObject(bucketName, file, folderName+"/"+objectName,fileType);
-            return minioProperties.getEndpoint()+"/"+bucketName+"/"+folderName+"/"+objectName;
+            minioUtil.putObject(bucketName, file, folderName + "/" + objectName, fileType);
+            return minioProperties.getEndpoint() + "/" + bucketName + "/" + folderName + "/" + objectName;
         } catch (Exception e) {
             e.printStackTrace();
             return " Upload failed ";
         }
     }
+
     @Override
     public String putObject(InputStream file, String bucketName, String folderName, String objectName, String fileType) {
         try {
@@ -92,10 +95,10 @@ public class MinioServiceImpl implements MinioService {
             String fileName = objectName;
             SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy-HH.mm.ss");
             Date date = new Date();
-            String fileObjectName = fileName.substring(0,fileName.lastIndexOf(".")) + "-" + formatter.format(date)
+            String fileObjectName = fileName.substring(0, fileName.lastIndexOf(".")) + "-" + formatter.format(date)
                     + fileName.substring(fileName.lastIndexOf("."));
-            minioUtil.putObject(bucketName, folderName+"/"+fileObjectName,file,fileType);
-            return minioProperties.getEndpoint()+"/"+bucketName+"/"+folderName+"/"+objectName;
+            minioUtil.putObject(bucketName, folderName + "/" + fileObjectName, file, fileType);
+            return minioProperties.getEndpoint() + "/" + bucketName + "/" + folderName + "/" + objectName;
         } catch (Exception e) {
             e.printStackTrace();
             return " Upload failed ";
@@ -103,8 +106,8 @@ public class MinioServiceImpl implements MinioService {
     }
 
     @Override
-    public InputStream downloadObject(String bucketName, String folderName ,String objectName) {
-        return minioUtil.getObject(bucketName,folderName +"/"+objectName);
+    public InputStream downloadObject(String bucketName, String folderName, String objectName) {
+        return minioUtil.getObject(bucketName, folderName + "/" + objectName);
     }
 
     @Override
@@ -114,16 +117,34 @@ public class MinioServiceImpl implements MinioService {
 
     @Override
     public boolean removeListObject(String bucketName, List<String> objectNameList) {
-        return minioUtil.removeObject(bucketName,objectNameList);
+        return minioUtil.removeObject(bucketName, objectNameList);
     }
 
     @Override
-    public String getObjectUrl(String bucketName,String objectName) {
+    public String getObjectUrl(String bucketName, String objectName) {
         return minioUtil.getObjectUrl(bucketName, objectName);
     }
 
     @Override
-    public boolean objectExists(String bucketName,String folderName, String objectName) {
-        return minioUtil.statObject(bucketName,folderName+"/"+objectName)!=null? true: false;
+    public boolean objectExists(String bucketName, String folderName, String objectName) {
+        return minioUtil.statObject(bucketName, folderName + "/" + objectName) != null;
+    }
+
+    @Override
+    public void putRequestFile(InputStream file, String fileName) {
+        var bucketName = minioProperties.getBucketName();
+        if (!this.bucketExists(bucketName)) {
+            this.makeBucket(bucketName);
+        }
+        try {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(fileName)
+                            .stream(file, -1, minioProperties.getFileSize())
+                            .build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

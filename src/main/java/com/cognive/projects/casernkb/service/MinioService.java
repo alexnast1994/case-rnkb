@@ -38,12 +38,17 @@ public interface MinioService {
     boolean removeObject(String bucketName, String objectName);
 
 
-
-    /** *  Delete files in bulk  * @param bucketName * @param objectNameList * @return */
+    /**
+     * Delete files in bulk  * @param bucketName * @param objectNameList * @return
+     */
     boolean removeListObject(String bucketName, List<String> objectNameList);
 
-    /** *  Get file path  * @param bucketName * @param objectName * @return */
-    String getObjectUrl(String bucketName,String objectName);
+    /**
+     * Get file path  * @param bucketName * @param objectName * @return
+     */
+    String getObjectUrl(String bucketName, String objectName);
 
-    boolean objectExists(String bucketName,String folderName,String objectName);
+    boolean objectExists(String bucketName, String folderName, String objectName);
+
+    void putRequestFile(InputStream file, String fileName);
 }
