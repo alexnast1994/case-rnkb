@@ -7,23 +7,20 @@ import com.cognive.projects.casernkb.model.RuleResultCO;
 import com.cognive.projects.casernkb.service.BPMProcessService;
 import com.cognive.projects.casernkb.service.MinioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.minio.MinioClient;
-import io.minio.errors.ErrorResponseException;
-import io.minio.messages.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.camunda.bpm.engine.variable.Variables;
-import org.h2.api.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -57,9 +54,8 @@ public class FileReadScheduler {
     private String minioFileName;
 
 
-
-    private BPMProcessService bpmProcessService;
-    private MinioService minioService;
+    private final BPMProcessService bpmProcessService;
+    private final MinioService minioService;
 
     @Autowired
     public FileReadScheduler(BPMProcessService bpmProcessService, MinioService minioService) {
@@ -77,7 +73,7 @@ public class FileReadScheduler {
             try {
                 RuleModelJob listObject = mapper.readValue(inputStreamObject, RuleModelJob.class);
                 HashMap<String, Object> variables = new HashMap<>();
-                List<RuleResultCO> operations = Optional.ofNullable(listObject.getOperation()).orElseGet(()->new ArrayList<>());
+                List<RuleResultCO> operations = Optional.ofNullable(listObject.getOperation()).orElseGet(ArrayList::new);
                 //String json = mapper.writeValueAsString(operations);
                 //log.info(json);
                 if(operations.size()>0) {

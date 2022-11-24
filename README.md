@@ -44,6 +44,9 @@
 - {+ KAFKA_SSL_KEY_PASSWORD - Пароль +}
 
 - {+ TOPIC_MESSAGE_INPUT - Топик для входящих сообщений +}
-- {+ TOPIC_CSM_INPUT - Топик от CSM +} 
+- {+ TOPIC_CSM_INPUT - Топик от CSM +}
 - {+ TOPIC_MESSAGE_OUT - Тип исходящих сообщений +}
 - {+ TOPIC_ERROR_OUT - Топик для отладки и просмотра ошибок запуска процессов от camunda +}
+- MINIO_REEST_FOLDER - папка в minio для сохранения файлов реестра
+- LEGAL_DOC_PATTERN - Путь к шаблону ЮЛ
+- INDIVIDUAL_DOC_PATTERN - Путь к шаблону ФЛ

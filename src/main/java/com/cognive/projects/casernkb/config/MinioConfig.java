@@ -43,6 +43,9 @@ public class MinioConfig {
     @Value("${minio.fileName}")
     private String fileName;
 
+    @Value("${minio.reestFolder}")
+    private String folderReestName;
+
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder()

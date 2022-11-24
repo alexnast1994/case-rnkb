@@ -39,6 +39,7 @@ minio:
   successCaseFolder: ${MINIO_SUCCESS_CASE_FOLDER:successtmp}
   caseFolder: ${MINIO_CASE_FOLDER:tmp}
   fileName: ${MINIO_FILE_NAME:result.json}
+  reestFolder: ${MINIO_REEST_FOLDER:reest}
 
 spring:
   liquibase:
@@ -127,7 +128,9 @@ server:
       mapping:
         pipeline-payment-response: ${PIPELINE_PAYMENT_RESPONSE_ID:2b605119-16db-47d9-a087-cd1ad87731f3}
     error-topic: ${TOPIC_ERROR_OUT:}
-
+zk:
+  legal-doc-pattern: ${LEGAL_DOC_PATTERN:PatternLegal.docx}
+  individual-doc-pattern: ${INDIVIDUAL_DOC_PATTERN:PatternIndividual.docx}
 logging:
   level:
     org.springframework: ERROR
