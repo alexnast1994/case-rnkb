@@ -93,6 +93,22 @@ public class KafkaServiceImpl implements KafkaService {
     }
 
     @Bean
+    public Consumer<Message<String>> kycCaseCreationInput() {
+        return x -> {
+            runProcess(x, () -> {
+                Map<String, Object> variables = new HashMap<>();
+                ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
+                variables.put("payload", jsonData);
+
+                return new Process(properties.getKyc().getProcessName(),
+                        false,
+                        variables);
+            });
+
+        };
+    }
+
+    @Bean
     public Consumer<Message<String>> pipelineMessageInput() {
         return x -> {
             runProcess(x, () -> {
@@ -134,6 +150,21 @@ public class KafkaServiceImpl implements KafkaService {
                 .build();
 
         streamBridge.send(binding, message);
+    }
+
+    @Bean
+    public Consumer<Message<String>> saveRiskResponseMessageInput() {
+        return x -> {
+            runProcess(x, () -> {
+                Map<String, Object> variables = new HashMap<>();
+                ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
+                variables.put("payload", jsonData);
+
+                return new Process("amlRiskSaveResult",
+                        false,
+                        variables);
+            });
+        };
     }
 
     @Bean

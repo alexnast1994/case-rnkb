@@ -12,5 +12,6 @@ public class KafkaServerProperties {
     private ServiceTopicProperties camunda;
     private ServiceTopicProperties csm;
     private ServiceTopicProperties pipeline;
+    private ServiceTopicProperties kyc;
     private String errorTopic;
 }

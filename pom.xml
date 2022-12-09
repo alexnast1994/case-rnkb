@@ -11,7 +11,7 @@
 
     <groupId>com.cognive.projects</groupId>
     <artifactId>case-rnkb</artifactId>
-    <version>2.16.0</version>
+    <version>2.18.0</version>
     <name>case-rnkb</name>
     <packaging>jar</packaging>
     <description>Create cases</description>
@@ -28,6 +28,10 @@
         <repository>
             <id>consaltica</id>
             <url>https://nexus.consaltica.ru/repository/consaltica/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
         </repository>
     </repositories>
     <distributionManagement>
@@ -57,7 +61,7 @@
         <dependency>
             <groupId>com.cognive.models</groupId>
             <artifactId>models-rnkb</artifactId>
-            <version>2.16.0</version>
+            <version>2.18.0</version>
         </dependency>
         <dependency>
             <groupId>io.minio</groupId>
