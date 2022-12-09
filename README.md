@@ -50,3 +50,4 @@
 - MINIO_REEST_FOLDER - папка в minio для сохранения файлов реестра
 - LEGAL_DOC_PATTERN - Путь к шаблону ЮЛ
 - INDIVIDUAL_DOC_PATTERN - Путь к шаблону ФЛ
+- TOPIC_RISK_RESPONSE_SAVE_INPUT - Топик для чтения сообщений по обработке рисков
