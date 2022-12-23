@@ -5,8 +5,12 @@ import com.cognive.projects.casernkb.config.MessageMappingConfig;
 import com.cognive.projects.casernkb.config.property.KafkaServerProperties;
 import com.cognive.projects.casernkb.model.ErrorDto;
 import com.cognive.projects.casernkb.model.PipelineResponse;
+import com.cognive.projects.casernkb.model.zk_request.AMLRequest;
+import com.cognive.projects.casernkb.model.zk_request.AMLRequestStatus;
+import com.cognive.projects.casernkb.model.zk_request.AMLResponse;
 import com.cognive.projects.casernkb.service.BPMProcessService;
 import com.cognive.projects.casernkb.service.KafkaService;
+import com.cognive.projects.casernkb.service.ZkRequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,9 +18,11 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.engine.variable.value.ObjectValue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -46,6 +52,9 @@ public class KafkaServiceImpl implements KafkaService {
 
     private final StreamBridge streamBridge;
 
+    @Setter(onMethod_ = {@Autowired})
+    private ZkRequestService zkRequestService;
+
     private final KafkaServerProperties properties;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -67,7 +76,43 @@ public class KafkaServiceImpl implements KafkaService {
                 return new Process(amlHeader,
                         amlHeader == null,
                         variables);
-                    });
+            });
+        };
+    }
+
+    @Bean
+    public Consumer<Message<String>> zkAmlRequestInput() {
+        return x -> {
+            try {
+                var request = objectMapper.readValue(x.getPayload(), AMLRequest.class);
+                zkRequestService.createObjectsAndSend(request);
+            } catch (JsonProcessingException e) {
+                log.error("", e);
+            }
+        };
+    }
+
+    @Bean
+    public Consumer<Message<String>> zkAmlResponseInput() {
+        return x -> {
+            try {
+                var request = objectMapper.readValue(x.getPayload(), AMLResponse.class);
+                zkRequestService.createObjectsAndSend(request);
+            } catch (JsonProcessingException e) {
+                log.error("", e);
+            }
+        };
+    }
+
+    @Bean
+    public Consumer<Message<String>> zkAmlStatusInput() {
+        return x -> {
+            try {
+                var request = objectMapper.readValue(x.getPayload(), AMLRequestStatus.class);
+                zkRequestService.saveStatus(request);
+            } catch (JsonProcessingException e) {
+                log.error("", e);
+            }
         };
     }
 
@@ -152,6 +197,16 @@ public class KafkaServiceImpl implements KafkaService {
         streamBridge.send(binding, message);
     }
 
+    @Override
+    public void sendZkRequestAnswer(AMLResponse response) {
+        sendZkAnswer(properties.getZkAmlRequestOutputTopic(), response);
+    }
+
+    @Override
+    public void sendZkResponseAnswer(AMLResponse response) {
+        sendZkAnswer(properties.getZkAmlResponseOutputTopic(), response);
+    }
+
     @Bean
     public Consumer<Message<String>> saveRiskResponseMessageInput() {
         return x -> {
@@ -204,7 +259,7 @@ public class KafkaServiceImpl implements KafkaService {
 
             Process process = function.get();
             try {
-                if(process.isSkip()) {
+                if (process.isSkip()) {
                     log.info("Skip run: {}", process.getName());
                     return;
                 }
@@ -218,6 +273,15 @@ public class KafkaServiceImpl implements KafkaService {
             }
         } catch (Exception ex) {
             sendError("", "", ex);
+        }
+    }
+
+    private void sendZkAnswer(String topic, AMLResponse response) {
+        try {
+            var result = objectMapper.writeValueAsString(response);
+            streamBridge.send(topic, result);
+        } catch (JsonProcessingException e) {
+            log.error("", e);
         }
     }
 
@@ -261,11 +325,11 @@ public class KafkaServiceImpl implements KafkaService {
                 JsonNode runEventResponse = root.get("runEventResponse");
                 if (runEventResponse.has("workflowId")) {
                     response.setWorkflowId(runEventResponse.get("workflowId").textValue());
-                    if(this.properties.getPipeline().getMapping() != null) {
+                    if (this.properties.getPipeline().getMapping() != null) {
                         this.properties.getPipeline().getMapping().entrySet()
                                 .stream().filter(x -> x.getValue().equals(response.getWorkflowId())).findFirst().ifPresent(mapping -> {
-                            response.setMappingName(mapping.getKey());
-                        });
+                                    response.setMappingName(mapping.getKey());
+                                });
                     }
                 }
                 if (runEventResponse.has("status")) {

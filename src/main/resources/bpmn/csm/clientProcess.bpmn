@@ -49,7 +49,7 @@
       <bpmn:incoming>Flow_0mouvka</bpmn:incoming>
       <bpmn:outgoing>Flow_0id5bqk</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:exclusiveGateway id="Gateway_14jv5q0" name="Кейсы найдены?" default="Flow_1tdal2p">
+    <bpmn:exclusiveGateway id="Gateway_14jv5q0" name="Кейсы найдены?">
       <bpmn:incoming>Flow_0id5bqk</bpmn:incoming>
       <bpmn:outgoing>Flow_1tdal2p</bpmn:outgoing>
       <bpmn:outgoing>Flow_1yf8hm0</bpmn:outgoing>
@@ -58,7 +58,9 @@
     <bpmn:endEvent id="Event_0m11oe7">
       <bpmn:incoming>Flow_1poj8yf</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1tdal2p" sourceRef="Gateway_14jv5q0" targetRef="Activity_08gaqrz" />
+    <bpmn:sequenceFlow id="Flow_1tdal2p" sourceRef="Gateway_14jv5q0" targetRef="Activity_08gaqrz">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cases.size() &gt; 1}    </bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
     <bpmn:subProcess id="createCaseKyc" name="createCaseKyc">
       <bpmn:incoming>Flow_1xc4nq8</bpmn:incoming>
       <bpmn:outgoing>Flow_1g9zlz9</bpmn:outgoing>
@@ -132,9 +134,9 @@ filteredList.each { l -&gt;
     def record = result.find { r -&gt; r.prop("record").prop("listType").stringValue() == l.prop("Id").stringValue()
     }.prop("record")
     java.lang.System.out.println(record)
-    kycCaseClientList2.setTypeList(getBd(214, record.prop("listType") as String))
-    kycCaseClientList2.setExId(record.prop("exId") as String)
-    kycCaseClientList2.setNum(record.prop("num") as String)
+    kycCaseClientList2.setTypeList(getBd(214, record.prop("listType").stringValue()))
+    kycCaseClientList2.setExId(record.prop("exId").stringValue())
+    kycCaseClientList2.setNum(record.prop("num").stringValue())
     java.lang.System.out.println(result[0].prop("D0"))
     kycCaseClientList2.setNameMatch(result[0].prop("D0").numberValue() as Integer)
     kycCaseClientList2.setFirstName(result[0].prop("D28").numberValue() as Integer)
@@ -143,7 +145,7 @@ filteredList.each { l -&gt;
     kycCaseClientList2.setLevelBlocking(l.prop("LevelBlocking").stringValue() as Integer)
     kycCaseClientList2.setCheckStatus(l.prop("CheckStatus").stringValue() as Integer)
     kycCaseClientList2.setIsActive(record.prop("isActive").boolValue() as Boolean)
-    kycCaseClientList2.setEntityType(record.prop("entityType") as String)
+    kycCaseClientList2.setEntityType(record.prop("entityType").stringValue())
     kycCaseClientList2List.add(kycCaseClientList2)
 }
 execution.setVariable("kycCaseClientList2List", kycCaseClientList2List)</bpmn:script>
@@ -190,7 +192,6 @@ def json = JSON(pld)
 BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
-
 com.prime.db.rnkb.model.Case caseNew = new com.prime.db.rnkb.model.Case()
 caseNew.setCaseType(getBd(18, "5"))
 caseNew.setName(getBd(18,"5").getName())
@@ -207,16 +208,20 @@ execution.setVariable("case", caseNew)
         <bpmn:script>import com.prime.db.rnkb.model.kyc.KycCaseClientList2
 import com.prime.db.rnkb.model.kyc.KycCaseClientNameList
 import com.prime.db.rnkb.model.BaseDictionary
+import org.camunda.spin.json.SpinJsonNode
+
 import static org.camunda.spin.Spin.JSON
 
-            def pld = execution.getVariable("payload")
-            def json = JSON(pld)
+def pld = execution.getVariable("payload")
+def json = JSON(pld)
 
-            BaseDictionary getBd(int type, String code) {
-            baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
-            }
+BaseDictionary getBd(int type, String code) {
+    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
+}
 
-List&lt;KycCaseClientList2&gt; kyc2list = execution.getVariable("KYCCaseClientList2newOut")
+def kyc2list = execution.getVariable("kycCaseClientList2List")
+println("Списки kyc")
+println(kyc2list)
 List&lt;KycCaseClientNameList&gt; kycCaseClientNameLists = []
 def result = json.prop("Clients").elements()[0].prop("Results").elements()
 kyc2list.each {k -&gt;
@@ -225,14 +230,14 @@ kyc2list.each {k -&gt;
     record.prop("nameList").elements().each {n -&gt;
         KycCaseClientNameList kycCaseClientNameList = new KycCaseClientNameList()
         kycCaseClientNameList.setKycCaseClientList2Id(k)
-        kycCaseClientNameList.setNameType(getBd(280, n.prop("nameType") as String))
-        kycCaseClientNameList.setName(n.prop("name") as String)
-        kycCaseClientNameList.setFirstName(n.prop("firstName") as String)
-        kycCaseClientNameList.setLastName(n.prop("lastName") as String)
-        kycCaseClientNameList.setMiddleName(n.prop("middleName") as String)
+        kycCaseClientNameList.setNameType(getBd(280, n.prop("nameType").stringValue()))
+        kycCaseClientNameList.setName(n.prop("name").stringValue())
+        kycCaseClientNameList.setFirstName(n.hasProp("firstName") ? n.prop("firstName").stringValue() : null)
+        kycCaseClientNameList.setLastName(n.hasProp("lastName")  ? n.prop("lastName").stringValue() : null)
+        kycCaseClientNameList.setMiddleName(n.hasProp("middleName") ? n.prop("middleName").stringValue() : null)
         def thisResult = result.find { r -&gt; r.prop("record").prop("listType").stringValue() == k.getTypeList().getCode()
         }
-        kycCaseClientNameList.setBestMatch(thisResult.prop("bestMatch") != null ? true : false as Boolean)
+        kycCaseClientNameList.setBestMatch(thisResult.hasProp("bestMatch") &amp;&amp; thisResult.prop("bestMatch") != null ? true : false as Boolean)
         kycCaseClientNameLists.add(kycCaseClientNameList)
     }
 }
@@ -268,7 +273,7 @@ BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
 
-List&lt;KycCaseClientList2&gt; kyc2list = execution.getVariable("KYCCaseClientList2newOut")
+List&lt;KycCaseClientList2&gt; kyc2list = execution.getVariable("kycCaseClientList2List")
 List&lt;KycCaseClientAddressList&gt; kycCaseClientAddressLists = []
 
 def result = json.prop("Clients").elements()[0].prop("Results").elements()
@@ -278,8 +283,8 @@ kyc2list.each {k -&gt;
     record.prop("addressList").elements().each {n -&gt;
         KycCaseClientAddressList kycCaseClientAddressList = new KycCaseClientAddressList()
         kycCaseClientAddressList.setKycCaseClientList2Id(k)
-        kycCaseClientAddressList.setAddressType(getBd(281, n.prop("addressType") as String))
-        kycCaseClientAddressList.setAddressLine(n.prop("addressLine") as String)
+        kycCaseClientAddressList.setAddressType(getBd(281, n.prop("addressType").stringValue()))
+        kycCaseClientAddressList.setAddressLine(n.hasProp("addressLine") ? n.prop("addressLine").stringValue() : null)
         kycCaseClientAddressLists.add(kycCaseClientAddressList)
     }
 }
@@ -315,7 +320,7 @@ BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
 
-List&lt;KycCaseClientList2&gt; kyc2list = execution.getVariable("KYCCaseClientList2newOut")
+List&lt;KycCaseClientList2&gt; kyc2list = execution.getVariable("kycCaseClientList2List")
 List&lt;KycCaseClientDateDetails&gt; kycCaseClientDateDetails = []
 
 def result = json.prop("Clients").elements()[0].prop("Results").elements()
@@ -326,13 +331,13 @@ kyc2list.each {k -&gt;
 
         KycCaseClientDateDetails kycCaseClientDateDetails1 = new KycCaseClientDateDetails()
         kycCaseClientDateDetails1.setKycCaseClientList2Id(k)
-        kycCaseClientDateDetails1.setDateTypeId(getBd(282, n.prop("dateTypeId") as String))
-        kycCaseClientDateDetails1.setDateValue(n.prop("dateValue") as String)
-        kycCaseClientDateDetails1.setDay(n.prop("day") as String)
-        kycCaseClientDateDetails1.setMonth(n.prop("month") as String)
-        kycCaseClientDateDetails1.setYear(n.prop("year") as String)
+        kycCaseClientDateDetails1.setDateTypeId(getBd(282, n.prop("dateTypeId").stringValue()))
+        kycCaseClientDateDetails1.setDateValue(n.hasProp("dateValue") ? n.prop("dateValue").stringValue() : null)
+        kycCaseClientDateDetails1.setDay(n.hasProp("day") ? n.prop("day").toString() : null)
+        kycCaseClientDateDetails1.setMonth(n.hasProp("month") ? n.prop("month").toString() : null)
+        kycCaseClientDateDetails1.setYear(n.hasProp("year") ? n.prop("year").toString() : null)
         kycCaseClientDateDetails.add(kycCaseClientDateDetails1)
-        
+
     }
 }
 
@@ -366,7 +371,7 @@ BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
 
-List&lt;KycCaseClientList2&gt; kyc2list = execution.getVariable("KYCCaseClientList2newOut")
+List&lt;KycCaseClientList2&gt; kyc2list = execution.getVariable("kycCaseClientList2List")
 List&lt;KycCaseClientIdentityAtrList&gt; kycCaseClientIdentityAtrLists = []
 
 def result = json.prop("Clients").elements()[0].prop("Results").elements()
@@ -376,13 +381,13 @@ kyc2list.each { k -&gt;
     record.prop("identityAtrList").elements().each { n -&gt;
         KycCaseClientIdentityAtrList kycCaseClientIdentityAtrList = new KycCaseClientIdentityAtrList()
         kycCaseClientIdentityAtrList.setKycCaseClientList2Id(k)
-        kycCaseClientIdentityAtrList.setIdType(getBd(283, n.prop("idType") as String))
-        kycCaseClientIdentityAtrList.setIdValue(n.prop("idValue") as String)
-        kycCaseClientIdentityAtrList.setIdSerial(n.prop("idSerial") as String)
-        kycCaseClientIdentityAtrList.setIdNumber(n.prop("idNumber") as String)
-        kycCaseClientIdentityAtrList.setComment(n.prop("Comment") as String)
-        kycCaseClientIdentityAtrList.setDateOfDocument(n.prop("dateOfDocument") as String)
-        kycCaseClientIdentityAtrList.setExpiryDateOfDocument(n.prop("expiryDateOfDocument") as String)
+        kycCaseClientIdentityAtrList.setIdType(n.hasProp("idType") ? getBd(283, n.prop("idType").stringValue()) : null)
+        kycCaseClientIdentityAtrList.setIdValue(n.hasProp("idValue") ? n.prop("idValue").stringValue() : null)
+        kycCaseClientIdentityAtrList.setIdSerial(n.hasProp("idSerial") ? n.prop("idSerial").stringValue() : null)
+        kycCaseClientIdentityAtrList.setIdNumber(n.hasProp("idNumber") ? n.prop("idNumber").stringValue() : null)
+        kycCaseClientIdentityAtrList.setComment(n.hasProp("Comment") ? n.prop("Comment").stringValue() : null)
+        kycCaseClientIdentityAtrList.setDateOfDocument(n.hasProp("dateOfDocument") ? n.prop("dateOfDocument").stringValue() : null)
+        kycCaseClientIdentityAtrList.setExpiryDateOfDocument(n.hasProp("expiryDateOfDocument") ? n.prop("expiryDateOfDocument").stringValue() : null)
         kycCaseClientIdentityAtrLists.add(kycCaseClientIdentityAtrList)
     }
 }
@@ -412,16 +417,17 @@ import static org.camunda.spin.Spin.JSON
 def pld = execution.getVariable("payload")
 def json = JSON(pld)
 
-List&lt;KycCaseClientList2&gt; kyc2list = execution.getVariable("KYCCaseClientList2newOut")
+List&lt;KycCaseClientList2&gt; kyc2list = execution.getVariable("kycCaseClientList2List")
 List&lt;KycCaseClientCountryList&gt; kycCaseClientCountryLists = []
 
-kyc2list.each { k -&gt; 
+kyc2list.each { k -&gt;
     KycCaseClientCountryList kycCaseClientCountryList = new KycCaseClientCountryList()
     kycCaseClientCountryList.setKycCaseClientList2Id(k)
     kycCaseClientCountryLists.add(kycCaseClientCountryList)
 }
 
-execution.setVariable("kycCaseClientCountryLists", kycCaseClientCountryLists)</bpmn:script>
+execution.setVariable("kycCaseClientCountryLists", kycCaseClientCountryLists)
+</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:serviceTask id="Activity_00rp610" name="Сохранить KYCCASEClientCountryList" camunda:delegateExpression="${saveObjectListDelegate}">
         <bpmn:extensionElements>
@@ -453,7 +459,7 @@ BaseDictionary getBd(int type, String code) {
 def pld = execution.getVariable("payload")
 def json = JSON(pld)
 
-List&lt;KycCaseClientList2&gt; kyc2list = execution.getVariable("KYCCaseClientList2newOut")
+List&lt;KycCaseClientList2&gt; kyc2list = execution.getVariable("kycCaseClientList2List")
 List&lt;KycCaseClientVersionsList&gt; kycCaseClientVersionsLists = []
 
 def result = json.prop("Clients").elements()[0].prop("Results").elements()
@@ -463,11 +469,11 @@ kyc2list.each { k -&gt;
     record.prop("versionsList").elements().each { n -&gt;
         KycCaseClientVersionsList kycCaseClientVersionsList = new KycCaseClientVersionsList()
         kycCaseClientVersionsList.setKycCaseClientList2Id(k)
-        kycCaseClientVersionsList.setListIdentifier(n.prop("listIdentifier") as String)
-        kycCaseClientVersionsList.setListVersion(n.prop("listVersion") as String)
-        kycCaseClientVersionsList.setVersionDate(n.prop("versionDate") as LocalDateTime)
-        kycCaseClientVersionsList.setLoadDate(n.prop("loadDate") as LocalDateTime)
-        kycCaseClientVersionsList.setUpdateDate(n.prop("updateDate") as LocalDateTime)
+        kycCaseClientVersionsList.setListIdentifier(n.hasProp("listIdentifier") ? n.prop("listIdentifier").stringValue() : null)
+        kycCaseClientVersionsList.setListVersion(n.hasProp("listVersion") ? n.prop("listVersion").stringValue() : null)
+        kycCaseClientVersionsList.setVersionDate(n.hasProp("versionDate") ? LocalDateTime.parse(n.prop("versionDate").stringValue()) : null )
+        kycCaseClientVersionsList.setLoadDate(n.hasProp("loadDate") ? LocalDateTime.parse(n.prop("loadDate").stringValue()):null)
+        kycCaseClientVersionsList.setUpdateDate(n.hasProp("updateDate") ? LocalDateTime.parse(n.prop("updateDate").stringValue()):null)
         kycCaseClientVersionsList.setIsLastVersion(n.prop("isLastVersion").boolValue())
         kycCaseClientVersionsLists.add(kycCaseClientVersionsList)
     }
@@ -516,17 +522,20 @@ def json = JSON(pld)
 def initialClient = json.prop("InitialClient").prop("RequestData").prop("Clients").elements()
 KycCaseClient kyccaseClient = new KycCaseClient()
 kyccaseClient.setCaseId(execution.getVariable("caseNewOut"))
-kyccaseClient.setSourceId(initialClient[0].prop("SourceId") as String)
-kyccaseClient.setClientId(execution.getVariable("kycClient"))
-kyccaseClient.setCManagerName(initialClient[0].prop("CManagerName") as String)
-kyccaseClient.setClientType(getBd(24, initialClient[0].prop("ClientType") as String))
-kyccaseClient.setFullName(initialClient[0].prop("FullName") as String)
-kyccaseClient.setInn(initialClient[0].prop("INN") as String)
-kyccaseClient.setOgrn(initialClient[0].prop("OGRN") as String)
-kyccaseClient.setOgrnDate(initialClient[0].prop("OGRNDate") as LocalDateTime)
+kyccaseClient.setSourceId(initialClient[0].prop("SourceId").stringValue())
+kyccaseClient.setClientId(execution.getVariable("client"))
+kyccaseClient.setBranchCode(initialClient[0].hasProp("BranchCode") ? initialClient[0].prop("BranchCode").stringValue() : null)
+kyccaseClient.setBranchName(initialClient[0].hasProp("BranchName") ? initialClient[0].prop("BranchName").stringValue(): null)
+kyccaseClient.setCManagerName(initialClient[0].hasProp("CManagerName") ? initialClient[0].prop("CManagerName").stringValue() : null)
+kyccaseClient.setClientType(getBd(24, initialClient[0].prop("ClientType").stringValue()))
+kyccaseClient.setFullName(initialClient[0].hasProp("FullName") ? initialClient[0].prop("FullName").stringValue() : null)
+kyccaseClient.setInn(initialClient[0].hasProp("INN") ? initialClient[0].prop("INN").stringValue() : null)
+kyccaseClient.setOgrn(initialClient[0].hasProp("OGRN") ? initialClient[0].prop("OGRN").stringValue() : null)
 
 execution.setVariable("kyccaseClient", kyccaseClient)
-execution.setVariable("clientType", initialClient[0].prop("ClientType") as String)
+execution.setVariable("clientType", initialClient[0].prop("ClientType").stringValue())
+
+
 </bpmn:script>
       </bpmn:scriptTask>
       <bpmn:sequenceFlow id="Flow_1ugpg09" sourceRef="Activity_1mh1lzf" targetRef="Activity_0qtkq9w" />
@@ -548,6 +557,7 @@ execution.setVariable("clientType", initialClient[0].prop("ClientType") as Strin
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
 import com.prime.db.rnkb.model.kyc.KycCaseClientLegal
 
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 import static org.camunda.spin.Spin.JSON
@@ -561,23 +571,23 @@ def json = JSON(pld)
 def initialClient = json.prop("InitialClient").prop("RequestData").prop("Clients").elements()[0].prop("ClientLegal")
 KycCaseClientLegal kycCaseClientLegal = new KycCaseClientLegal()
 kycCaseClientLegal.setKycCaseClientId(execution.getVariable("kyccaseClientOutNew"))
-kycCaseClientLegal.setLegalName(initialClient.prop("LegalName") as String)
-kycCaseClientLegal.setShortName(initialClient.prop("ShortName") as String)
-kycCaseClientLegal.setShortNameEng(initialClient.prop("ShortNameEng") as String)
-kycCaseClientLegal.setKpp(initialClient.prop("KPP") as String)
-kycCaseClientLegal.setSwiftCd(initialClient.prop("SwiftCd") as String)
-kycCaseClientLegal.setBankId(initialClient.prop("BankId") as String)
-kycCaseClientLegal.setOkfs(getBd(39,initialClient.prop("OKFS") as String))
-kycCaseClientLegal.setJurisdiction(getBd(40, initialClient.prop("Jurisdiction") as String))
-kycCaseClientLegal.setLegalForm(getBd(76, initialClient.prop("LegalForm") as String))
-kycCaseClientLegal.setRegistrationCity(initialClient.prop("RegistrationCity") as String)
-kycCaseClientLegal.setTaxSerialIssueDate(initialClient.prop("TaxSerialIssueDate") as LocalDateTime)
-kycCaseClientLegal.setRegistrationUnit(initialClient.prop("RegistrationUnit") as String)
-kycCaseClientLegal.setDateOfRegistrationBeforeOgrn(initialClient.prop("DateOfRegistrationBeforeOGRN") as LocalDateTime)
-kycCaseClientLegal.setOkato(initialClient.prop("OKATO") as String)
-kycCaseClientLegal.setGiin(initialClient.prop("GIIN") as String)
-kycCaseClientLegal.setRegistrationUnitAddress(initialClient.prop("RegistrationUnitAddress") as String)
-kycCaseClientLegal.setLei(initialClient.prop("LEI") as String)
+kycCaseClientLegal.setLegalName(initialClient.hasProp("LegalName") ? initialClient.prop("LegalName").stringValue() : null)
+kycCaseClientLegal.setShortName(initialClient.hasProp("ShortName") ? initialClient.prop("ShortName").stringValue() : null)
+kycCaseClientLegal.setShortNameEng(initialClient.hasProp("ShortNameEng") ? initialClient.prop("ShortNameEng").stringValue() : null)
+kycCaseClientLegal.setTaxSerialIssueDate(initialClient.hasProp("TaxSerialIssueDate") ? LocalDate.parse(initialClient.prop("TaxSerialIssueDate").stringValue()).atStartOfDay() : null )
+kycCaseClientLegal.setTaxSerialIssueDate(initialClient.hasProp("DateOfRegistrationBeforeOGRN") ? LocalDate.parse(initialClient.prop("DateOfRegistrationBeforeOGRN").stringValue()).atStartOfDay() : null )
+kycCaseClientLegal.setKpp(initialClient.hasProp("KPP") ? initialClient.prop("KPP").stringValue() : null)
+kycCaseClientLegal.setSwiftCd(initialClient.hasProp("SwiftCd") ? initialClient.prop("SwiftCd").stringValue() : null)
+kycCaseClientLegal.setBankId(initialClient.hasProp("BankId") ? initialClient.prop("BankId").stringValue() : null)
+kycCaseClientLegal.setOkfs(initialClient.hasProp("OKFS") ? getBd(39,initialClient.prop("OKFS").stringValue()) : null)
+kycCaseClientLegal.setJurisdiction(initialClient.hasProp("Jurisdiction") ? getBd(40, initialClient.prop("Jurisdiction").stringValue()) : null)
+kycCaseClientLegal.setLegalForm(initialClient.hasProp("LegalForm") ? getBd(76, initialClient.prop("LegalForm").stringValue()) : null)
+kycCaseClientLegal.setRegistrationCity(initialClient.hasProp("RegistrationCity") ? initialClient.prop("RegistrationCity").stringValue() : null)
+kycCaseClientLegal.setRegistrationUnit(initialClient.hasProp("RegistrationUnit") ? initialClient.prop("RegistrationUnit").stringValue() : null)
+kycCaseClientLegal.setOkato(initialClient.hasProp("OKATO") ? initialClient.prop("OKATO").stringValue() : null)
+kycCaseClientLegal.setGiin(initialClient.hasProp("GIIN") ? initialClient.prop("GIIN").stringValue() : null)
+kycCaseClientLegal.setRegistrationUnitAddress(initialClient.hasProp("RegistrationUnitAddress") ? initialClient.prop("RegistrationUnitAddress").stringValue() : null)
+kycCaseClientLegal.setLei(initialClient.hasProp("LEI") ? initialClient.prop("LEI").stringValue() : null)
 
 execution.setVariable("kycCaseClientLegal", kycCaseClientLegal)</bpmn:script>
       </bpmn:scriptTask>
@@ -598,6 +608,7 @@ execution.setVariable("kycCaseClientLegal", kycCaseClientLegal)</bpmn:script>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
 import com.prime.db.rnkb.model.kyc.KycCaseClientIndividual
 
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 import static org.camunda.spin.Spin.JSON
@@ -610,29 +621,31 @@ def pld = execution.getVariable("payloadFull")
 def json = JSON(pld)
 def initialClient = json.prop("InitialClient").prop("RequestData").prop("Clients").elements()[0].prop("ClientIndividual")
 KycCaseClientIndividual kycCaseClientIndividual = new KycCaseClientIndividual()
-kycCaseClientIndividual.setKycCaseClientId(execution.getVariable("kyccaseClientOutNew"))
-kycCaseClientIndividual.setLastNameEng(initialClient.prop("LastNameEng") as String)
-kycCaseClientIndividual.setFirstNameEng(initialClient.prop("FirstNameEng") as String)
-kycCaseClientIndividual.setMiddleNameEng(initialClient.prop("MiddleNameEng") as String)
-kycCaseClientIndividual.setLastName(initialClient.prop("LastName") as String)
-kycCaseClientIndividual.setFirstName(initialClient.prop("FirstName") as String)
-kycCaseClientIndividual.setMiddleName(initialClient.prop("MiddleName") as String)
-kycCaseClientIndividual.setFullNameEng(initialClient.prop("FullNameEng") as String)
-kycCaseClientIndividual.setBirthdate(initialClient.prop("Birthdate") as LocalDateTime)
-kycCaseClientIndividual.setPlaceOfBirth(initialClient.prop("PlaceOfBirth") as String)
-kycCaseClientIndividual.setOkato(initialClient.prop("OKATORegCode") as String)
-kycCaseClientIndividual.setRegisterNumber(initialClient.prop("RegisterNumber") as String)
-kycCaseClientIndividual.setCitizenship(getBd(40, initialClient.prop("Citizenship") as String))
+kycCaseClientIndividual.setKycCaseClientId(execution.getVariable("kyccaseClient"))
+kycCaseClientIndividual.setLastNameEng(initialClient.prop("LastNameEng").stringValue())
+kycCaseClientIndividual.setFirstNameEng(initialClient.prop("FirstNameEng").stringValue())
+kycCaseClientIndividual.setMiddleNameEng(initialClient.prop("MiddleNameEng").stringValue())
+kycCaseClientIndividual.setLastName(initialClient.prop("LastName").stringValue())
+kycCaseClientIndividual.setFirstName(initialClient.prop("FirstName").stringValue())
+kycCaseClientIndividual.setMiddleName(initialClient.prop("MiddleName").stringValue())
+kycCaseClientIndividual.setFullNameEng(initialClient.prop("FullNameEng").stringValue())
+kycCaseClientIndividual.setPlaceOfBirth(initialClient.prop("PlaceOfBirth").stringValue())
+kycCaseClientIndividual.setOkato(initialClient.prop("OKATORegCode").stringValue())
+kycCaseClientIndividual.setRegisterNumber(initialClient.prop("RegisterNumber").stringValue())
+kycCaseClientIndividual.setBirthdate(initialClient.hasProp("Birthdate") ? LocalDate.parse(initialClient.prop("Birthdate").stringValue()).atStartOfDay():null)
+kycCaseClientIndividual.setCitizenship(initialClient.hasProp("Citizenship") ? getBd(40, initialClient.prop("Citizenship").stringValue()) : null)
 
 execution.setVariable("kycCaseClientIndividual", kycCaseClientIndividual)</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:exclusiveGateway id="Gateway_0e2zkzt" name="clientType" default="Flow_1eatndf">
+      <bpmn:exclusiveGateway id="Gateway_0e2zkzt" name="clientType">
         <bpmn:incoming>Flow_0ii78nb</bpmn:incoming>
         <bpmn:outgoing>Flow_1eatndf</bpmn:outgoing>
         <bpmn:outgoing>Flow_0ctb87c</bpmn:outgoing>
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_0ii78nb" sourceRef="Activity_0qtkq9w" targetRef="Gateway_0e2zkzt" />
-      <bpmn:sequenceFlow id="Flow_1eatndf" sourceRef="Gateway_0e2zkzt" targetRef="Activity_1ebyu7i" />
+      <bpmn:sequenceFlow id="Flow_1eatndf" sourceRef="Gateway_0e2zkzt" targetRef="Activity_1ebyu7i">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${clientType != "4"}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="Flow_0ctb87c" sourceRef="Gateway_0e2zkzt" targetRef="Activity_1t2x4mk">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${clientType == "4"}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
@@ -668,15 +681,15 @@ def initialClient = json.prop("InitialClient").prop("RequestData").prop("Clients
 
 KycCaseClientVerdoc kycCaseClientVerdoc = new KycCaseClientVerdoc()
 kycCaseClientVerdoc.setKycCaseClientId(execution.getVariable("kyccaseClientOutNew"))
-kycCaseClientVerdoc.setSourceId(initialClient.prop("SourceId") as String)
-kycCaseClientVerdoc.setIsMain(initialClient.prop("IsMain").boolValue())
-kycCaseClientVerdoc.setIssueDate(initialClient.prop("IssueDate") as LocalDate)
-kycCaseClientVerdoc.setName(initialClient.prop("Name") as String)
-kycCaseClientVerdoc.setType(getBd(34, initialClient.prop("Type") as String))
-kycCaseClientVerdoc.setDocNumber(initialClient.prop("DocNumber") as String)
-kycCaseClientVerdoc.setIssueByOrganization(initialClient.prop("IssueByOrganization") as String)
-kycCaseClientVerdoc.setExpirationDate(initialClient.prop("ExpirationDate") as LocalDate)
-kycCaseClientVerdoc.setIssueByDepartmentCode(initialClient.prop("IssueByDepartmentCode") as String)
+kycCaseClientVerdoc.setSourceId(initialClient.hasProp("SourceId") ? initialClient.prop("SourceId").stringValue() : null)
+kycCaseClientVerdoc.setIsMain(initialClient.hasProp("IsMain") ? initialClient.prop("IsMain").boolValue() : null)
+kycCaseClientVerdoc.setIssueDate(initialClient.hasProp("IssueDate") ? LocalDate.parse(initialClient.prop("IssueDate").stringValue()): null)
+kycCaseClientVerdoc.setName(initialClient.hasProp("Name") ? initialClient.prop("Name").stringValue() : null)
+kycCaseClientVerdoc.setType(initialClient.hasProp("Type") ? getBd(34, initialClient.prop("Type").stringValue()) : null)
+kycCaseClientVerdoc.setDocNumber(initialClient.hasProp("DocNumber") ? initialClient.prop("DocNumber").stringValue() : null)
+kycCaseClientVerdoc.setIssueByOrganization(initialClient.hasProp("IssueByOrganization") ? initialClient.prop("IssueByOrganization").stringValue() : null)
+kycCaseClientVerdoc.setExpirationDate(initialClient.hasProp("ExpirationDate") ? LocalDate.parse(initialClient.prop("ExpirationDate").stringValue()) : null)
+kycCaseClientVerdoc.setIssueByDepartmentCode(initialClient.hasProp("IssueByDepartmentCode") ? initialClient.prop("IssueByDepartmentCode").stringValue() : null)
 
 execution.setVariable("kycCaseClientVerdoc", kycCaseClientVerdoc)</bpmn:script>
       </bpmn:scriptTask>
@@ -744,7 +757,7 @@ def kycLists = json
         .prop("ResponseData")
         .prop("ClientCheckResult")
         .elements()[0]
-        .prop("KYCList").elements().findAll {k -&gt;
+        .prop("KYCList").elements().any {k -&gt;
     k.prop("CheckStatus").stringValue() == "1" || k.prop("CheckStatus").stringValue() == "2"
 }
 
@@ -760,13 +773,14 @@ execution.setVariable("kycLists", kycLists)</bpmn:script>
       <bpmn:incoming>Flow_0wqeg59</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_0wqeg59" name="да" sourceRef="Gateway_0hwsvy1" targetRef="Event_19mnekh">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${kycLists.size() &lt; 1}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!kycLists}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_13xl7mb" name="нет" sourceRef="Gateway_0hwsvy1" targetRef="Activity_0ln9jyl" />
     <bpmn:scriptTask id="Activity_0ln9jyl" name="Изменить статусы кейсов" scriptFormat="groovy">
       <bpmn:incoming>Flow_13xl7mb</bpmn:incoming>
       <bpmn:outgoing>Flow_0tqjyuw</bpmn:outgoing>
       <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
+
 
 import static org.camunda.spin.Spin.JSON
 
@@ -775,29 +789,46 @@ def json = JSON(pld)
 
 def KYCList = json.prop("ResponseData").prop("ClientCheckResult").elements()[0].prop("KYCList")
 
-List&lt;String&gt; typeLists = KYCList.elements().stream().map({ r -&gt; r.prop("Id") }) as List&lt;String&gt;
-
+def typeLists = []
+KYCList.elements().stream().map({ r -&gt; r.prop("Id").stringValue() }).each {i -&gt; typeLists.add(i as Long)}
+println("Шаг 1")
 List&lt;Case&gt; getCases(String exId, List&lt;String&gt; codes) {
-    caseRepo.getLatestCaseByClientIdAndExIdAndNumAndTypeList(exId, codes);
+    caseRepo.getLatestCaseByClientIdAndExIdAndNumAndTypeList1(exId, codes);
 }
-
+println("Шаг 2")
 BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
-
-List&lt;com.prime.db.rnkb.model.Case&gt; cases = getCases(execution.getVariable("sourceId"), typeLists) as List&lt;com.prime.db.rnkb.model.Case&gt;
-List&lt;com.prime.db.rnkb.model.Case&gt; changeCases = []
+println("Шаг 3")
+println(execution.getVariable("sourceId"))
+println(typeLists)
+println(typeLists.class)
+def cases = getCases(execution.getVariable("sourceId") as String, typeLists)
+println("Шаг 4")
+def changeCases = []
+println("Шаг 5")
 cases.each {c -&gt;
     if (c.getStatus() == getBd(286, "1") || c.getStatus() == getBd(286, "2")) {
+        println("Шаг 6")
         execution.setVariable("createCase", true)
+        println("Шаг 7")
         changeCases.add(c)
+        println("Шаг 8")
         c.setStatus(getBd(286, "7"))
     }
     else if (c.getStatus() == getBd(286, "7") || c.getStatus() == getBd(286, "4") || c.getStatus() == getBd(286, "5") ){
         execution.setVariable("createCase", true)
+        println("Шаг 9")
+    }
+    else {
+        execution.setVariable("createCase", false)
     }
 }
-execution.setVariable("changeCases", changeCases)</bpmn:script>
+if (execution.getVariable("createCase") == null) {
+    execution.setVariable("createCase", false)
+}
+execution.setVariable("changeCases", changeCases)
+println("Шаг 10")</bpmn:script>
     </bpmn:scriptTask>
     <bpmn:sequenceFlow id="Flow_0tqjyuw" sourceRef="Activity_0ln9jyl" targetRef="Activity_0fmw1xk" />
     <bpmn:serviceTask id="Activity_0fmw1xk" name="Сохранить измененные кейсы" camunda:delegateExpression="${saveObjectListDelegate}">
@@ -868,7 +899,7 @@ execution.setVariable("changeCases", changeCases)</bpmn:script>
         <di:waypoint x="1420" y="200" />
         <di:waypoint x="1522" y="200" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1429" y="172" width="12" height="14" />
+          <dc:Bounds x="1430" y="172" width="12" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1pw0owq_di" bpmnElement="Flow_1pw0owq">
