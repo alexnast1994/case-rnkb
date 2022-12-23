@@ -106,6 +106,18 @@ spring:
           destination: ${TOPIC_KYC_CASE_CREATION:rnkb-kyc-casecreation}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
+        zkAmlRequestInput-in-0:
+          destination: ${TOPIC_ZK_REQUEST:rnkb-transport-req-requestClient}
+          group: ${KAFKA_GROUP:case-rnkb}
+          binder: kafka
+        zkAmlResponseInput-in-0:
+          destination: ${TOPIC_ZK_RESPONSE_IN:rnkb-transport-req-responseClient}
+          group: ${KAFKA_GROUP:case-rnkb}
+          binder: kafka
+        zkAmlStatusInput-in-0:
+          destination: ${TOPIC_ZK_STATUS:rnkb-transport-req-statusClient}
+          group: ${KAFKA_GROUP:case-rnkb}
+          binder: kafka
         outMessage-out-0:
           destination: ${TOPIC_MESSAGE_OUT}
           group: ${KAFKA_GROUP:case-rnkb}
@@ -115,7 +127,7 @@ spring:
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
       function:
-        definition: commonMessageInput;csmMessageInput;pipelineMessageInput;savePipelineResponsePaymentMessageInput;saveRiskResponseMessageInput;kycCaseCreationInput
+        definition: commonMessageInput;csmMessageInput;pipelineMessageInput;savePipelineResponsePaymentMessageInput;saveRiskResponseMessageInput;kycCaseCreationInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput
 
 server:
   port: ${SERVER_PORT:8193}
@@ -138,6 +150,8 @@ server:
     kyc:
       process-name: ${KYC_PROCESS_NAME:clientProcess}
     error-topic: ${TOPIC_ERROR_OUT:}
+    zk-aml-request-output-topic: ${TOPIC_ZK_REQUEST_OUT:rnkb-requestClient-resp}
+    zk-aml-response-output-topic: ${TOPIC_ZK_RESPONSE_OUT:rnkb-responseClient-resp}
 zk:
   legal-doc-pattern: ${LEGAL_DOC_PATTERN:PatternLegal.docx}
   individual-doc-pattern: ${INDIVIDUAL_DOC_PATTERN:PatternIndividual.docx}

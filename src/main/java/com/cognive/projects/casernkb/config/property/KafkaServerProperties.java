@@ -14,4 +14,6 @@ public class KafkaServerProperties {
     private ServiceTopicProperties pipeline;
     private ServiceTopicProperties kyc;
     private String errorTopic;
+    private String zkAmlRequestOutputTopic;
+    private String zkAmlResponseOutputTopic;
 }

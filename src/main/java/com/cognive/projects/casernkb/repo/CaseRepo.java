@@ -35,4 +35,22 @@ public interface CaseRepo extends IBaseDslRepository<Case, QCase> {
                                                                @Param("exId") String exId,
                                                                @Param("num") String num);
 
+
+    @Query(value = "SELECT c.* FROM \"CASE\" c " +
+            "INNER JOIN KYCCASECLIENTLIST1 l1 ON l1.CASEID = c.ID " +
+            "INNER JOIN KYCCASECLIENTLIST2 l2 ON l2.CASEID = c.ID " +
+            "WHERE l2.TYPELIST IN :typeList " +
+            "   AND l2.EXID = :exId " +
+            "   AND c.CREATIONDATE = (" +
+            "       SELECT max(c.CREATIONDATE) FROM \"CASE\" c " +
+            "       INNER JOIN KYCCASECLIENTLIST1 l1 ON l1.CASEID = c.ID " +
+            "       INNER JOIN KYCCASECLIENTLIST2 l2 ON l2.CASEID = c.ID " +
+            "       WHERE " +
+            "           l2.TYPELIST IN :typeList " +
+            "           AND l2.EXID = :exId " +
+            "   ) " +
+            "ORDER BY c.CREATIONDATE desc", nativeQuery = true)
+    List<Case> getLatestCaseByClientIdAndExIdAndNumAndTypeList1(@Param("exId") String exId,
+                                                               @Param("typeList") List<Long> typeList);
+
 }
