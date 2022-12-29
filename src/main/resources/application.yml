@@ -106,6 +106,10 @@ spring:
           destination: ${TOPIC_KYC_CASE_CREATION:rnkb-kyc-casecreation}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
+        rjCreationInput-in-0:
+          destination: ${TOPIC_RJ_CREATION:rnkb-aml_camunda_rj_request}
+          group: ${KAFKA_GROUP:case-rnkb}
+          binder: kafka
         zkAmlRequestInput-in-0:
           destination: ${TOPIC_ZK_REQUEST:rnkb-transport-req-requestClient}
           group: ${KAFKA_GROUP:case-rnkb}
@@ -127,7 +131,7 @@ spring:
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
       function:
-        definition: commonMessageInput;csmMessageInput;pipelineMessageInput;savePipelineResponsePaymentMessageInput;saveRiskResponseMessageInput;kycCaseCreationInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput
+        definition: commonMessageInput;csmMessageInput;pipelineMessageInput;savePipelineResponsePaymentMessageInput;saveRiskResponseMessageInput;kycCaseCreationInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput
 
 server:
   port: ${SERVER_PORT:8193}
@@ -149,6 +153,8 @@ server:
         pipeline-payment-response: ${PIPELINE_PAYMENT_RESPONSE_ID:2b605119-16db-47d9-a087-cd1ad87731f3}
     kyc:
       process-name: ${KYC_PROCESS_NAME:clientProcess}
+    rj:
+      process-name: amlAutoReasonedJudgment
     error-topic: ${TOPIC_ERROR_OUT:}
     zk-aml-request-output-topic: ${TOPIC_ZK_REQUEST_OUT:rnkb-requestClient-resp}
     zk-aml-response-output-topic: ${TOPIC_ZK_RESPONSE_OUT:rnkb-responseClient-resp}

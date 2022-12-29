@@ -81,6 +81,22 @@ public class KafkaServiceImpl implements KafkaService {
     }
 
     @Bean
+    public Consumer<Message<String>> rjCreationInput() {
+        return x -> {
+            runProcess(x, () -> {
+                Map<String, Object> variables = new HashMap<>();
+                ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
+                variables.put("payload", jsonData);
+
+                return new Process(properties.getRj().getProcessName(),
+                        false,
+                        variables);
+            });
+
+        };
+    }
+
+    @Bean
     public Consumer<Message<String>> zkAmlRequestInput() {
         return x -> {
             try {

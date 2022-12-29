@@ -49,7 +49,7 @@
       <bpmn:incoming>Flow_0mouvka</bpmn:incoming>
       <bpmn:outgoing>Flow_0id5bqk</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:exclusiveGateway id="Gateway_14jv5q0" name="Кейсы найдены?">
+    <bpmn:exclusiveGateway id="Gateway_14jv5q0" name="Кейсы найдены?" default="Flow_1tdal2p">
       <bpmn:incoming>Flow_0id5bqk</bpmn:incoming>
       <bpmn:outgoing>Flow_1tdal2p</bpmn:outgoing>
       <bpmn:outgoing>Flow_1yf8hm0</bpmn:outgoing>
@@ -58,9 +58,7 @@
     <bpmn:endEvent id="Event_0m11oe7">
       <bpmn:incoming>Flow_1poj8yf</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1tdal2p" sourceRef="Gateway_14jv5q0" targetRef="Activity_08gaqrz">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cases.size() &gt; 1}    </bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1tdal2p" sourceRef="Gateway_14jv5q0" targetRef="Activity_08gaqrz" />
     <bpmn:subProcess id="createCaseKyc" name="createCaseKyc">
       <bpmn:incoming>Flow_1xc4nq8</bpmn:incoming>
       <bpmn:outgoing>Flow_1g9zlz9</bpmn:outgoing>
