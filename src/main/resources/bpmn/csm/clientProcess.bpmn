@@ -109,21 +109,23 @@
         <bpmn:incoming>Flow_0evno5w</bpmn:incoming>
         <bpmn:outgoing>Flow_12p82pg</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
-            import com.prime.db.rnkb.model.kyc.KycCaseClientList2
+import com.prime.db.rnkb.model.kyc.KycCaseClientList2
 
-            import static org.camunda.spin.Spin.JSON
+import static org.camunda.spin.Spin.JSON
 
-            def pld = execution.getVariable("payload")
-            def json = JSON(pld)
+def pld = execution.getVariable("payload")
+def json = JSON(pld)
 
-            BaseDictionary getBd(int type, String code) {
-            baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
-            }
+BaseDictionary getBd(int type, String code) {
+    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
+}
 
 List&lt;KycCaseClientList2&gt; kycCaseClientList2List = []
 def kycList = json.prop("ResponseData").prop("ClientCheckResult").elements()[0].prop("KYCList").elements()
-def filteredList = kycList.findAll { k -&gt; k.prop("CheckStatus").stringValue() == "1" ||
-        k.prop("CheckStatus").stringValue() == "2" }
+def filteredList = kycList.findAll { k -&gt;
+    k.prop("CheckStatus").stringValue() == "1" ||
+            k.prop("CheckStatus").stringValue() == "2"
+}
 def result = json.prop("Clients").elements()[0].prop("Results").elements()
 filteredList.each { l -&gt;
     KycCaseClientList2 kycCaseClientList2 = new KycCaseClientList2()
@@ -136,6 +138,20 @@ filteredList.each { l -&gt;
     kycCaseClientList2.setExId(record.prop("exId").stringValue())
     kycCaseClientList2.setNum(record.prop("num").stringValue())
     java.lang.System.out.println(result[0].prop("D0"))
+    StringBuilder markerString = new StringBuilder()
+    java.lang.System.out.println(result[0].fieldNames())
+    def fields = result[0].fieldNames().findAll { it =~ /^[D,M][0-9]*$/ }
+    java.lang.System.out.println(fields)
+    fields.each { it -&gt;
+        if ((result[0].prop(it).isBoolean() &amp;&amp; result[0].prop(it).boolValue() != false)
+                || (result[0].prop(it).isString() &amp;&amp; result[0].prop(it).stringValue() != "")
+                || (result[0].prop(it).isNumber() &amp;&amp; result[0].prop(it).numberValue() != 0)) {
+            markerString.append(it)
+            markerString.append(", ")
+        }
+    }
+    java.lang.System.out.println(markerString.toString().substring(0, markerString.toString().size() - 2))
+    kycCaseClientList2.setMarkers(markerString.size() &gt; 0 ? markerString.toString().substring(0, markerString.toString().size() - 2) : "")
     kycCaseClientList2.setNameMatch(result[0].prop("D0").numberValue() as Integer)
     kycCaseClientList2.setFirstName(result[0].prop("D28").numberValue() as Integer)
     kycCaseClientList2.setLastName(result[0].prop("D27").numberValue() as Integer)
