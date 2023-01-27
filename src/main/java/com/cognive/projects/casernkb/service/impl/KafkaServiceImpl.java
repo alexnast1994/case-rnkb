@@ -301,7 +301,7 @@ public class KafkaServiceImpl implements KafkaService {
         }
     }
 
-    private void sendError(String processName, String key, Exception ex) {
+    public void sendError(String processName, String key, Exception ex) {
         if (!(properties.getErrorTopic() != null && !properties.getErrorTopic().isEmpty())) {
             return;
         }

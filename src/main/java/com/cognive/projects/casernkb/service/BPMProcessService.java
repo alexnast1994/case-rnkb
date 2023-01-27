@@ -2,7 +2,6 @@ package com.cognive.projects.casernkb.service;
 
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,4 +47,6 @@ public interface BPMProcessService {
      */
 
     void message(String businessKey, String name, String data);
+
+
 }

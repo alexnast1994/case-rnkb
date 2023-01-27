@@ -227,7 +227,7 @@
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_06lsc37" sourceRef="Activity_0y6jre5" targetRef="Gateway_1w23zc6" />
       <bpmn:sequenceFlow id="Flow_1k9y2g5" sourceRef="Gateway_1w23zc6" targetRef="Activity_0y09n4q">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${caseOperations.isEmpty() == false or caseOperations != null}        </bpmn:conditionExpression>
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${caseOperations.isEmpty() == false and caseOperations != null and caseOperations.size() &gt; 0}        </bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:subProcess id="Activity_0y09n4q">
         <bpmn:incoming>Flow_1k9y2g5</bpmn:incoming>
