@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.repo;
 
+import com.cognive.projects.casernkb.model.projection.RosstatOkveds;
 import com.prime.db.rnkb.model.LstRosstatOkved;
 import com.prime.db.rnkb.model.QLstRosstatOkved;
 import com.prime.db.rnkb.repository.IBaseDslRepository;
@@ -12,8 +13,8 @@ import java.util.List;
 public interface LstRosstatOkvedRepo extends IBaseDslRepository<LstRosstatOkved, QLstRosstatOkved> {
 
     @Query(value = "SELECT " +
-            "BRANCH_GROUP," +
-            "CODE_OKVED " +
+            "BRANCH_GROUP as branchGroup," +
+            "CODE_OKVED as codeOkved " +
             "FROM " +
             "(" +
             "SELECT " +
@@ -37,6 +38,6 @@ public interface LstRosstatOkvedRepo extends IBaseDslRepository<LstRosstatOkved,
             " BRANCH_GROUP = :branchGroupId " +
             " AND " +
             " CODE_OKVED = :codeOvked ", nativeQuery = true)
-    List<Object[]> findRosstatOkveds(Long branchGroupId, String codeOvked);
+    List<RosstatOkveds> findRosstatOkveds(Long branchGroupId, String codeOvked);
 
 }

@@ -55,10 +55,6 @@ public class AmlCsmKycClientRequestTest {
         final FluentJavaDelegateMock selectOneDelegate = registerJavaDelegateMock("selectOneDelegate");
         selectOneDelegate.onExecutionSetVariables(selectResult);
 
-        final var caseRepoMock = registerMockInstance(CaseRepo.class);
-        when(caseRepoMock.getLatestCaseByClientIdAndExIdAndNumAndTypeList(any(), any(), any(), any()))
-                .thenReturn(List.of(cs));
-
         final var baseDictionaryRepository = registerMockInstance(BaseDictRepo.class);
         when(baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(45, "7"))
                 .thenReturn(sourceStatus7);
