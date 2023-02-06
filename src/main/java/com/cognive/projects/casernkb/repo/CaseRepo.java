@@ -1,11 +1,13 @@
 package com.cognive.projects.casernkb.repo;
 
+import com.cognive.projects.casernkb.model.projection.CaseProjection;
 import com.prime.db.rnkb.model.Case;
 import com.prime.db.rnkb.model.QCase;
 import com.prime.db.rnkb.repository.IBaseDslRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -52,5 +54,12 @@ public interface CaseRepo extends IBaseDslRepository<Case, QCase> {
             "ORDER BY c.CREATIONDATE desc", nativeQuery = true)
     List<Case> getLatestCaseByClientIdAndExIdAndNumAndTypeList1(@Param("exId") String exId,
                                                                @Param("typeList") List<Long> typeList);
+
+    @Query(value = "select c.creationdate as creationDate, k2.typeList as typeList from Case c " +
+            "inner join KycCaseClientList1 k1 on k1.caseId = c " +
+            "inner join KycCaseClientList2 k2 on k2.caseId = k1.caseId  " +
+            "where k1.clientId.id = :clientId and c.caseType.code = '5' and c.creationdate >= :dateStart and c.creationdate <= :dateEnd and k2.checkStatus in (1,2)")
+    List<CaseProjection> getCaseKyc(Long clientId, LocalDateTime dateStart, LocalDateTime dateEnd);
+
 
 }
