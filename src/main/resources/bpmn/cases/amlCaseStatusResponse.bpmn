@@ -208,7 +208,7 @@ execution.setVariable("caseStatus", caseStatus)
       <bpmn:incoming>Flow_13tvrx3</bpmn:incoming>
     </bpmn:endEvent>
       <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
-                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
           <bpmn:incoming>Flow_05qvdch</bpmn:incoming>
           <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
       </bpmn:serviceTask>
