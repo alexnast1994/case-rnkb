@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_00uf2wy" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
   <bpmn:process id="amlCasePostAndNecessarily" name="18. Формирование кейса Постконтроль СО или Обязательный контроль с UI" isExecutable="true">
-    <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
-      <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
-      <bpmn:outgoing>Flow_1w39g1w</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию"
+                      camunda:delegateExpression="${openSessionRnkbDelegate}">
+        <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
+        <bpmn:outgoing>Flow_1w39g1w</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_1jae6rb" name="Логирование процесса" camunda:delegateExpression="${loggerDelegate}">
       <bpmn:incoming>Flow_0hlfsn7</bpmn:incoming>
@@ -12,10 +13,11 @@
     <bpmn:endEvent id="Event_098yyfy">
       <bpmn:incoming>Flow_13tvrx3</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию" camunda:delegateExpression="${closeSessionDelegate}">
-      <bpmn:incoming>Flow_0mchax4</bpmn:incoming>
-      <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
-    </bpmn:serviceTask>
+      <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+          <bpmn:incoming>Flow_0mchax4</bpmn:incoming>
+          <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
+      </bpmn:serviceTask>
     <bpmn:subProcess id="Activity_1kx0w6a">
       <bpmn:incoming>Flow_01qo4jc</bpmn:incoming>
       <bpmn:outgoing>Flow_080j4ak</bpmn:outgoing>
@@ -238,6 +240,7 @@ execution.setVariable("payment", payment)
           <camunda:in source="comment" target="comment" />
           <camunda:in source="user" target="user" />
           <camunda:in source="acceptedCodes" target="acceptedCodes" />
+            <camunda:in businessKey="#{execution.processBusinessKey}"/>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_1da6cvq</bpmn:incoming>
         <bpmn:outgoing>Flow_1b4jbax</bpmn:outgoing>

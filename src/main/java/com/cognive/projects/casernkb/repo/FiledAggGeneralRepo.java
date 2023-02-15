@@ -50,7 +50,7 @@ public interface FiledAggGeneralRepo extends IBaseDslRepository<FieldAggGeneral,
             " )" +
             " GROUP BY branch_group,agg_id " +
             " ORDER BY GROUP_SUM DESC OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY) " +
-            " JOIN ANTG_BRANCH_GROUP abg ON abg.ID = branch_group ", nativeQuery = true)
+            " JOIN ANTG_BRANCH_GROUP abg ON abg.ID = TO_NUMBER(branch_group) ", nativeQuery = true)
     BranchGroup findBranch(Long clientId, String dateStart, String dateEnd);
 
     @Query(value = "SELECT " +
@@ -67,8 +67,8 @@ public interface FiledAggGeneralRepo extends IBaseDslRepository<FieldAggGeneral,
             " fag.STRING AS string, " +
             " fag.SUM, " +
             " fag.CALCULATION_DATE, " +
-            " SUM(fag.SUM) OVER(PARTITION BY fag.\"TYPE\", fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lsum," +
-            " SUM(fag.COUNT) OVER(PARTITION BY fag.\"TYPE\", fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lcount " +
+            " SUM(fag.SUM) OVER(PARTITION BY fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lsum," +
+            " SUM(fag.COUNT) OVER(PARTITION BY fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lcount " +
             " FROM FIELD_AGG_GENERAL fag " +
             " JOIN RULE r ON fag.AGGDIRID = r.ID " +
             " JOIN BASEDICTIONARY b ON fag.\"TYPE\" = b.ID " +

@@ -12,9 +12,10 @@
       <bpmn:outgoing>Flow_0tmz7xl</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0dvx4sc" sourceRef="StartEvent_1" targetRef="Activity_1jae6rb" />
-    <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
-      <bpmn:incoming>Flow_0tmz7xl</bpmn:incoming>
-      <bpmn:outgoing>Flow_1fmjt5z</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию"
+                      camunda:delegateExpression="${openSessionRnkbDelegate}">
+        <bpmn:incoming>Flow_0tmz7xl</bpmn:incoming>
+        <bpmn:outgoing>Flow_1fmjt5z</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:subProcess id="Activity_038bidn">
       <bpmn:incoming>Flow_1fmjt5z</bpmn:incoming>
@@ -642,10 +643,11 @@ if(paymentEvents.size() &gt; 0) {
     <bpmn:sequenceFlow id="Flow_1fmjt5z" sourceRef="Activity_1qwn6qf" targetRef="Activity_038bidn" />
     <bpmn:sequenceFlow id="Flow_16i4xfs" sourceRef="Activity_038bidn" targetRef="Activity_131dz13" />
     <bpmn:sequenceFlow id="Flow_0tmz7xl" sourceRef="Activity_1jae6rb" targetRef="Activity_1qwn6qf" />
-    <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию" camunda:delegateExpression="${closeSessionDelegate}">
-      <bpmn:incoming>Flow_16i4xfs</bpmn:incoming>
-      <bpmn:outgoing>Flow_1qkyy98</bpmn:outgoing>
-    </bpmn:serviceTask>
+      <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+          <bpmn:incoming>Flow_16i4xfs</bpmn:incoming>
+          <bpmn:outgoing>Flow_1qkyy98</bpmn:outgoing>
+      </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_1qkyy98" sourceRef="Activity_131dz13" targetRef="Event_009dr5b" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">

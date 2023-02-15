@@ -8,9 +8,9 @@
       <bpmn:incoming>Flow_0013hhg</bpmn:incoming>
       <bpmn:outgoing>Flow_01amumx</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Activity_0b7dn0q" name="Open Session" camunda:delegateExpression="${openSessionDelegate}">
-      <bpmn:incoming>Flow_112yfei</bpmn:incoming>
-      <bpmn:outgoing>Flow_0013hhg</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_0b7dn0q" name="Open Session" camunda:delegateExpression="${openSessionRnkbDelegate}">
+        <bpmn:incoming>Flow_112yfei</bpmn:incoming>
+        <bpmn:outgoing>Flow_0013hhg</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_1ad4nfy" name="Get opreations from variable" camunda:delegateExpression="${operationsCaseDelegate}">
       <bpmn:extensionElements>
@@ -24,10 +24,11 @@
     <bpmn:endEvent id="Event_0nwzpry">
       <bpmn:incoming>Flow_1pjktg9</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="Activity_1taz41n" name="Close Session" camunda:delegateExpression="${closeSessionDelegate}">
-      <bpmn:incoming>Flow_0ax9sjl</bpmn:incoming>
-      <bpmn:outgoing>Flow_0dzucx0</bpmn:outgoing>
-    </bpmn:serviceTask>
+      <bpmn:serviceTask id="Activity_1taz41n" name="Close Session"
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+          <bpmn:incoming>Flow_0ax9sjl</bpmn:incoming>
+          <bpmn:outgoing>Flow_0dzucx0</bpmn:outgoing>
+      </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_1n0xb5l" name="Логирование" camunda:delegateExpression="${loggerDelegate}">
       <bpmn:incoming>Flow_0dzucx0</bpmn:incoming>
       <bpmn:outgoing>Flow_1pjktg9</bpmn:outgoing>

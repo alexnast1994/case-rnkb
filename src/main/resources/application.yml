@@ -1,7 +1,7 @@
 camunda:
   bpm:
     admin-user:
-      id:  ${CAMUNDA_ID:demo}
+      id: ${CAMUNDA_ID:demo}
       password: ${CAMUNDA_PASSWORD:demo}
       firstName: ${CAMUNDA_FIRST_NAME:Demo}
       lastName: ${CAMUNDA_LAST_NAME:Demo}
@@ -106,6 +106,10 @@ spring:
           destination: ${TOPIC_KYC_CASE_CREATION:rnkb-kyc-casecreation}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
+        kycOperationCreationInput-in-0:
+          destination: ${TOPIC_KYC_OPERATION_CREATION:rnkb-kyc-operationCreation}
+          group: ${KAFKA_GROUP:case-rnkb}
+          binder: kafka
         rjCreationInput-in-0:
           destination: ${TOPIC_RJ_CREATION:rnkb-aml_camunda_rj_request}
           group: ${KAFKA_GROUP:case-rnkb}
@@ -131,7 +135,7 @@ spring:
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
       function:
-        definition: commonMessageInput;csmMessageInput;pipelineMessageInput;savePipelineResponsePaymentMessageInput;saveRiskResponseMessageInput;kycCaseCreationInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput
+        definition: commonMessageInput;csmMessageInput;pipelineMessageInput;savePipelineResponsePaymentMessageInput;saveRiskResponseMessageInput;kycCaseCreationInput;kycOperationCreationInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput
 
 server:
   port: ${SERVER_PORT:8193}
@@ -153,6 +157,8 @@ server:
         pipeline-payment-response: ${PIPELINE_PAYMENT_RESPONSE_ID:2b605119-16db-47d9-a087-cd1ad87731f3}
     kyc:
       process-name: ${KYC_PROCESS_NAME:clientProcess}
+    kycOperation:
+      process-name: ${KYC_OPERATION_PROCESS_NAME:operationProcess}
     rj:
       process-name: amlAutoReasonedJudgment
     error-topic: ${TOPIC_ERROR_OUT:}

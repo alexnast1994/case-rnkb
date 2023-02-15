@@ -8,9 +8,9 @@
       <bpmn:incoming>Flow_1crfnfk</bpmn:incoming>
       <bpmn:outgoing>Flow_05quuqa</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Activity_0p5b1rm" name="Open Session" camunda:delegateExpression="${openSessionDelegate}">
-      <bpmn:incoming>Flow_05quuqa</bpmn:incoming>
-      <bpmn:outgoing>Flow_15jyl5l</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_0p5b1rm" name="Open Session" camunda:delegateExpression="${openSessionRnkbDelegate}">
+        <bpmn:incoming>Flow_05quuqa</bpmn:incoming>
+        <bpmn:outgoing>Flow_15jyl5l</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_0uuh0i5" name="Start Transaction Delegate" camunda:delegateExpression="${startTransactionDelegate}">
       <bpmn:incoming>Flow_15jyl5l</bpmn:incoming>
@@ -1004,9 +1004,10 @@ execution.setVariable("resultItems", resultItems)</bpmn:script>
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_0m9d8o5" sourceRef="Activity_Clients_Handling" targetRef="Event_11a48t6" />
     </bpmn:subProcess>
-    <bpmn:serviceTask id="Activity_1h1hznx" name="Close Session" camunda:delegateExpression="${closeSessionDelegate}">
-      <bpmn:incoming>Flow_0euspvr</bpmn:incoming>
-    </bpmn:serviceTask>
+      <bpmn:serviceTask id="Activity_1h1hznx" name="Close Session"
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+          <bpmn:incoming>Flow_0euspvr</bpmn:incoming>
+      </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_0utp56l" name="End Transaction Delegate" camunda:delegateExpression="${endTransactionDelegate}">
       <bpmn:incoming>Flow_03gukxj</bpmn:incoming>
       <bpmn:outgoing>Flow_0euspvr</bpmn:outgoing>

@@ -5,7 +5,6 @@ import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
-import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.MessageCorrelationBuilder;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.engine.task.TaskQuery;
@@ -37,10 +36,6 @@ public class BPMProcessServiceImpl implements BPMProcessService {
         this.historyService = historyService;
     }
 
-    @Override
-    public ProcessDefinition getProcessInstance(String processId) {
-        return repositoryService.getProcessDefinition(processId);
-    }
 
 //    @Override
 //    public String getProcessInstanceId(String processKey, String orderCheckoutId) throws IOException {
@@ -52,6 +47,7 @@ public class BPMProcessServiceImpl implements BPMProcessService {
 //        return processInstanceId;
 //    }
 //
+
     @Override
     public String startProcess(String processId, Map<String, Object> variables) {
         return runtimeService.startProcessInstanceByKey(processId, variables).getProcessDefinitionId();

@@ -13,6 +13,7 @@ public class KafkaServerProperties {
     private ServiceTopicProperties csm;
     private ServiceTopicProperties pipeline;
     private ServiceTopicProperties kyc;
+    private ServiceTopicProperties kycOperation;
     private ServiceTopicProperties rj;
     private String errorTopic;
     private String zkAmlRequestOutputTopic;

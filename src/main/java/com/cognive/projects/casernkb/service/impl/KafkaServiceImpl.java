@@ -10,6 +10,7 @@ import com.cognive.projects.casernkb.model.zk_request.AMLRequestStatus;
 import com.cognive.projects.casernkb.model.zk_request.AMLResponse;
 import com.cognive.projects.casernkb.service.BPMProcessService;
 import com.cognive.projects.casernkb.service.KafkaService;
+import com.cognive.projects.casernkb.service.SessionCacheService;
 import com.cognive.projects.casernkb.service.ZkRequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -50,14 +51,13 @@ public class KafkaServiceImpl implements KafkaService {
 
     private final BPMProcessService bpmService;
 
-    private final StreamBridge streamBridge;
+    private final SessionCacheService sessionCacheService;
 
+    private final StreamBridge streamBridge;
+    private final KafkaServerProperties properties;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     @Setter(onMethod_ = {@Autowired})
     private ZkRequestService zkRequestService;
-
-    private final KafkaServerProperties properties;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Bean
     public Consumer<Message<String>> commonMessageInput() {
@@ -170,6 +170,22 @@ public class KafkaServiceImpl implements KafkaService {
     }
 
     @Bean
+    public Consumer<Message<String>> kycOperationCreationInput() {
+        return x -> {
+            runProcess(x, () -> {
+                Map<String, Object> variables = new HashMap<>();
+                ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
+                variables.put("payload", jsonData);
+
+                return new Process(properties.getKycOperation().getProcessName(),
+                        false,
+                        variables);
+            });
+
+        };
+    }
+
+    @Bean
     public Consumer<Message<String>> pipelineMessageInput() {
         return x -> {
             runProcess(x, () -> {
@@ -268,12 +284,11 @@ public class KafkaServiceImpl implements KafkaService {
 
     private void runProcess(Message<String> message, Supplier<Process> function) {
         try {
-            String key = message.getHeaders().get(KafkaHeaders.RECEIVED_MESSAGE_KEY, String.class);
+            var now = LocalDateTime.now();
             String topic = message.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class);
-
-            log.info("Input message from: {}, key={}", topic, key);
-
             Process process = function.get();
+            String key = "kafka_" + now + "_" + process.getName();
+            log.info("Input message from: {}, key={}", topic, key);
             try {
                 if (process.isSkip()) {
                     log.info("Skip run: {}", process.getName());
@@ -302,6 +317,7 @@ public class KafkaServiceImpl implements KafkaService {
     }
 
     public void sendError(String processName, String key, Exception ex) {
+        sessionCacheService.closeAndRemove(key);
         if (!(properties.getErrorTopic() != null && !properties.getErrorTopic().isEmpty())) {
             return;
         }

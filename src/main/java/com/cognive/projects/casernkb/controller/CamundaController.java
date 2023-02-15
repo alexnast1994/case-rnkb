@@ -2,8 +2,8 @@ package com.cognive.projects.casernkb.controller;
 
 import com.cognive.projects.casernkb.service.BPMProcessService;
 import com.cognive.projects.casernkb.service.KafkaService;
-import com.prime.db.rnkb.repository.ExecutionRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.engine.variable.value.ObjectValue;
 import org.springframework.http.ResponseEntity;
@@ -16,11 +16,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/camunda")
 @RequiredArgsConstructor
+@Slf4j
 public class CamundaController {
     private static final String START = "/start/{processName}";
     private final BPMProcessService bpmService;
     private final KafkaService kafkaService;
-    private final ExecutionRepository executionRepository;
 
     @PostMapping(value = START)
     public ResponseEntity<String> camundaProcessStart(@PathVariable String processName, @RequestBody Map<String, Object> body) {

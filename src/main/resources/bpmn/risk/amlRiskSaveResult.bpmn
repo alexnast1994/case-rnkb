@@ -18,7 +18,7 @@
         </bpmn:serviceTask>
         <bpmn:sequenceFlow id="Flow_1ui3cnd" sourceRef="Activity_0q968aa" targetRef="Activity_17ranvz"/>
         <bpmn:serviceTask id="Activity_17ranvz" name="Открыть сессию"
-                          camunda:delegateExpression="${openSessionDelegate}">
+                          camunda:delegateExpression="${openSessionRnkbDelegate}">
             <bpmn:incoming>Flow_1ui3cnd</bpmn:incoming>
             <bpmn:outgoing>Flow_1vaix4w</bpmn:outgoing>
         </bpmn:serviceTask>
@@ -132,7 +132,7 @@
         <bpmn:sequenceFlow id="Flow_1vaix4w" sourceRef="Activity_17ranvz" targetRef="Activity_0f8rdez"/>
         <bpmn:sequenceFlow id="Flow_0g6mxmz" sourceRef="Activity_1bvr42n" targetRef="Activity_0w1sqei"/>
         <bpmn:serviceTask id="Activity_05zqixx" name="Закрыть сессию"
-                          camunda:delegateExpression="${closeSessionDelegate}">
+                          camunda:delegateExpression="${closeSessionRnkbDelegate}">
             <bpmn:incoming>Flow_0ursvkg</bpmn:incoming>
             <bpmn:outgoing>Flow_0fk6n44</bpmn:outgoing>
         </bpmn:serviceTask>

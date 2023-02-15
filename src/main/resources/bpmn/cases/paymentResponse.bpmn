@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1g7xbpg" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
   <bpmn:process id="paymentResponse" name="Ответ по платежу 2.1 процесс (pipeline) internal" isExecutable="true">
-    <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
+    <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию"
+                      camunda:delegateExpression="${openSessionRnkbDelegate}">
       <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
       <bpmn:outgoing>Flow_10kqd3k</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -152,6 +153,7 @@ execution.setVariable("acceptedRules", acceptedRules)
           <camunda:in source="session" target="session" />
           <camunda:in source="acceptedRules" target="acceptedRules" />
           <camunda:in sourceExpression="caseType" target="caseType" />
+          <camunda:in businessKey="#{execution.processBusinessKey}"/>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_113rnzs</bpmn:incoming>
         <bpmn:outgoing>Flow_1upboep</bpmn:outgoing>
@@ -170,7 +172,8 @@ execution.setVariable("acceptedRules", acceptedRules)
     <bpmn:endEvent id="Event_098yyfy">
       <bpmn:incoming>Flow_13tvrx3</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию" camunda:delegateExpression="${closeSessionDelegate}">
+    <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
+                      camunda:delegateExpression="${closeSessionRnkbDelegate}">
       <bpmn:incoming>Flow_163efhh</bpmn:incoming>
       <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
     </bpmn:serviceTask>
