@@ -19,14 +19,16 @@
     <bpmn:endEvent id="Event_End">
       <bpmn:incoming>Flow_01253c3</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="Activity_04cx2ds" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
-      <bpmn:incoming>Flow_0b9b043</bpmn:incoming>
-      <bpmn:outgoing>Flow_0v286vx</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_04cx2ds" name="Открыть сессию"
+                      camunda:delegateExpression="${openSessionRnkbDelegate}">
+        <bpmn:incoming>Flow_0b9b043</bpmn:incoming>
+        <bpmn:outgoing>Flow_0v286vx</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Activity_0hj1qcq" name="Закрыть сессию" camunda:delegateExpression="${closeSessionDelegate}">
-      <bpmn:incoming>Flow_1whou80</bpmn:incoming>
-      <bpmn:outgoing>Flow_01253c3</bpmn:outgoing>
-    </bpmn:serviceTask>
+      <bpmn:serviceTask id="Activity_0hj1qcq" name="Закрыть сессию"
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+          <bpmn:incoming>Flow_1whou80</bpmn:incoming>
+          <bpmn:outgoing>Flow_01253c3</bpmn:outgoing>
+      </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_01253c3" sourceRef="Activity_0hj1qcq" targetRef="Event_End" />
     <bpmn:sequenceFlow id="Flow_1whou80" sourceRef="Activity_01gnm40" targetRef="Activity_0hj1qcq" />
     <bpmn:subProcess id="Activity_01gnm40">

@@ -44,9 +44,10 @@ execution.setVariable("defaultNoFnsFatcaCode", "1")</bpmn:script>
     <bpmn:endEvent id="Event_1jodbdy">
       <bpmn:incoming>Flow_09jg2ud</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="Activity_10wunb1" name="Закрыть Сессию" camunda:delegateExpression="${closeSessionDelegate}">
-      <bpmn:incoming>Flow_10bbfv0</bpmn:incoming>
-      <bpmn:outgoing>Flow_09jg2ud</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_10wunb1" name="Закрыть Сессию"
+                      camunda:delegateExpression="${closeSessionRnkbDelegate}">
+        <bpmn:incoming>Flow_10bbfv0</bpmn:incoming>
+        <bpmn:outgoing>Flow_09jg2ud</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_09jg2ud" sourceRef="Activity_10wunb1" targetRef="Event_1jodbdy" />
     <bpmn:subProcess id="Activity_002z49l">

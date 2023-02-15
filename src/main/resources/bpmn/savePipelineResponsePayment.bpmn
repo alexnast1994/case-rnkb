@@ -4,9 +4,10 @@
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_01uszvz</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:serviceTask id="Activity_07o2tne" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
-      <bpmn:incoming>Flow_1i5z35j</bpmn:incoming>
-      <bpmn:outgoing>Flow_1fgy4px</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_07o2tne" name="Открыть сессию"
+                      camunda:delegateExpression="${openSessionRnkbDelegate}">
+        <bpmn:incoming>Flow_1i5z35j</bpmn:incoming>
+        <bpmn:outgoing>Flow_1fgy4px</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_01pncld" name="startTransactionDelegate" camunda:delegateExpression="${startTransactionDelegate}">
       <bpmn:incoming>Flow_1fgy4px</bpmn:incoming>
@@ -95,10 +96,11 @@ execution.setVariable("saveObjectList", saveObjects)</bpmn:script>
       <bpmn:outgoing>Flow_0529lvq</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0g4zxz1" sourceRef="Activity_0f5iut7" targetRef="Activity_1ljabnt" />
-    <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию" camunda:delegateExpression="${closeSessionDelegate}">
-      <bpmn:incoming>Flow_0529lvq</bpmn:incoming>
-      <bpmn:outgoing>Flow_0vf9inx</bpmn:outgoing>
-    </bpmn:serviceTask>
+      <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+          <bpmn:incoming>Flow_0529lvq</bpmn:incoming>
+          <bpmn:outgoing>Flow_0vf9inx</bpmn:outgoing>
+      </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_18g526r" sourceRef="Activity_0p8lu0j" targetRef="Activity_19gukqt" />
     <bpmn:sequenceFlow id="Flow_0529lvq" sourceRef="Activity_1ljabnt" targetRef="Activity_131dz13" />
     <bpmn:endEvent id="Event_098yyfy">

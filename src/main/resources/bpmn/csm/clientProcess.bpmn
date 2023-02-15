@@ -32,9 +32,10 @@
       <bpmn:outgoing>Flow_0r4sii8</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0r4sii8" sourceRef="Activity_1dmsgze" targetRef="Activity_00wprxj" />
-    <bpmn:serviceTask id="Activity_00wprxj" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
-      <bpmn:incoming>Flow_0r4sii8</bpmn:incoming>
-      <bpmn:outgoing>Flow_0mouvka</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_00wprxj" name="Открыть сессию"
+                      camunda:delegateExpression="${openSessionRnkbDelegate}">
+        <bpmn:incoming>Flow_0r4sii8</bpmn:incoming>
+        <bpmn:outgoing>Flow_0mouvka</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0mouvka" sourceRef="Activity_00wprxj" targetRef="Activity_13cbbf8" />
     <bpmn:serviceTask id="Activity_13cbbf8" name="Поиск существующих кейсов" camunda:delegateExpression="${selectDelegate}">
@@ -748,10 +749,11 @@ execution.setVariable("kycCaseClientVerdoc", kycCaseClientVerdoc)</bpmn:script>
       <bpmn:incoming>Flow_1kwzn44</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1g9zlz9" sourceRef="createCaseKyc" targetRef="Activity_06urcbs" />
-    <bpmn:serviceTask id="Activity_1vdc5v6" name="Закрыть сессию" camunda:delegateExpression="${closeSessionDelegate}">
-      <bpmn:incoming>Flow_1nat4ys</bpmn:incoming>
-      <bpmn:outgoing>Flow_1kwzn44</bpmn:outgoing>
-    </bpmn:serviceTask>
+      <bpmn:serviceTask id="Activity_1vdc5v6" name="Закрыть сессию"
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+          <bpmn:incoming>Flow_1nat4ys</bpmn:incoming>
+          <bpmn:outgoing>Flow_1kwzn44</bpmn:outgoing>
+      </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_1kwzn44" sourceRef="Activity_1vdc5v6" targetRef="Event_1ci363g" />
     <bpmn:serviceTask id="Activity_0sbdk1p" name="StartTransactionDelegate" camunda:delegateExpression="${startTransactionDelegate}">
       <bpmn:incoming>Flow_1v7pagb</bpmn:incoming>
@@ -763,10 +765,11 @@ execution.setVariable("kycCaseClientVerdoc", kycCaseClientVerdoc)</bpmn:script>
       <bpmn:outgoing>Flow_1nat4ys</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_1nat4ys" sourceRef="Activity_06urcbs" targetRef="Activity_1vdc5v6" />
-    <bpmn:serviceTask id="Activity_1cpt2gg" name="Закрыть сессию" camunda:delegateExpression="${closeSessionDelegate}">
-      <bpmn:incoming>Flow_1yzqqia</bpmn:incoming>
-      <bpmn:outgoing>Flow_1poj8yf</bpmn:outgoing>
-    </bpmn:serviceTask>
+      <bpmn:serviceTask id="Activity_1cpt2gg" name="Закрыть сессию"
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+          <bpmn:incoming>Flow_1yzqqia</bpmn:incoming>
+          <bpmn:outgoing>Flow_1poj8yf</bpmn:outgoing>
+      </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_1poj8yf" sourceRef="Activity_1cpt2gg" targetRef="Event_0m11oe7" />
     <bpmn:scriptTask id="Activity_08gaqrz" name="Получить список TypeList" scriptFormat="groovy">
       <bpmn:incoming>Flow_1tdal2p</bpmn:incoming>

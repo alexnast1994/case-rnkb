@@ -8,9 +8,10 @@
       <bpmn:incoming>Flow_1pu22hm</bpmn:incoming>
       <bpmn:outgoing>Flow_0ijxlkz</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionDelegate}">
-      <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
-      <bpmn:outgoing>Flow_1sicgmj</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию"
+                      camunda:delegateExpression="${openSessionRnkbDelegate}">
+        <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
+        <bpmn:outgoing>Flow_1sicgmj</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_1pu22hm" sourceRef="Event_0qnx3lv" targetRef="Activity_1jae6rb" />
     <bpmn:sequenceFlow id="Flow_0ijxlkz" sourceRef="Activity_1jae6rb" targetRef="Activity_1qwn6qf" />
@@ -161,10 +162,11 @@ dboRequest Информация о ДБО клиента</bpmn:text>
       <bpmn:sequenceFlow id="Flow_0s84npn" sourceRef="Activity_105rp9w" targetRef="Event_1ex9dqm" />
     </bpmn:subProcess>
     <bpmn:sequenceFlow id="Flow_1sicgmj" sourceRef="Activity_1qwn6qf" targetRef="Activity_0f9qjf6" />
-    <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию" camunda:delegateExpression="${closeSessionDelegate}">
-      <bpmn:incoming>Flow_0pr5w2a</bpmn:incoming>
-      <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
-    </bpmn:serviceTask>
+      <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+          <bpmn:incoming>Flow_0pr5w2a</bpmn:incoming>
+          <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
+      </bpmn:serviceTask>
     <bpmn:endEvent id="Event_end">
       <bpmn:incoming>Flow_13tvrx3</bpmn:incoming>
     </bpmn:endEvent>

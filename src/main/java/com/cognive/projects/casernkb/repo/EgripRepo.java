@@ -13,7 +13,13 @@ public interface EgripRepo extends JpaRepository<ListEgripInfoIndividual, Long> 
     @Query(value = "select ef.firstName as firstName, ef.lastName as lastName, ef.middleName as middleName, er.dateOgrnip as dateOgrnip from ListEgripInfoIndividual e left join ListEgripFl ef on e.flId.id = ef.id left join ListEgripRegip er on e.regipId.id = er.id where e.innFl like :inn")
     Egrip getEgripByInn(String inn);
 
-    @Query(value = "select efo.nameOkved as name, efo.codeOkved as code from ListEgripInfoIndividual e left join ListEgripOkved efo on efo.individualId.id = e.id where e.innFl like :inn and efo.id = e.okvedId.id")
+
+    @Query(value = "SELECT a.ID, " +
+            "a.INN_FL, " +
+            "okved.CODE_OKVED as code, " +
+            "okved.NAME_OKVED as name " +
+            "FROM LST_EGRIP_INFO_INDIVIDUAL a " +
+            "JOIN LST_EGRIP_OKVED okved ON a.OKVED_ID = okved.ID WHERE a.INN_FL LIKE :inn", nativeQuery = true)
     OkvedProj getEgripOkvedByInn(String inn);
 
 }

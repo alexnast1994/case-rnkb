@@ -1,18 +1,10 @@
 package com.cognive.projects.casernkb.service;
 
-import org.camunda.bpm.engine.repository.ProcessDefinition;
-
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 public interface BPMProcessService {
-
-    /**
-     * Get process instance
-     */
-    ProcessDefinition getProcessInstance(String processId);
-
 
     /**
      * Get deploy of process
