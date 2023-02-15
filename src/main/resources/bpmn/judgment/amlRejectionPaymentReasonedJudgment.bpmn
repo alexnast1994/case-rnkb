@@ -163,7 +163,7 @@ dboRequest Информация о ДБО клиента</bpmn:text>
     </bpmn:subProcess>
     <bpmn:sequenceFlow id="Flow_1sicgmj" sourceRef="Activity_1qwn6qf" targetRef="Activity_0f9qjf6" />
       <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
-                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
           <bpmn:incoming>Flow_0pr5w2a</bpmn:incoming>
           <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
       </bpmn:serviceTask>

@@ -1005,7 +1005,7 @@ execution.setVariable("resultItems", resultItems)</bpmn:script>
       <bpmn:sequenceFlow id="Flow_0m9d8o5" sourceRef="Activity_Clients_Handling" targetRef="Event_11a48t6" />
     </bpmn:subProcess>
       <bpmn:serviceTask id="Activity_1h1hznx" name="Close Session"
-                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
           <bpmn:incoming>Flow_0euspvr</bpmn:incoming>
       </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_0utp56l" name="End Transaction Delegate" camunda:delegateExpression="${endTransactionDelegate}">

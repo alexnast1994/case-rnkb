@@ -14,9 +14,9 @@
         <bpmn:outgoing>Flow_12ek4a9</bpmn:outgoing>
     </bpmn:serviceTask>
       <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
-                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
-          <bpmn:incoming>Flow_1pzming</bpmn:incoming>
-          <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+        <bpmn:incoming>Flow_1pzming</bpmn:incoming>
+        <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
       </bpmn:serviceTask>
     <bpmn:endEvent id="Event_end">
       <bpmn:incoming>Flow_13tvrx3</bpmn:incoming>

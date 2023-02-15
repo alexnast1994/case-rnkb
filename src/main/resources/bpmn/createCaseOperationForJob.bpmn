@@ -28,9 +28,9 @@
       <bpmn:incoming>Flow_003ei0r</bpmn:incoming>
     </bpmn:endEvent>
       <bpmn:serviceTask id="Activity_1m4ic94" name="Close Session"
-                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
-          <bpmn:incoming>Flow_0spkv5c</bpmn:incoming>
-          <bpmn:outgoing>Flow_0v5to50</bpmn:outgoing>
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+        <bpmn:incoming>Flow_0spkv5c</bpmn:incoming>
+        <bpmn:outgoing>Flow_0v5to50</bpmn:outgoing>
       </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0v5to50" sourceRef="Activity_1m4ic94" targetRef="Activity_0sdtd6k" />
     <bpmn:serviceTask id="Activity_0sdtd6k" name="Логирование" camunda:delegateExpression="${loggerDelegate}">

@@ -644,7 +644,7 @@ if(paymentEvents.size() &gt; 0) {
     <bpmn:sequenceFlow id="Flow_16i4xfs" sourceRef="Activity_038bidn" targetRef="Activity_131dz13" />
     <bpmn:sequenceFlow id="Flow_0tmz7xl" sourceRef="Activity_1jae6rb" targetRef="Activity_1qwn6qf" />
       <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
-                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
+                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
           <bpmn:incoming>Flow_16i4xfs</bpmn:incoming>
           <bpmn:outgoing>Flow_1qkyy98</bpmn:outgoing>
       </bpmn:serviceTask>
