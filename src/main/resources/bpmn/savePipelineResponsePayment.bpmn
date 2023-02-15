@@ -97,7 +97,7 @@ execution.setVariable("saveObjectList", saveObjects)</bpmn:script>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0g4zxz1" sourceRef="Activity_0f5iut7" targetRef="Activity_1ljabnt" />
       <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
-                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
           <bpmn:incoming>Flow_0529lvq</bpmn:incoming>
           <bpmn:outgoing>Flow_0vf9inx</bpmn:outgoing>
       </bpmn:serviceTask>

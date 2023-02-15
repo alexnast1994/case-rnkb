@@ -173,7 +173,7 @@ execution.setVariable("acceptedRules", acceptedRules)
       <bpmn:incoming>Flow_13tvrx3</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
-                      camunda:delegateExpression="${closeSessionRnkbDelegate}">
+                      camunda:delegateExpression="${CloseSessionRnkbDelegate}">
       <bpmn:incoming>Flow_163efhh</bpmn:incoming>
       <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
     </bpmn:serviceTask>
