@@ -401,9 +401,9 @@
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_05y7s0x" sourceRef="Activity_1qhqh1c" targetRef="Event_0n49gcy" />
       <bpmn:serviceTask id="Activity_1cpt2gg" name="Закрыть сессию"
-                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
-        <bpmn:incoming>Flow_12kd06o</bpmn:incoming>
-        <bpmn:outgoing>Flow_1x1l9mb</bpmn:outgoing>
+                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
+          <bpmn:incoming>Flow_12kd06o</bpmn:incoming>
+          <bpmn:outgoing>Flow_1x1l9mb</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="Flow_1x1l9mb" sourceRef="Activity_1cpt2gg" targetRef="Event_0rslf45" />
     </bpmn:subProcess>

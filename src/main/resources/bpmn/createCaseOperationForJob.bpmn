@@ -28,7 +28,7 @@
       <bpmn:incoming>Flow_003ei0r</bpmn:incoming>
     </bpmn:endEvent>
       <bpmn:serviceTask id="Activity_1m4ic94" name="Close Session"
-                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
           <bpmn:incoming>Flow_0spkv5c</bpmn:incoming>
           <bpmn:outgoing>Flow_0v5to50</bpmn:outgoing>
       </bpmn:serviceTask>

@@ -169,7 +169,7 @@ if(comment != null) {
             <bpmn:outgoing>Flow_0cetk3l</bpmn:outgoing>
         </bpmn:serviceTask>
         <bpmn:serviceTask id="Activity_09ji9nl" name="Закрыть сессию"
-                          camunda:delegateExpression="${closeSessionRnkbDelegate}">
+                          camunda:delegateExpression="${CloseSessionRnkbDelegate}">
             <bpmn:incoming>Flow_1vak5gg</bpmn:incoming>
             <bpmn:outgoing>Flow_0z7vuh4</bpmn:outgoing>
         </bpmn:serviceTask>

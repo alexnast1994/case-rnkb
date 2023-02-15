@@ -45,7 +45,7 @@ execution.setVariable("defaultNoFnsFatcaCode", "1")</bpmn:script>
       <bpmn:incoming>Flow_09jg2ud</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:serviceTask id="Activity_10wunb1" name="Закрыть Сессию"
-                      camunda:delegateExpression="${closeSessionRnkbDelegate}">
+                      camunda:delegateExpression="${CloseSessionRnkbDelegate}">
         <bpmn:incoming>Flow_10bbfv0</bpmn:incoming>
         <bpmn:outgoing>Flow_09jg2ud</bpmn:outgoing>
     </bpmn:serviceTask>

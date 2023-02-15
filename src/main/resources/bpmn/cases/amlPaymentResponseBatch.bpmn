@@ -61,7 +61,7 @@ execution.setVariable("rules", paymentItem.rules)
     <bpmn:sequenceFlow id="Flow_0ijxlkz" sourceRef="Activity_1jae6rb" targetRef="Activity_1qwn6qf" />
     <bpmn:sequenceFlow id="Flow_16huva2" sourceRef="Activity_1qwn6qf" targetRef="Activity_selectPipelineResult" />
       <bpmn:serviceTask id="Activity_0xi7f5i" name="Закрыть сессию"
-                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
           <bpmn:incoming>Flow_0t9dnnd</bpmn:incoming>
           <bpmn:outgoing>Flow_0l2q4gm</bpmn:outgoing>
       </bpmn:serviceTask>

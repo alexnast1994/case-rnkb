@@ -750,7 +750,7 @@ execution.setVariable("kycCaseClientVerdoc", kycCaseClientVerdoc)</bpmn:script>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1g9zlz9" sourceRef="createCaseKyc" targetRef="Activity_06urcbs" />
       <bpmn:serviceTask id="Activity_1vdc5v6" name="Закрыть сессию"
-                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
           <bpmn:incoming>Flow_1nat4ys</bpmn:incoming>
           <bpmn:outgoing>Flow_1kwzn44</bpmn:outgoing>
       </bpmn:serviceTask>
@@ -766,7 +766,7 @@ execution.setVariable("kycCaseClientVerdoc", kycCaseClientVerdoc)</bpmn:script>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_1nat4ys" sourceRef="Activity_06urcbs" targetRef="Activity_1vdc5v6" />
       <bpmn:serviceTask id="Activity_1cpt2gg" name="Закрыть сессию"
-                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
+                        camunda:delegateExpression="${CloseSessionRnkbDelegate}">
           <bpmn:incoming>Flow_1yzqqia</bpmn:incoming>
           <bpmn:outgoing>Flow_1poj8yf</bpmn:outgoing>
       </bpmn:serviceTask>
