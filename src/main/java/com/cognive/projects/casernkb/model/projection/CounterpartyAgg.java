@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 
 public interface CounterpartyAgg {
 
-    String getAggSting();
+    String getInn();
 
-    Long getAggAggdirId();
+    Long getId();
 
-    BigDecimal getAggSum();
+    BigDecimal getSum();
 
 }

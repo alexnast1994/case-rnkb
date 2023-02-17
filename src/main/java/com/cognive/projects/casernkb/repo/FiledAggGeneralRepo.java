@@ -82,7 +82,7 @@ public interface FiledAggGeneralRepo extends IBaseDslRepository<FieldAggGeneral,
             "GROUP BY string,aggId,ltype", nativeQuery = true)
     List<FieldAgg> getFieldAgg(Long clientId, String dateStart, String dateEnd);
 
-    @Query(value = "SELECT fag.STRING as aggString, fag.AGGDIRID as aggAggdirId, fag.SUM as aggSum " +
+    @Query(value = "SELECT fag.STRING as inn, fag.AGGDIRID as id, fag.SUM as sum " +
             "FROM FIELD_AGG_GENERAL fag " +
             "WHERE fag.CLIENTID = :clientId " +
             "  AND fag.AGGDIRID in (SELECT ID FROM RULE WHERE CODE IN ('AGRT096', 'AGRT097')) " +
