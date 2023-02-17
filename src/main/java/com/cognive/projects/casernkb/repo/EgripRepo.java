@@ -10,7 +10,14 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EgripRepo extends JpaRepository<ListEgripInfoIndividual, Long> {
 
-    @Query(value = "select ef.firstName as firstName, ef.lastName as lastName, ef.middleName as middleName, er.dateOgrnip as dateOgrnip from ListEgripInfoIndividual e left join ListEgripFl ef on e.flId.id = ef.id left join ListEgripRegip er on e.regipId.id = er.id where e.innFl like :inn")
+    @Query(value = "select ef.firstName as firstName, " +
+            "ef.lastName as lastName, " +
+            "ef.middleName as middleName, " +
+            "er.dateOgrnip as dateOgrnip " +
+            "from ListEgripFl ef " +
+            "inner join ListEgripInfoIndividual e on e.flId.id = ef.id " +
+            "inner join ListEgripRegip er on e.regipId.id = er.id " +
+            "where e.innFl like :inn")
     Egrip getEgripByInn(String inn);
 
 

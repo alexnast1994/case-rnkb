@@ -19,16 +19,14 @@
     <bpmn:endEvent id="Event_End">
       <bpmn:incoming>Flow_01253c3</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="Activity_04cx2ds" name="Открыть сессию"
-                      camunda:delegateExpression="${openSessionRnkbDelegate}">
-        <bpmn:incoming>Flow_0b9b043</bpmn:incoming>
-        <bpmn:outgoing>Flow_0v286vx</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_04cx2ds" name="Открыть сессию" camunda:delegateExpression="${openSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_0b9b043</bpmn:incoming>
+      <bpmn:outgoing>Flow_0v286vx</bpmn:outgoing>
     </bpmn:serviceTask>
-      <bpmn:serviceTask id="Activity_0hj1qcq" name="Закрыть сессию"
-                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
-          <bpmn:incoming>Flow_14efkmw</bpmn:incoming>
-          <bpmn:outgoing>Flow_01253c3</bpmn:outgoing>
-      </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_0hj1qcq" name="Закрыть сессию" camunda:delegateExpression="${closeSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_14efkmw</bpmn:incoming>
+      <bpmn:outgoing>Flow_01253c3</bpmn:outgoing>
+    </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_01253c3" sourceRef="Activity_0hj1qcq" targetRef="Event_End" />
     <bpmn:scriptTask id="Activity_payload" name="Payload" scriptFormat="groovy">
       <bpmn:incoming>Flow_0v286vx</bpmn:incoming>
@@ -184,15 +182,21 @@ if (verificationDocument != null) {
         <bpmn:incoming>Flow_0m76unr</bpmn:incoming>
         <bpmn:outgoing>Flow_19akj7z</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.Client
-                    import com.prime.db.rnkb.model.ClientIndividual
-                    import com.prime.db.rnkb.model.ClientLegal
-                    import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
-                    import com.prime.db.rnkb.model.commucation.judgment.RjClient
-                    import java.time.LocalDateTime
-                    import org.slf4j.LoggerFactory
-                    def log = LoggerFactory.getLogger(this.class)
+import com.prime.db.rnkb.model.ClientIndividual
+import com.prime.db.rnkb.model.ClientLegal
+import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
+import com.prime.db.rnkb.model.commucation.judgment.RjClient
 
-                    def rjClient = new RjClient()
+import java.sql.Timestamp
+import java.time.LocalDateTime
+import org.slf4j.LoggerFactory
+def log = LoggerFactory.getLogger(this.class)
+
+List&lt;Timestamp&gt; getDate(String inn) {
+    egrulRepo.getDate(inn)
+}
+
+def rjClient = new RjClient()
 def reasonedJudgment = execution.getVariable("reasonedJudgmentOut") as ReasonedJudgment
 
 def client = execution.getVariable("clientBase") as Client
@@ -202,7 +206,7 @@ def clientIndividual = new ClientIndividual()
 
 if(client.clientLegal!=null) {
     clientLegal = client.clientLegal
-    def sc = clientLegal?.sharecapital != null ? clientLegal?.sharecapital?.longValue() : 0L
+    def sc = clientLegal.sharecapital != null ? clientLegal.sharecapital.longValue() : 0L
     rjClient.sharecapital = sc
 }
 
@@ -227,16 +231,16 @@ if(client.ogrnDate!=null){
 rjClient.placeofbirth = clientIndividual.placeofbirth
 rjClient.clientFullname = client.fullName
 rjClient.manager = client.manager
-                    rjClient.branch = client.exBranch
-                    rjClient.fnsSegment = client.fnsSegment
-                    rjClient.ogrn = client.ogrn
-                    rjClient.typeOfClient = client.clientType
+rjClient.branch = client.exBranch
+rjClient.fnsSegment = client.fnsSegment
+rjClient.ogrn = client.ogrn
+rjClient.typeOfClient = client.clientType
 
-                    rjClient.client = client
-                    rjClient.exClientId = client.exClientId
-
-                    return rjClient
-                </bpmn:script>
+rjClient.client = client
+rjClient.exClientId = client.exClientId
+rjClient.untrueDate = getDate(client.inn).get(0).toLocalDateTime()
+return rjClient
+</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:scriptTask id="Activity_1nxjv8d" name="RJ_CLIENTRE" scriptFormat="groovy" camunda:resultVariable="rjClientRe">
         <bpmn:incoming>Flow_01wrt3k</bpmn:incoming>
@@ -1046,33 +1050,33 @@ OkvedProj getEgripOkvedByInn(String inn) {
 OkvedProj getOkvedByInn(String inn) {
     okvedRepo.getOkvedByInn(inn)
 }
+
 Long getRuleId(String code) {
     ruleRepo.getRuleId(code)
 }
 
 List&lt;CounterpartyAgg&gt; counterpartyAggList = getClientAgg(clientId, dateStart.substring(0,10), dateEnd.substring(0,10))
-println("Список контрагентов: " + counterpartyAggList.toString())
 if (!counterpartyAggList.isEmpty() &amp;&amp; counterpartyAggList != null) {
     List&lt;RjCounterparty&gt; rjCounterparties = new ArrayList&lt;&gt;()
     counterpartyAggList.each {c -&gt;
         try {
-            println "Начало формирования контрагента с ИНН: " + c.aggSting + " с записью по агрегату " + c.aggAggdirId
+            println "Начало формирования контрагента с ИНН: " + c.inn + " с записью по агрегату " + c.id
             RjCounterparty rjCounterparty = new RjCounterparty()
             rjCounterparty.rjId = execution.getVariable("reasonedJudgment") as ReasonedJudgment
-            Egrul egrul = getEgrulByInn(c.aggSting)
+            Egrul egrul = getEgrulByInn(c.inn)
             try {
                 if (egrul != null) {
                     rjCounterparty.fullName = egrul.fullname
                     rjCounterparty.isNewlyFormed = ChronoUnit.MONTHS.between(LocalDateTime.now(), egrul.dateOgrn) &lt; 18
                 }
                 else {
-                    Egrip egrip = getEgripByInn(c.aggSting)
+                    Egrip egrip = getEgripByInn(c.inn)
                     if (egrip != null) {
                         rjCounterparty.fullName = egrip.lastName + " " + egrip.firstName + " " + egrip.middleName
                         rjCounterparty.isNewlyFormed = ChronoUnit.MONTHS.between(LocalDateTime.now(), egrip.dateOgrnip) &lt; 18
                     }
                     else {
-                        Client client = getCounterpartyClientByInn(c.aggSting)
+                        Client client = getCounterpartyClientByInn(c.inn)
                         rjCounterparty.fullName = client.fullName
                         rjCounterparty.isNewlyFormed = ChronoUnit.MONTHS.between(LocalDateTime.now(), client.ogrnDate) &lt; 18
                     }
@@ -1081,11 +1085,11 @@ if (!counterpartyAggList.isEmpty() &amp;&amp; counterpartyAggList != null) {
             catch (Exception e) {
                 println "Не найден клиент по ИНН " + e.localizedMessage
             }
-            OkvedProj okvedProj = getEgrulOkvedByInn(c.aggSting)
+            OkvedProj okvedProj = getEgrulOkvedByInn(c.inn)
             if (okvedProj == null) {
-                okvedProj = getEgripOkvedByInn(c.aggSting)
+                okvedProj = getEgripOkvedByInn(c.inn)
                 if (okvedProj == null) {
-                    okvedProj = getOkvedByInn(c.aggSting)
+                    okvedProj = getOkvedByInn(c.inn)
                 }
             }
             try {
@@ -1095,18 +1099,18 @@ if (!counterpartyAggList.isEmpty() &amp;&amp; counterpartyAggList != null) {
             catch (Exception e) {
                 println "Не найден оквэд клиента по ИНН " + e.localizedMessage
             }
-            rjCounterparty.inn = c.aggSting
-            if (c.aggAggdirId == getRuleId("AGRT096")) {
-                rjCounterparty.oborotDt = c.aggSum
+            rjCounterparty.inn = c.inn
+            if (c.inn == getRuleId("AGRT096")) {
+                rjCounterparty.oborotDt = c.sum
             }
             else {
-                rjCounterparty.oborotKt = c.aggSum
+                rjCounterparty.oborotKt = c.sum
             }
             rjCounterparties.add(rjCounterparty)
             println "Добавлен контрагент: " + rjCounterparty.toString()
         }
         catch (Exception e) {
-            println "Не удалось сформировать запись по контрагенту с ИНН: " + c.aggSum
+            println "Не удалось сформировать запись по контрагенту с ИНН: " + c.sum
         }
     }
     if (rjCounterparties.isEmpty() || rjCounterparties == null) {
