@@ -67,8 +67,8 @@ public interface FiledAggGeneralRepo extends IBaseDslRepository<FieldAggGeneral,
             " fag.STRING AS string, " +
             " fag.SUM, " +
             " fag.CALCULATION_DATE, " +
-            " SUM(fag.SUM) OVER(PARTITION BY fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lsum," +
-            " SUM(fag.COUNT) OVER(PARTITION BY fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lcount " +
+            " SUM(fag.SUM) OVER(PARTITION BY fag.\"TYPE\", fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lsum," +
+            " SUM(fag.COUNT) OVER(PARTITION BY fag.\"TYPE\", fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lcount " +
             " FROM FIELD_AGG_GENERAL fag " +
             " JOIN RULE r ON fag.AGGDIRID = r.ID " +
             " JOIN BASEDICTIONARY b ON fag.\"TYPE\" = b.ID " +
