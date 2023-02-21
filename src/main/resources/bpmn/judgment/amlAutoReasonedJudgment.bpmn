@@ -1236,7 +1236,7 @@ if (bankList != null &amp;&amp; !bankList.isEmpty()) {
         try {
             println("Контрагент: " + rjCounterparties.find { it.inn == b.inn }.toString())
             rjCounterpartyBank.counterpartyId = rjCounterparties.find { r -&gt; r.inn == b.inn }
-            rjCounterpartyBank.name = b.inn
+            rjCounterpartyBank.name = b.bank.name
             rjCounterpartyBank.bic = b.bank.bic
             rjCounterpartyBanks.addAll(rjCounterpartyBank)
         }
