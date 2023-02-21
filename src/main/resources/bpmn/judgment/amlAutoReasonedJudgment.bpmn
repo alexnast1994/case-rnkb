@@ -197,6 +197,10 @@ List&lt;Timestamp&gt; getDate(String inn) {
     egrulRepo.getDate(inn)
 }
 
+BigDecimal getShareCapital(String inn) {
+    egrulRepo.getShareCapital(inn)
+}
+
 def rjClient = new RjClient()
 def reasonedJudgment = execution.getVariable("reasonedJudgmentOut") as ReasonedJudgment
 
@@ -205,12 +209,16 @@ def client = execution.getVariable("clientBase") as Client
 def clientLegal = new ClientLegal()
 def clientIndividual = new ClientIndividual()
 
-if(client.clientLegal!=null) {
+Long share = getShareCapital(client.inn).longValue()
+if(client.clientLegal!=null &amp;&amp; share == null ) {
     println("Клиент - юл")
     clientLegal = client.clientLegal
     def sc = clientLegal.sharecapital != null ? clientLegal.sharecapital.longValue() : 0L
     println("Клиент - юл " + sc)
     rjClient.sharecapital = sc
+}
+else {
+    rjClient.sharecapital = share == null ? 0L : share
 }
 
 if(client.clientIndividual!=null) {
@@ -243,8 +251,7 @@ rjClient.typeOfClient = client.clientType
 rjClient.client = client
 rjClient.exClientId = client.exClientId
 rjClient.untrueDate = getDate(client.inn).get(0).toLocalDateTime()
-return rjClient
-</bpmn:script>
+return rjClient</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:scriptTask id="Activity_1nxjv8d" name="RJ_CLIENTRE" scriptFormat="groovy" camunda:resultVariable="rjClientRe">
         <bpmn:incoming>Flow_01wrt3k</bpmn:incoming>
@@ -1007,6 +1014,7 @@ execution.setVariable("rjFieldAggregateList", rjFieldAggregateList)</bpmn:script
         <bpmn:outgoing>Flow_1xw2k24</bpmn:outgoing>
         <bpmn:script>package temp.rj
 
+import com.cognive.projects.casernkb.model.CounterPartyFinal
 import com.cognive.projects.casernkb.model.projection.CounterpartyAgg
 import com.cognive.projects.casernkb.model.projection.Egrip
 import com.cognive.projects.casernkb.model.projection.Egrul
@@ -1060,7 +1068,7 @@ if (!counterpartyAggList.isEmpty() &amp;&amp; counterpartyAggList != null) {
     List&lt;RjCounterparty&gt; rjCounterparties = new ArrayList&lt;&gt;()
     counterpartyAggList.each {c -&gt;
         try {
-            println "Начало формирования контрагента с ИНН: " + c.inn + " с записью по агрегату " + c.id
+            println "Начало формирования контрагента с ИНН: " + c.inn
             RjCounterparty rjCounterparty = new RjCounterparty()
             rjCounterparty.rjId = execution.getVariable("reasonedJudgment") as ReasonedJudgment
             Egrul egrul = getEgrulByInn(c.inn)
@@ -1100,17 +1108,14 @@ if (!counterpartyAggList.isEmpty() &amp;&amp; counterpartyAggList != null) {
                 println "Не найден оквэд клиента по ИНН " + e.localizedMessage
             }
             rjCounterparty.inn = c.inn
-            if (c.id == getRuleId("AGRT096")) {
-                rjCounterparty.oborotDt = c.sum
-            }
-            else {
-                rjCounterparty.oborotKt = c.sum
-            }
+                rjCounterparty.oborotDt = c.sumDt
+                rjCounterparty.oborotKt = c.sumKt
+            
             rjCounterparties.add(rjCounterparty)
             println "Добавлен контрагент: " + rjCounterparty.toString()
         }
         catch (Exception e) {
-            println "Не удалось сформировать запись по контрагенту с ИНН: " + c.sum
+            println "Не удалось сформировать запись по контрагенту с ИНН: " + c.inn
         }
     }
     if (rjCounterparties.isEmpty() || rjCounterparties == null) {
