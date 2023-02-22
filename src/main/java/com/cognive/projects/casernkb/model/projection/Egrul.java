@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public interface Egrul {
 
-    String getFullname();
+    String getFullName();
 
     LocalDateTime getDateOgrn();
 

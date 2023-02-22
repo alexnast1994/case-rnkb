@@ -6,8 +6,8 @@ public interface CounterpartyAgg {
 
     String getInn();
 
-    Long getId();
+    BigDecimal getSumDt();
 
-    BigDecimal getSum();
+    BigDecimal getSumKt();
 
 }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,6 +36,11 @@ public interface EgrulRepo extends JpaRepository<ListEgrulInfoUl, Long> {
             "JOIN LST_EGRUL_GRNDATA GRNDATA ON GRNDATA.ID = ADR_UNR.GRNDATAID " +
             "WHERE INN_UL = :inn", nativeQuery = true)
     List<Timestamp> getDate(String inn);
+
+    @Query(value = "SELECT ac.SUMM_CAPITAL FROM LST_EGRUL_INFO_UL a " +
+            "JOIN LST_EGRUL_AUTHORIZED_CAPITAL ac ON a.AUTHORIZED_CAPITAL_ID = ac.ID " +
+            "WHERE a.INN_UL = :inn AND ROWNUM = 1", nativeQuery = true)
+    BigDecimal getShareCapital(String inn);
 
 
 }

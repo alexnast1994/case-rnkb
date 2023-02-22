@@ -67,8 +67,8 @@ public interface FiledAggGeneralRepo extends IBaseDslRepository<FieldAggGeneral,
             " fag.STRING AS string, " +
             " fag.SUM, " +
             " fag.CALCULATION_DATE, " +
-            " SUM(fag.SUM) OVER(PARTITION BY fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lsum," +
-            " SUM(fag.COUNT) OVER(PARTITION BY fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lcount " +
+            " SUM(fag.SUM) OVER(PARTITION BY fag.\"TYPE\", fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lsum," +
+            " SUM(fag.COUNT) OVER(PARTITION BY fag.\"TYPE\", fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lcount " +
             " FROM FIELD_AGG_GENERAL fag " +
             " JOIN RULE r ON fag.AGGDIRID = r.ID " +
             " JOIN BASEDICTIONARY b ON fag.\"TYPE\" = b.ID " +
@@ -82,15 +82,19 @@ public interface FiledAggGeneralRepo extends IBaseDslRepository<FieldAggGeneral,
             "GROUP BY string,aggId,ltype", nativeQuery = true)
     List<FieldAgg> getFieldAgg(Long clientId, String dateStart, String dateEnd);
 
-    @Query(value = "SELECT fag.STRING as inn, fag.AGGDIRID as id, fag.SUM as sum " +
+    @Query(value = "SELECT distinct fag.STRING as inn, " +
+            "       SUM(case when fag.AGGDIRID = (SELECT ID FROM RULE WHERE CODE = 'AGRT096') THEN fag.SUM ELSE 0 END) OVER ( PARTITION BY fag.TYPE, fag.STRING ORDER BY fag.STRING) as sumDt, " +
+            "       SUM(case when fag.AGGDIRID = (SELECT ID FROM RULE WHERE CODE = 'AGRT097') THEN fag.SUM ELSE 0 END) OVER ( PARTITION BY fag.TYPE, fag.STRING ORDER BY fag.STRING) as sumKt " +
             "FROM FIELD_AGG_GENERAL fag " +
             "WHERE fag.CLIENTID = :clientId " +
             "  AND fag.AGGDIRID in (SELECT ID FROM RULE WHERE CODE IN ('AGRT096', 'AGRT097')) " +
             "  AND fag.TYPE = (SELECT b.ID " +
             "                  FROM BASEDICTIONARY b " +
-            "                  WHERE b.CODE = '1' AND b.TYPE = (SELECT ID FROM BASEDICTIONARYTYPE WHERE CODE = 1004)) " +
+            "                  WHERE b.CODE = '1' " +
+            "                    AND b.TYPE = (SELECT ID FROM BASEDICTIONARYTYPE WHERE CODE = 1004)) " +
             "  AND fag.CALCULATION_DATE >= TO_DATE(:dateStart, 'YYYY-MM-DD') " +
-            "  AND fag.CALCULATION_DATE <= TO_DATE(:dateEnd, 'YYYY-MM-DD')" +
+            "  AND fag.CALCULATION_DATE <= TO_DATE(:dateEnd, 'YYYY-MM-DD') " +
+            "ORDER BY fag.STRING" +
             " ", nativeQuery = true)
     List<CounterpartyAgg> getClientAgg(Long clientId, String dateStart, String dateEnd);
 
