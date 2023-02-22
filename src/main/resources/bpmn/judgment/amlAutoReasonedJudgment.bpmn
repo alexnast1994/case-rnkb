@@ -1309,18 +1309,19 @@ def rjClient = execution.getVariable("rjClient") as RjClient
 
 RjAggregate rjAggregate = new RjAggregate()
 rjAggregate.rjClientId = rjClient
-rjAggregate.turnoverDt = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr1 } as BigDecimal
-rjAggregate.turnoverKt = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr2 } as BigDecimal
-rjAggregate.turnoverDtClean = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
-rjAggregate.turnoverKtClean = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
-rjAggregate.transferToKo = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr72 } as BigDecimal
-rjAggregate.transferFromKo = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr44 } as BigDecimal
-rjAggregate.taxSum = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr13 } as BigDecimal
-rjAggregate.economicActivitySum = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr33 } as BigDecimal
-rjAggregate.arrivalSum = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
-rjAggregate.spendSum = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
+rjAggregate.turnoverDt = profAggGeneral == null || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr1 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr1 } as BigDecimal
+rjAggregate.turnoverKt = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr1 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr2 } as BigDecimal
+rjAggregate.turnoverDtClean = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr2 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
+rjAggregate.turnoverKtClean = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr82 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
+rjAggregate.transferToKo = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr72 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr72 } as BigDecimal
+rjAggregate.transferFromKo = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr44 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr44 } as BigDecimal
+rjAggregate.taxSum = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr13 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr13 } as BigDecimal
+rjAggregate.economicActivitySum = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr33 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr33 } as BigDecimal
+rjAggregate.arrivalSum = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr5 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
+rjAggregate.spendSum = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr82 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
 execution.setVariable("rjAggregates", rjAggregate)
-execution.setVariable("emptyProfileAggGeneral", false)</bpmn:script>
+execution.setVariable("emptyProfileAggGeneral", false)
+</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:exclusiveGateway id="Gateway_191bell" default="Flow_10mma8t">
         <bpmn:incoming>Flow_050sefu</bpmn:incoming>
@@ -2295,14 +2296,14 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1wmamsk_di" bpmnElement="Flow_1wmamsk">
         <di:waypoint x="8460" y="340" />
-        <di:waypoint x="8490" y="340" />
+        <di:waypoint x="8520" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0f82qtf_di" bpmnElement="Flow_0f82qtf">
         <di:waypoint x="8800" y="340" />
         <di:waypoint x="8925" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_17b0fs2_di" bpmnElement="Flow_17b0fs2">
-        <di:waypoint x="8590" y="340" />
+        <di:waypoint x="8620" y="340" />
         <di:waypoint x="8700" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_1652rxe_di" bpmnElement="Event_1652rxe">
@@ -2550,10 +2551,6 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
       <bpmndi:BPMNShape id="Activity_0c6gp2v_di" bpmnElement="Activity_0tk6n5v">
         <dc:Bounds x="8360" y="300" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_00ejh17_di" bpmnElement="Activity_1jfr2cb">
-        <dc:Bounds x="8490" y="300" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_19vr3o8_di" bpmnElement="Gateway_19vr3o8" isMarkerVisible="true">
         <dc:Bounds x="9825" y="315" width="50" height="50" />
       </bpmndi:BPMNShape>
@@ -2588,6 +2585,10 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1jny1wi_di" bpmnElement="Activity_039qe4y">
         <dc:Bounds x="8700" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_00ejh17_di" bpmnElement="Activity_1jfr2cb">
+        <dc:Bounds x="8520" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_1ser3at_di" bpmnElement="TextAnnotation_1ser3at">
