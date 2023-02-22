@@ -1309,16 +1309,16 @@ def rjClient = execution.getVariable("rjClient") as RjClient
 
 RjAggregate rjAggregate = new RjAggregate()
 rjAggregate.rjClientId = rjClient
-rjAggregate.turnoverDt = profAggGeneral == null || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr1 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr1 } as BigDecimal
-rjAggregate.turnoverKt = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr1 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr2 } as BigDecimal
-rjAggregate.turnoverDtClean = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr2 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
-rjAggregate.turnoverKtClean = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr82 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
-rjAggregate.transferToKo = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr72 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr72 } as BigDecimal
-rjAggregate.transferFromKo = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr44 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr44 } as BigDecimal
-rjAggregate.taxSum = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr13 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr13 } as BigDecimal
-rjAggregate.economicActivitySum = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr33 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr33 } as BigDecimal
-rjAggregate.arrivalSum = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr5 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
-rjAggregate.spendSum = profAggGeneral == null || profAggGeneral.isEmpty() || profAggGeneral.isEmpty() !profAggGeneral.any {it -&gt; it.profAgr82 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
+rjAggregate.turnoverDt = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr1 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr1 } as BigDecimal
+rjAggregate.turnoverKt = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr1 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr2 } as BigDecimal
+rjAggregate.turnoverDtClean = profAggGeneral == null || profAggGeneral.isEmpty()  || !profAggGeneral.any {it -&gt; it.profAgr2 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
+rjAggregate.turnoverKtClean = profAggGeneral == null || profAggGeneral.isEmpty()|| !profAggGeneral.any {it -&gt; it.profAgr82 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
+rjAggregate.transferToKo = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr72 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr72 } as BigDecimal
+rjAggregate.transferFromKo = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr44 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr44 } as BigDecimal
+rjAggregate.taxSum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr13 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr13 } as BigDecimal
+rjAggregate.economicActivitySum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr33 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr33 } as BigDecimal
+rjAggregate.arrivalSum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr5 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
+rjAggregate.spendSum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr82 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
 execution.setVariable("rjAggregates", rjAggregate)
 execution.setVariable("emptyProfileAggGeneral", false)
 </bpmn:script>
