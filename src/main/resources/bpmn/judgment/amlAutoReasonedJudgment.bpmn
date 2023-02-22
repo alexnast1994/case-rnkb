@@ -1308,17 +1308,20 @@ def rjClient = execution.getVariable("rjClient") as RjClient
 
 
 RjAggregate rjAggregate = new RjAggregate()
+println("rjClient " + rjClient.toString())
+println(profAggGeneral.toString())
+println(profAggGeneral.size())
 rjAggregate.rjClientId = rjClient
-rjAggregate.turnoverDt = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr1 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr1 } as BigDecimal
-rjAggregate.turnoverKt = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr1 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr2 } as BigDecimal
-rjAggregate.turnoverDtClean = profAggGeneral == null || profAggGeneral.isEmpty()  || !profAggGeneral.any {it -&gt; it.profAgr2 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
-rjAggregate.turnoverKtClean = profAggGeneral == null || profAggGeneral.isEmpty()|| !profAggGeneral.any {it -&gt; it.profAgr82 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
-rjAggregate.transferToKo = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr72 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr72 } as BigDecimal
-rjAggregate.transferFromKo = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr44 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr44 } as BigDecimal
-rjAggregate.taxSum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr13 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr13 } as BigDecimal
-rjAggregate.economicActivitySum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr33 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr33 } as BigDecimal
-rjAggregate.arrivalSum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr5 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
-rjAggregate.spendSum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr82 != null} ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
+rjAggregate.turnoverDt = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr1 != null} ? 0 : profAggGeneral.findAll {it -&gt; it.profAgr1 != null}.collect().sum { p -&gt; p.profAgr1 } as BigDecimal
+rjAggregate.turnoverKt = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr2 != null} ? 0 : profAggGeneral.findAll {it -&gt; it.profAgr2 != null}.collect().sum { p -&gt; p.profAgr2 } as BigDecimal
+rjAggregate.turnoverDtClean = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr5 != null} ? 0 : profAggGeneral.findAll {it -&gt; it.profAgr5 != null}.collect().sum { p -&gt; p.profAgr5 } as BigDecimal
+rjAggregate.turnoverKtClean = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr82 != null} ? 0 : profAggGeneral.findAll {it -&gt; it.profAgr82 != null}.collect().sum { p -&gt; p.profAgr82 } as BigDecimal
+rjAggregate.transferToKo = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr72 != null} ? 0 : profAggGeneral.findAll {it -&gt; it.profAgr72 != null}.collect().sum { p -&gt; p.profAgr72 } as BigDecimal
+rjAggregate.transferFromKo = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr44 != null} ? 0 : profAggGeneral.findAll {it -&gt; it.profAgr44 != null}.collect().sum { p -&gt; p.profAgr44 } as BigDecimal
+rjAggregate.taxSum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr13 != null} ? 0 : profAggGeneral.findAll {it -&gt; it.profAgr13 != null}.collect().sum { p -&gt; p.profAgr13 } as BigDecimal
+rjAggregate.economicActivitySum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr33 != null} ? 0 : profAggGeneral.findAll {it -&gt; it.profAgr33 != null}.collect().sum { p -&gt; p.profAgr33 } as BigDecimal
+rjAggregate.arrivalSum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr5 != null} ? 0 : profAggGeneral.findAll {it -&gt; it.profAgr5 != null}.collect().sum { p -&gt; p.profAgr5 } as BigDecimal
+rjAggregate.spendSum = profAggGeneral == null || profAggGeneral.isEmpty() || !profAggGeneral.any {it -&gt; it.profAgr82 != null} ? 0 : profAggGeneral.findAll {it -&gt; it.profAgr82 != null}.collect().sum { p -&gt; p.profAgr82 } as BigDecimal
 execution.setVariable("rjAggregates", rjAggregate)
 execution.setVariable("emptyProfileAggGeneral", false)
 </bpmn:script>
@@ -1792,8 +1795,8 @@ for (int i = 0; i&lt;4; i++) {
     RjAggregateCurrencyExchange rjAggregateCurrencyExchange = new RjAggregateCurrencyExchange()
     rjAggregateCurrencyExchange.rjAggregateId = rjAggregate
     List&lt;ProfileAggGeneral&gt; agg = getAggrs(clientId, startQ, endQ)
-    rjAggregateCurrencyExchange.currExchangeBuyAmount = agg == null || agg.isEmpty() || !agg.any {it -&gt; it.profAgr11 != null} ? 0 : agg.sum { it -&gt; it.profAgr11} as BigDecimal
-    rjAggregateCurrencyExchange.currExchangeSellCurrency = agg == null || agg.isEmpty() || !agg.any {it -&gt; it.profAgr12 != null} ? 0 : agg.sum { it -&gt; it.profAgr12} as BigDecimal
+    rjAggregateCurrencyExchange.currExchangeBuyAmount = agg == null || agg.isEmpty() || !agg.any {it -&gt; it.profAgr11 != null} ? 0 : agg.findAll{it -&gt; it.profAgr11 != null}.sum { it -&gt; it.profAgr11} as BigDecimal
+    rjAggregateCurrencyExchange.currExchangeSellAmount = agg == null || agg.isEmpty() || !agg.any {it -&gt; it.profAgr12 != null} ? 0 : agg.findAll{it -&gt; it.profAgr12 != null}.sum { it -&gt; it.profAgr12} as BigDecimal
     rjAggregateCurrencyExchange.quaterAgo = getQuarter(i.toString())
     startQ = startQ.minusMonths(3).with(TemporalAdjusters.firstDayOfMonth())
     endQ= endQ.minusMonths(3).with(TemporalAdjusters.lastDayOfMonth())
@@ -1873,6 +1876,22 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
       <bpmndi:BPMNShape id="Activity_1508q2q_di" bpmnElement="Activity_1508q2q" isExpanded="true">
         <dc:Bounds x="910" y="80" width="11420" height="480" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_17b0fs2_di" bpmnElement="Flow_17b0fs2">
+        <di:waypoint x="8620" y="340" />
+        <di:waypoint x="8700" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0f82qtf_di" bpmnElement="Flow_0f82qtf">
+        <di:waypoint x="8800" y="340" />
+        <di:waypoint x="8925" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wmamsk_di" bpmnElement="Flow_1wmamsk">
+        <di:waypoint x="8460" y="340" />
+        <di:waypoint x="8520" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1g561qt_di" bpmnElement="Flow_1g561qt">
+        <di:waypoint x="4006" y="340" />
+        <di:waypoint x="4220" y="340" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_130cahw_di" bpmnElement="Flow_130cahw">
         <di:waypoint x="3320" y="315" />
         <di:waypoint x="3320" y="230" />
@@ -2290,22 +2309,6 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
         <di:waypoint x="2593" y="340" />
         <di:waypoint x="2650" y="340" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1g561qt_di" bpmnElement="Flow_1g561qt">
-        <di:waypoint x="4006" y="340" />
-        <di:waypoint x="4220" y="340" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1wmamsk_di" bpmnElement="Flow_1wmamsk">
-        <di:waypoint x="8460" y="340" />
-        <di:waypoint x="8520" y="340" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0f82qtf_di" bpmnElement="Flow_0f82qtf">
-        <di:waypoint x="8800" y="340" />
-        <di:waypoint x="8925" y="340" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_17b0fs2_di" bpmnElement="Flow_17b0fs2">
-        <di:waypoint x="8620" y="340" />
-        <di:waypoint x="8700" y="340" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_1652rxe_di" bpmnElement="Event_1652rxe">
         <dc:Bounds x="950" y="322" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -2357,6 +2360,9 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1wj9sjl" bpmnElement="Activity_08upt1g">
         <dc:Bounds x="3906" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_12ncfwe" bpmnElement="Activity_0e3ywof">
+        <dc:Bounds x="4050" y="180" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_00mgb29" bpmnElement="Activity_0jfbyz9">
         <dc:Bounds x="4220" y="300" width="100" height="80" />
@@ -2480,6 +2486,48 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
       <bpmndi:BPMNShape id="Activity_1g8rh1c_di" bpmnElement="Activity_0jiapll">
         <dc:Bounds x="7890" y="300" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0rxzohc_di" bpmnElement="Activity_1lzdmgo">
+        <dc:Bounds x="8160" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_191bell_di" bpmnElement="Gateway_191bell" isMarkerVisible="true">
+        <dc:Bounds x="8285" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_14q2a3u_di" bpmnElement="Gateway_14q2a3u" isMarkerVisible="true">
+        <dc:Bounds x="8925" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0c6gp2v_di" bpmnElement="Activity_0tk6n5v">
+        <dc:Bounds x="8360" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0vpp3l6_di" bpmnElement="Activity_11kp1jm">
+        <dc:Bounds x="9010" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jpi8wj_di" bpmnElement="Activity_0l1uo50">
+        <dc:Bounds x="9130" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0hrivxt_di" bpmnElement="Gateway_0hrivxt" isMarkerVisible="true">
+        <dc:Bounds x="9255" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_01wf6t4_di" bpmnElement="Gateway_01wf6t4" isMarkerVisible="true">
+        <dc:Bounds x="9445" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1nbt7lt_di" bpmnElement="Activity_039txn0">
+        <dc:Bounds x="9320" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_11jb6y2_di" bpmnElement="Activity_1o7sh79">
+        <dc:Bounds x="9520" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1kk02z9_di" bpmnElement="Gateway_1kk02z9" isMarkerVisible="true">
+        <dc:Bounds x="9645" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_19vr3o8_di" bpmnElement="Gateway_19vr3o8" isMarkerVisible="true">
+        <dc:Bounds x="9825" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0048r8h_di" bpmnElement="Activity_0ivrv39">
+        <dc:Bounds x="9720" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1ej5olq_di" bpmnElement="Activity_1hnspuv">
         <dc:Bounds x="9890" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
@@ -2538,57 +2586,12 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
       <bpmndi:BPMNShape id="Gateway_0fvbazc_di" bpmnElement="Gateway_0fvbazc" isMarkerVisible="true">
         <dc:Bounds x="3515" y="315" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_12ncfwe" bpmnElement="Activity_0e3ywof">
-        <dc:Bounds x="4050" y="180" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0rxzohc_di" bpmnElement="Activity_1lzdmgo">
-        <dc:Bounds x="8160" y="300" width="100" height="80" />
+      <bpmndi:BPMNShape id="Activity_00ejh17_di" bpmnElement="Activity_1jfr2cb">
+        <dc:Bounds x="8520" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_191bell_di" bpmnElement="Gateway_191bell" isMarkerVisible="true">
-        <dc:Bounds x="8285" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0c6gp2v_di" bpmnElement="Activity_0tk6n5v">
-        <dc:Bounds x="8360" y="300" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_19vr3o8_di" bpmnElement="Gateway_19vr3o8" isMarkerVisible="true">
-        <dc:Bounds x="9825" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0048r8h_di" bpmnElement="Activity_0ivrv39">
-        <dc:Bounds x="9720" y="300" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1kk02z9_di" bpmnElement="Gateway_1kk02z9" isMarkerVisible="true">
-        <dc:Bounds x="9645" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_11jb6y2_di" bpmnElement="Activity_1o7sh79">
-        <dc:Bounds x="9520" y="300" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_01wf6t4_di" bpmnElement="Gateway_01wf6t4" isMarkerVisible="true">
-        <dc:Bounds x="9445" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1nbt7lt_di" bpmnElement="Activity_039txn0">
-        <dc:Bounds x="9320" y="300" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0hrivxt_di" bpmnElement="Gateway_0hrivxt" isMarkerVisible="true">
-        <dc:Bounds x="9255" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1jpi8wj_di" bpmnElement="Activity_0l1uo50">
-        <dc:Bounds x="9130" y="300" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0vpp3l6_di" bpmnElement="Activity_11kp1jm">
-        <dc:Bounds x="9010" y="300" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_14q2a3u_di" bpmnElement="Gateway_14q2a3u" isMarkerVisible="true">
-        <dc:Bounds x="8925" y="315" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1jny1wi_di" bpmnElement="Activity_039qe4y">
         <dc:Bounds x="8700" y="300" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_00ejh17_di" bpmnElement="Activity_1jfr2cb">
-        <dc:Bounds x="8520" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_1ser3at_di" bpmnElement="TextAnnotation_1ser3at">
