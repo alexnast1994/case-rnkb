@@ -1074,8 +1074,12 @@ OkvedProj getEgrulOkvedByInn(String inn) {
     egrulRepo.getEgrulOkvedByInn(inn)
 }
 
-Egrip getEgripByInn(String inn) {
+String getEgripByInn(String inn) {
     egripRepo.getEgripByInn(inn)
+}
+
+LocalDateTime getDateOgrnip(String inn) {
+    egripRepo.getDateOgrnip(inn)
 }
 
 OkvedProj getEgripOkvedByInn(String inn) {
@@ -1105,10 +1109,11 @@ if (!counterpartyAggList.isEmpty() &amp;&amp; counterpartyAggList != null) {
                     rjCounterparty.isNewlyFormed = ChronoUnit.MONTHS.between(LocalDateTime.now(), egrul.dateOgrn) &lt; 18
                 }
                 else {
-                    Egrip egrip = getEgripByInn(c.inn)
-                    if (egrip != null) {
-                        rjCounterparty.fullName = egrip.lastName + " " + egrip.firstName + " " + egrip.middleName
-                        rjCounterparty.isNewlyFormed = ChronoUnit.MONTHS.between(LocalDateTime.now(), egrip.dateOgrnip) &lt; 18
+                    String name = getEgripByInn(c.inn)
+                    LocalDateTime dateOgrnip = getDateOgrnip(c.inn)
+                    if (name != null) {
+                        rjCounterparty.fullName = name
+                        rjCounterparty.isNewlyFormed = ChronoUnit.MONTHS.between(LocalDateTime.now(), dateOgrnip) &lt; 18
                     }
                     else {
                         Client client = getCounterpartyClientByInn(c.inn)
@@ -1137,7 +1142,7 @@ if (!counterpartyAggList.isEmpty() &amp;&amp; counterpartyAggList != null) {
             rjCounterparty.inn = c.inn
                 rjCounterparty.oborotDt = c.sumDt
                 rjCounterparty.oborotKt = c.sumKt
-            
+
             rjCounterparties.add(rjCounterparty)
             println "Добавлен контрагент: " + rjCounterparty.toString()
         }
@@ -1301,27 +1306,21 @@ List&lt;ProfileAggGeneral&gt; getAggrs(Long clientId, LocalDate startDate, Local
 List&lt;ProfileAggGeneral&gt; profAggGeneral = getAggrs(clientId, LocalDate.parse(dateStart.substring(0, 10)), LocalDate.parse(dateEnd.substring(0, 10)))
 def rjClient = execution.getVariable("rjClient") as RjClient
 
-if (!profAggGeneral.isEmpty() &amp;&amp; profAggGeneral != null) {
 
-    RjAggregate rjAggregate = new RjAggregate()
-    rjAggregate.rjClientId = rjClient
-    rjAggregate.turnoverDt = profAggGeneral.sum { p -&gt; p.profAgr1 } as BigDecimal
-    rjAggregate.turnoverKt = profAggGeneral.sum { p -&gt; p.profAgr2 } as BigDecimal
-    rjAggregate.turnoverDtClean = profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
-    rjAggregate.turnoverKtClean = profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
-    rjAggregate.transferToKo = profAggGeneral.sum { p -&gt; p.profAgr72 } as BigDecimal
-    rjAggregate.transferFromKo = profAggGeneral.sum { p -&gt; p.profAgr44 } as BigDecimal
-    rjAggregate.taxSum = profAggGeneral.sum { p -&gt; p.profAgr13 } as BigDecimal
-    rjAggregate.economicActivitySum = profAggGeneral.sum { p -&gt; p.profAgr33 } as BigDecimal
-    rjAggregate.arrivalSum = profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
-    rjAggregate.spendSum = profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
-    execution.setVariable("rjAggregates", rjAggregate)
-    execution.setVariable("emptyProfileAggGeneral", false)
-
-} else {
-    println("ProfileAggGeneral не найдены")
-    execution.setVariable("emptyProfileAggGeneral", true)
-}</bpmn:script>
+RjAggregate rjAggregate = new RjAggregate()
+rjAggregate.rjClientId = rjClient
+rjAggregate.turnoverDt = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr1 } as BigDecimal
+rjAggregate.turnoverKt = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr2 } as BigDecimal
+rjAggregate.turnoverDtClean = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
+rjAggregate.turnoverKtClean = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
+rjAggregate.transferToKo = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr72 } as BigDecimal
+rjAggregate.transferFromKo = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr44 } as BigDecimal
+rjAggregate.taxSum = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr13 } as BigDecimal
+rjAggregate.economicActivitySum = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr33 } as BigDecimal
+rjAggregate.arrivalSum = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr5 } as BigDecimal
+rjAggregate.spendSum = profAggGeneral == null || profAggGeneral.isEmpty() ? 0 : profAggGeneral.sum { p -&gt; p.profAgr82 } as BigDecimal
+execution.setVariable("rjAggregates", rjAggregate)
+execution.setVariable("emptyProfileAggGeneral", false)</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:exclusiveGateway id="Gateway_191bell" default="Flow_10mma8t">
         <bpmn:incoming>Flow_050sefu</bpmn:incoming>
@@ -1331,11 +1330,10 @@ if (!profAggGeneral.isEmpty() &amp;&amp; profAggGeneral != null) {
       <bpmn:sequenceFlow id="Flow_050sefu" sourceRef="Activity_1lzdmgo" targetRef="Gateway_191bell" />
       <bpmn:sequenceFlow id="Flow_10mma8t" sourceRef="Gateway_191bell" targetRef="Activity_0tk6n5v" />
       <bpmn:exclusiveGateway id="Gateway_14q2a3u">
-        <bpmn:incoming>Flow_0j8e4uz</bpmn:incoming>
         <bpmn:incoming>Flow_13naaka</bpmn:incoming>
+        <bpmn:incoming>Flow_0f82qtf</bpmn:incoming>
         <bpmn:outgoing>Flow_1ahu9fj</bpmn:outgoing>
       </bpmn:exclusiveGateway>
-      <bpmn:sequenceFlow id="Flow_0j8e4uz" sourceRef="Activity_0tk6n5v" targetRef="Gateway_14q2a3u" />
       <bpmn:sequenceFlow id="Flow_13naaka" sourceRef="Gateway_191bell" targetRef="Gateway_14q2a3u">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${emptyProfileAggGeneral}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
@@ -1343,10 +1341,11 @@ if (!profAggGeneral.isEmpty() &amp;&amp; profAggGeneral != null) {
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="saveObject">${rjAggregates}</camunda:inputParameter>
+            <camunda:inputParameter name="outputVarName">rjAggregatesOut</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_10mma8t</bpmn:incoming>
-        <bpmn:outgoing>Flow_0j8e4uz</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1wmamsk</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="Flow_1ahu9fj" sourceRef="Gateway_14q2a3u" targetRef="Activity_11kp1jm" />
       <bpmn:serviceTask id="Activity_11kp1jm" name="Получение risklevel" camunda:delegateExpression="${selectDelegate}">
@@ -1758,6 +1757,60 @@ else {
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${emptyLicense}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="Flow_1g561qt" sourceRef="Activity_08upt1g" targetRef="Activity_0jfbyz9" />
+      <bpmn:sequenceFlow id="Flow_1wmamsk" sourceRef="Activity_0tk6n5v" targetRef="Activity_1jfr2cb" />
+      <bpmn:scriptTask id="Activity_1jfr2cb" name="RJ_AGGREGATE_CURRENCY_EXCHANGE" scriptFormat="groovy">
+        <bpmn:incoming>Flow_1wmamsk</bpmn:incoming>
+        <bpmn:outgoing>Flow_17b0fs2</bpmn:outgoing>
+        <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
+import com.prime.db.rnkb.model.ProfileAggGeneral
+import com.prime.db.rnkb.model.commucation.judgment.RjAggregate
+import com.prime.db.rnkb.model.commucation.judgment.RjAggregateCurrencyExchange
+
+import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
+
+BaseDictionary getQuarter(String code) {
+    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(292, code);
+}
+
+List&lt;ProfileAggGeneral&gt; getAggrs(Long clientId, LocalDate startDate, LocalDate offDate) {
+    aggGeneralRepo.getAggr(clientId, startDate, offDate)
+}
+
+Long clientId = execution.getVariable("clientId") as Long
+String dateStart = execution.getVariable("startDate") as String
+String dateEnd = execution.getVariable("offDate") as String
+RjAggregate rjAggregate = execution.getVariable("rjAggregatesOut") as RjAggregate
+
+LocalDate startQ = LocalDate.now().with(LocalDate.now().getMonth().firstMonthOfQuarter()).with(TemporalAdjusters.firstDayOfMonth())
+LocalDate endQ = startQ.plusMonths(2).with(TemporalAdjusters.lastDayOfMonth())
+
+List&lt;RjAggregateCurrencyExchange&gt; rjAggregateCurrencyExchangeList = new ArrayList&lt;&gt;()
+for (int i = 0; i&lt;4; i++) {
+
+    RjAggregateCurrencyExchange rjAggregateCurrencyExchange = new RjAggregateCurrencyExchange()
+    rjAggregateCurrencyExchange.rjAggregateId = rjAggregate
+    List&lt;ProfileAggGeneral&gt; agg = getAggrs(clientId, startQ, endQ)
+    rjAggregateCurrencyExchange.currExchangeBuyAmount = agg == null || agg.isEmpty() || !agg.any {it -&gt; it.profAgr11 != null} ? 0 : agg.sum { it -&gt; it.profAgr11} as BigDecimal
+    rjAggregateCurrencyExchange.currExchangeSellCurrency = agg == null || agg.isEmpty() || !agg.any {it -&gt; it.profAgr12 != null} ? 0 : agg.sum { it -&gt; it.profAgr12} as BigDecimal
+    rjAggregateCurrencyExchange.quaterAgo = getQuarter(i.toString())
+    startQ = startQ.minusMonths(3).with(TemporalAdjusters.firstDayOfMonth())
+    endQ= endQ.minusMonths(3).with(TemporalAdjusters.lastDayOfMonth())
+    rjAggregateCurrencyExchangeList.add(rjAggregateCurrencyExchange)
+}
+execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExchangeList)</bpmn:script>
+      </bpmn:scriptTask>
+      <bpmn:serviceTask id="Activity_039qe4y" name="save delegate" camunda:delegateExpression="${saveObjectListDelegate}">
+        <bpmn:extensionElements>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="saveObjectList">${rjAggregateCurrencyExchangeList}</camunda:inputParameter>
+          </camunda:inputOutput>
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_17b0fs2</bpmn:incoming>
+        <bpmn:outgoing>Flow_0f82qtf</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="Flow_0f82qtf" sourceRef="Activity_039qe4y" targetRef="Gateway_14q2a3u" />
+      <bpmn:sequenceFlow id="Flow_17b0fs2" sourceRef="Activity_1jfr2cb" targetRef="Activity_039qe4y" />
     </bpmn:subProcess>
     <bpmn:sequenceFlow id="Flow_0afcxcw" sourceRef="Activity_payload" targetRef="Activity_1508q2q" />
     <bpmn:sequenceFlow id="Flow_14efkmw" sourceRef="Activity_1508q2q" targetRef="Activity_0hj1qcq" />
@@ -1936,78 +1989,74 @@ else {
         <di:waypoint x="10055" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1omp6se_di" bpmnElement="Flow_1omp6se">
-        <di:waypoint x="9825" y="340" />
+        <di:waypoint x="9875" y="340" />
         <di:waypoint x="9890" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1tjlof3_di" bpmnElement="Flow_1tjlof3">
-        <di:waypoint x="9560" y="365" />
-        <di:waypoint x="9560" y="470" />
-        <di:waypoint x="9800" y="470" />
-        <di:waypoint x="9800" y="365" />
+        <di:waypoint x="9670" y="365" />
+        <di:waypoint x="9670" y="470" />
+        <di:waypoint x="9850" y="470" />
+        <di:waypoint x="9850" y="365" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1tt5dch_di" bpmnElement="Flow_1tt5dch">
-        <di:waypoint x="9740" y="340" />
-        <di:waypoint x="9775" y="340" />
+        <di:waypoint x="9820" y="340" />
+        <di:waypoint x="9825" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_083p6o3_di" bpmnElement="Flow_083p6o3">
-        <di:waypoint x="9585" y="340" />
-        <di:waypoint x="9640" y="340" />
+        <di:waypoint x="9695" y="340" />
+        <di:waypoint x="9720" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0q3bqmz_di" bpmnElement="Flow_0q3bqmz">
-        <di:waypoint x="9510" y="340" />
-        <di:waypoint x="9535" y="340" />
+        <di:waypoint x="9620" y="340" />
+        <di:waypoint x="9645" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1vtlagx_di" bpmnElement="Flow_1vtlagx">
-        <di:waypoint x="9385" y="340" />
-        <di:waypoint x="9410" y="340" />
+        <di:waypoint x="9495" y="340" />
+        <di:waypoint x="9520" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0q9rea6_di" bpmnElement="Flow_0q9rea6">
-        <di:waypoint x="9150" y="365" />
-        <di:waypoint x="9150" y="470" />
-        <di:waypoint x="9360" y="470" />
-        <di:waypoint x="9360" y="365" />
+        <di:waypoint x="9280" y="365" />
+        <di:waypoint x="9280" y="470" />
+        <di:waypoint x="9470" y="470" />
+        <di:waypoint x="9470" y="365" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1tp4izo_di" bpmnElement="Flow_1tp4izo">
-        <di:waypoint x="9310" y="340" />
-        <di:waypoint x="9335" y="340" />
+        <di:waypoint x="9420" y="340" />
+        <di:waypoint x="9445" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_05bcvqx_di" bpmnElement="Flow_05bcvqx">
-        <di:waypoint x="9175" y="340" />
-        <di:waypoint x="9210" y="340" />
+        <di:waypoint x="9305" y="340" />
+        <di:waypoint x="9320" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0ow1tp9_di" bpmnElement="Flow_0ow1tp9">
-        <di:waypoint x="9100" y="340" />
-        <di:waypoint x="9125" y="340" />
+        <di:waypoint x="9230" y="340" />
+        <di:waypoint x="9255" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0u4jl76_di" bpmnElement="Flow_0u4jl76">
-        <di:waypoint x="8960" y="340" />
-        <di:waypoint x="9000" y="340" />
+        <di:waypoint x="9110" y="340" />
+        <di:waypoint x="9130" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1ahu9fj_di" bpmnElement="Flow_1ahu9fj">
-        <di:waypoint x="8795" y="340" />
-        <di:waypoint x="8860" y="340" />
+        <di:waypoint x="8975" y="340" />
+        <di:waypoint x="9010" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_13naaka_di" bpmnElement="Flow_13naaka">
-        <di:waypoint x="8490" y="365" />
-        <di:waypoint x="8490" y="470" />
-        <di:waypoint x="8770" y="470" />
-        <di:waypoint x="8770" y="365" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0j8e4uz_di" bpmnElement="Flow_0j8e4uz">
-        <di:waypoint x="8680" y="340" />
-        <di:waypoint x="8745" y="340" />
+        <di:waypoint x="8310" y="365" />
+        <di:waypoint x="8310" y="470" />
+        <di:waypoint x="8950" y="470" />
+        <di:waypoint x="8950" y="365" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_10mma8t_di" bpmnElement="Flow_10mma8t">
-        <di:waypoint x="8515" y="340" />
-        <di:waypoint x="8580" y="340" />
+        <di:waypoint x="8335" y="340" />
+        <di:waypoint x="8360" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_050sefu_di" bpmnElement="Flow_050sefu">
-        <di:waypoint x="8360" y="340" />
-        <di:waypoint x="8465" y="340" />
+        <di:waypoint x="8260" y="340" />
+        <di:waypoint x="8285" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1jk74w9_di" bpmnElement="Flow_1jk74w9">
         <di:waypoint x="8115" y="340" />
-        <di:waypoint x="8260" y="340" />
+        <di:waypoint x="8160" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1travt0_di" bpmnElement="Flow_1travt0">
         <di:waypoint x="7800" y="315" />
@@ -2244,6 +2293,18 @@ else {
         <di:waypoint x="4006" y="340" />
         <di:waypoint x="4220" y="340" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wmamsk_di" bpmnElement="Flow_1wmamsk">
+        <di:waypoint x="8460" y="340" />
+        <di:waypoint x="8490" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0f82qtf_di" bpmnElement="Flow_0f82qtf">
+        <di:waypoint x="8800" y="340" />
+        <di:waypoint x="8925" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17b0fs2_di" bpmnElement="Flow_17b0fs2">
+        <di:waypoint x="8590" y="340" />
+        <di:waypoint x="8700" y="340" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_1652rxe_di" bpmnElement="Event_1652rxe">
         <dc:Bounds x="950" y="322" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -2418,48 +2479,6 @@ else {
       <bpmndi:BPMNShape id="Activity_1g8rh1c_di" bpmnElement="Activity_0jiapll">
         <dc:Bounds x="7890" y="300" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0rxzohc_di" bpmnElement="Activity_1lzdmgo">
-        <dc:Bounds x="8260" y="300" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_191bell_di" bpmnElement="Gateway_191bell" isMarkerVisible="true">
-        <dc:Bounds x="8465" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_14q2a3u_di" bpmnElement="Gateway_14q2a3u" isMarkerVisible="true">
-        <dc:Bounds x="8745" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0c6gp2v_di" bpmnElement="Activity_0tk6n5v">
-        <dc:Bounds x="8580" y="300" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0vpp3l6_di" bpmnElement="Activity_11kp1jm">
-        <dc:Bounds x="8860" y="300" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1jpi8wj_di" bpmnElement="Activity_0l1uo50">
-        <dc:Bounds x="9000" y="300" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0hrivxt_di" bpmnElement="Gateway_0hrivxt" isMarkerVisible="true">
-        <dc:Bounds x="9125" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_01wf6t4_di" bpmnElement="Gateway_01wf6t4" isMarkerVisible="true">
-        <dc:Bounds x="9335" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1nbt7lt_di" bpmnElement="Activity_039txn0">
-        <dc:Bounds x="9210" y="300" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_11jb6y2_di" bpmnElement="Activity_1o7sh79">
-        <dc:Bounds x="9410" y="300" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1kk02z9_di" bpmnElement="Gateway_1kk02z9" isMarkerVisible="true">
-        <dc:Bounds x="9535" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_19vr3o8_di" bpmnElement="Gateway_19vr3o8" isMarkerVisible="true">
-        <dc:Bounds x="9775" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0048r8h_di" bpmnElement="Activity_0ivrv39">
-        <dc:Bounds x="9640" y="300" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1ej5olq_di" bpmnElement="Activity_1hnspuv">
         <dc:Bounds x="9890" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
@@ -2520,6 +2539,56 @@ else {
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_12ncfwe" bpmnElement="Activity_0e3ywof">
         <dc:Bounds x="4050" y="180" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0rxzohc_di" bpmnElement="Activity_1lzdmgo">
+        <dc:Bounds x="8160" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_191bell_di" bpmnElement="Gateway_191bell" isMarkerVisible="true">
+        <dc:Bounds x="8285" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0c6gp2v_di" bpmnElement="Activity_0tk6n5v">
+        <dc:Bounds x="8360" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_00ejh17_di" bpmnElement="Activity_1jfr2cb">
+        <dc:Bounds x="8490" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_19vr3o8_di" bpmnElement="Gateway_19vr3o8" isMarkerVisible="true">
+        <dc:Bounds x="9825" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0048r8h_di" bpmnElement="Activity_0ivrv39">
+        <dc:Bounds x="9720" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1kk02z9_di" bpmnElement="Gateway_1kk02z9" isMarkerVisible="true">
+        <dc:Bounds x="9645" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_11jb6y2_di" bpmnElement="Activity_1o7sh79">
+        <dc:Bounds x="9520" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_01wf6t4_di" bpmnElement="Gateway_01wf6t4" isMarkerVisible="true">
+        <dc:Bounds x="9445" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1nbt7lt_di" bpmnElement="Activity_039txn0">
+        <dc:Bounds x="9320" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0hrivxt_di" bpmnElement="Gateway_0hrivxt" isMarkerVisible="true">
+        <dc:Bounds x="9255" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jpi8wj_di" bpmnElement="Activity_0l1uo50">
+        <dc:Bounds x="9130" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0vpp3l6_di" bpmnElement="Activity_11kp1jm">
+        <dc:Bounds x="9010" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_14q2a3u_di" bpmnElement="Gateway_14q2a3u" isMarkerVisible="true">
+        <dc:Bounds x="8925" y="315" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jny1wi_di" bpmnElement="Activity_039qe4y">
+        <dc:Bounds x="8700" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_1ser3at_di" bpmnElement="TextAnnotation_1ser3at">
         <dc:Bounds x="160" y="130" width="100" height="111" />

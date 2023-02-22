@@ -7,18 +7,24 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+
 @Repository
 public interface EgripRepo extends JpaRepository<ListEgripInfoIndividual, Long> {
 
-    @Query(value = "select ef.firstName as firstName, " +
-            "ef.lastName as lastName, " +
-            "ef.middleName as middleName, " +
-            "er.dateOgrnip as dateOgrnip " +
-            "from ListEgripFl ef " +
-            "inner join ListEgripInfoIndividual e on e.flId.id = ef.id " +
-            "inner join ListEgripRegip er on e.regipId.id = er.id " +
-            "where e.innFl like :inn")
-    Egrip getEgripByInn(String inn);
+    @Query(value = "SELECT " +
+            "    name.LAST_NAME || ' ' || name.FIRST_NAME || ' ' || name.MIDDLE_NAME AS fullName " +
+            "FROM LST_EGRIP_INFO_INDIVIDUAL a " +
+            "JOIN LST_EGRIP_FL name ON a.FL_ID = name.ID " +
+            "WHERE a.INN_FL = :inn ", nativeQuery = true)
+    String getEgripByInn(String inn);
+
+    @Query(value = "SELECT " +
+            "    reg.DATE_OGRNIP as OGRNDATE " +
+            "FROM LST_EGRIP_INFO_INDIVIDUAL a " +
+            "JOIN LST_EGRIP_REGIP reg ON a.REGIP_ID = reg.ID " +
+            "WHERE a.INN_FL = :inn ", nativeQuery = true)
+    LocalDateTime getDateOgrnip(String inn);
 
 
     @Query(value = "SELECT a.ID, " +
