@@ -209,7 +209,7 @@ def client = execution.getVariable("clientBase") as Client
 def clientLegal = new ClientLegal()
 def clientIndividual = new ClientIndividual()
 
-Long share = getShareCapital(client.inn).longValue()
+def share = getShareCapital(client.inn)
 if(client.clientLegal!=null &amp;&amp; share == null ) {
     println("Клиент - юл")
     clientLegal = client.clientLegal
@@ -218,7 +218,7 @@ if(client.clientLegal!=null &amp;&amp; share == null ) {
     rjClient.sharecapital = sc
 }
 else {
-    rjClient.sharecapital = share == null ? 0L : share
+    rjClient.sharecapital = share == null ? 0L : share.longValue()
 }
 
 if(client.clientIndividual!=null) {
