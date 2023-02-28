@@ -501,7 +501,6 @@ BaseDictionary getStatus(String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(269, code);
 }
 
-def rjRbs = new RjRbs()
 def client = execution.getVariable("clientBase") as Client
 def rjClient = execution.getVariable("rjClient") as RjClient
 def clientRbsBlock1 = execution.getVariable("rbsBlockBase") as List&lt;ClientRbsBlock&gt;
@@ -518,6 +517,7 @@ rbs.each {it -&gt;
 if (clientRbsBlock != null) {
     clientRbsBlock.each {
         println("Итерация")
+        def rjRbs = new RjRbs()
         def clientRbs = new ClientRbs()
         clientRbs = it.clientRbs
         rjRbs.blockdate = it.agreementBlockDate
