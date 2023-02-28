@@ -1233,13 +1233,12 @@ bankList.addAll(getPayeeBanks(rjCounterparties.collect { it.inn }))
 println("Количество банков: " + bankList.size())
 println("Инн банков: " + bankList.collect {it.inn})
 if (bankList != null &amp;&amp; !bankList.isEmpty()) {
-    def uniqueBank = bankList.unique { b1, b2 -&gt; b1.bank.id &lt;=&gt; b2.bank.id }
-    println("Инн уникальных банков: " + uniqueBank.collect {it.inn})
+    def u = bankList.unique {b1, b2 -&gt; b1.bank.id &lt;=&gt; b2.bank.id ?: b1.inn &lt;=&gt; b2.inn}
     List&lt;RjCounterpartyBank&gt; rjCounterpartyBanks = new ArrayList&lt;&gt;()
-    uniqueBank.each { b -&gt;
+    u.each { b -&gt;
         RjCounterpartyBank rjCounterpartyBank = new RjCounterpartyBank()
         try {
-            println("Контрагент: " + rjCounterparties.find { it.inn == b.inn }.toString())
+
             rjCounterpartyBank.counterpartyId = rjCounterparties.find { r -&gt; r.inn == b.inn }
             rjCounterpartyBank.name = b.bank.name
             rjCounterpartyBank.bic = b.bank.bic
