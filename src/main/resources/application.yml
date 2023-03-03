@@ -1,5 +1,6 @@
 camunda:
   bpm:
+    default-number-of-retries: 0
     admin-user:
       id: ${CAMUNDA_ID:demo}
       password: ${CAMUNDA_PASSWORD:demo}
