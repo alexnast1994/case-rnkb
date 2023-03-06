@@ -34,7 +34,7 @@
       <bpmn:outgoing>Flow_1xyzeup</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_157in7d" name="online/offline clients" sourceRef="Gateway_13n9x1d" targetRef="Activity_08imauc">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${processName == "clientProcess" || processName == "offlineCreateCase"}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${processName == "amlKycClientProcess" || processName == "offlineCreateCase"}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:endEvent id="Event_encKycPayement">
       <bpmn:incoming>Flow_0vh35dq</bpmn:incoming>

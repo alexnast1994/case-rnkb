@@ -157,9 +157,9 @@ server:
       mapping:
         pipeline-payment-response: ${PIPELINE_PAYMENT_RESPONSE_ID:2b605119-16db-47d9-a087-cd1ad87731f3}
     kyc:
-      process-name: ${KYC_PROCESS_NAME:clientProcess}
+      process-name: ${KYC_PROCESS_NAME:amlKycClientProcess}
     kycOperation:
-      process-name: ${KYC_OPERATION_PROCESS_NAME:operationProcess}
+      process-name: ${KYC_OPERATION_PROCESS_NAME:amlKycOperationProcess}
     rj:
       process-name: amlAutoReasonedJudgment
     error-topic: ${TOPIC_ERROR_OUT:}
