@@ -250,7 +250,7 @@ rjClient.typeOfClient = client.clientType
 
 rjClient.client = client
 rjClient.exClientId = client.exClientId
-rjClient.untrueDate = getDate(client.inn).get(0).toLocalDateTime()
+rjClient.untrueDate = !getDate(client.inn).isEmpty() &amp;&amp; getDate(client.inn) != null ? getDate(client.inn).get(0).toLocalDateTime() : null
 return rjClient</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:scriptTask id="Activity_1nxjv8d" name="RJ_CLIENTRE" scriptFormat="groovy" camunda:resultVariable="rjClientRe">
@@ -1840,6 +1840,14 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlAutoReasonedJudgment">
+      <bpmndi:BPMNEdge id="Flow_17n2wzp_di" bpmnElement="Flow_17n2wzp">
+        <di:waypoint x="12550" y="260" />
+        <di:waypoint x="12690" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1et5bc6_di" bpmnElement="Flow_1et5bc6">
+        <di:waypoint x="820" y="270" />
+        <di:waypoint x="910" y="270" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_14efkmw_di" bpmnElement="Flow_14efkmw">
         <di:waypoint x="12330" y="260" />
         <di:waypoint x="12450" y="260" />
@@ -1864,38 +1872,23 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
         <di:waypoint x="228" y="270" />
         <di:waypoint x="280" y="270" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1et5bc6_di" bpmnElement="Flow_1et5bc6">
-        <di:waypoint x="820" y="270" />
-        <di:waypoint x="910" y="270" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_17n2wzp_di" bpmnElement="Flow_17n2wzp">
-        <di:waypoint x="12550" y="260" />
-        <di:waypoint x="12690" y="260" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="192" y="252" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1hjbmy9_di" bpmnElement="Activity_0uqf4tg">
         <dc:Bounds x="280" y="230" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1vgpprs_di" bpmnElement="Activity_04cx2ds">
-        <dc:Bounds x="410" y="230" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1bv3f5b_di" bpmnElement="Activity_payload">
-        <dc:Bounds x="550" y="230" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1judvsr_di" bpmnElement="Activity_0xhr3ji">
-        <dc:Bounds x="720" y="230" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1es98f4_di" bpmnElement="Event_End">
         <dc:Bounds x="12892" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vgpprs_di" bpmnElement="Activity_04cx2ds">
+        <dc:Bounds x="410" y="230" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1b8hv6f_di" bpmnElement="Activity_0hj1qcq">
         <dc:Bounds x="12690" y="220" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0j7vzkb" bpmnElement="Activity_0dsygxy">
-        <dc:Bounds x="12450" y="220" width="100" height="80" />
-        <bpmndi:BPMNLabel />
+      <bpmndi:BPMNShape id="Activity_1bv3f5b_di" bpmnElement="Activity_payload">
+        <dc:Bounds x="550" y="230" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1508q2q_di" bpmnElement="Activity_1508q2q" isExpanded="true">
         <dc:Bounds x="910" y="80" width="11420" height="480" />
@@ -2616,6 +2609,13 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1jny1wi_di" bpmnElement="Activity_039qe4y">
         <dc:Bounds x="8700" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1judvsr_di" bpmnElement="Activity_0xhr3ji">
+        <dc:Bounds x="720" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0j7vzkb" bpmnElement="Activity_0dsygxy">
+        <dc:Bounds x="12450" y="220" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_1ser3at_di" bpmnElement="TextAnnotation_1ser3at">
