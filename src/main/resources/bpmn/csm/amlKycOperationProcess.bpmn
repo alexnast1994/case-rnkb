@@ -461,20 +461,25 @@ execution.setVariable("paymentVersionsLists", paymentVersionsLists)</bpmn:script
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0kd34xp" sourceRef="Activity_0gxxh7b" targetRef="Activity_0xhr3ji" />
     <bpmn:endEvent id="Event_09uqy16">
-      <bpmn:incoming>Flow_178dyym</bpmn:incoming>
+      <bpmn:incoming>Flow_0di8ron</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_14cpvbj" sourceRef="Activity_046avyt" targetRef="Activity_0qvrl0i" />
     <bpmn:serviceTask id="Activity_0qvrl0i" name="Закрыть транзакцию" camunda:delegateExpression="${endTransactionDelegate}">
       <bpmn:incoming>Flow_14cpvbj</bpmn:incoming>
       <bpmn:outgoing>Flow_178dyym</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_178dyym" sourceRef="Activity_0qvrl0i" targetRef="Event_09uqy16" />
+    <bpmn:sequenceFlow id="Flow_178dyym" sourceRef="Activity_0qvrl0i" targetRef="Activity_1cpt2gg" />
+    <bpmn:serviceTask id="Activity_1cpt2gg" name="Закрыть сессию" camunda:delegateExpression="${closeSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_178dyym</bpmn:incoming>
+      <bpmn:outgoing>Flow_0di8ron</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0di8ron" sourceRef="Activity_1cpt2gg" targetRef="Event_09uqy16" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlKycOperationProcess">
       <bpmndi:BPMNEdge id="Flow_178dyym_di" bpmnElement="Flow_178dyym">
         <di:waypoint x="3890" y="310" />
-        <di:waypoint x="3982" y="310" />
+        <di:waypoint x="4020" y="310" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_14cpvbj_di" bpmnElement="Flow_14cpvbj">
         <di:waypoint x="3640" y="310" />
@@ -500,6 +505,10 @@ execution.setVariable("paymentVersionsLists", paymentVersionsLists)</bpmn:script
         <di:waypoint x="188" y="310" />
         <di:waypoint x="260" y="310" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0di8ron_di" bpmnElement="Flow_0di8ron">
+        <di:waypoint x="4120" y="310" />
+        <di:waypoint x="4192" y="310" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="152" y="292" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -508,6 +517,12 @@ execution.setVariable("paymentVersionsLists", paymentVersionsLists)</bpmn:script
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1ltawxt_di" bpmnElement="Activity_1et1nm9">
         <dc:Bounds x="430" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1ue267h" bpmnElement="Activity_1cpt2gg">
+        <dc:Bounds x="4020" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_09uqy16_di" bpmnElement="Event_09uqy16">
+        <dc:Bounds x="4192" y="292" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_046avyt_di" bpmnElement="Activity_046avyt" isExpanded="true">
         <dc:Bounds x="990" y="80" width="2650" height="460" />
@@ -649,9 +664,6 @@ execution.setVariable("paymentVersionsLists", paymentVersionsLists)</bpmn:script
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0rcn6vc_di" bpmnElement="Activity_0gxxh7b">
         <dc:Bounds x="600" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_09uqy16_di" bpmnElement="Event_09uqy16">
-        <dc:Bounds x="3982" y="292" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0awbn9b_di" bpmnElement="Activity_0qvrl0i">
         <dc:Bounds x="3790" y="270" width="100" height="80" />
