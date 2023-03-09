@@ -469,7 +469,7 @@ execution.setVariable("kycCaseClientVersionsLists", kycCaseClientVersionsLists)<
             <camunda:inputParameter name="saveObject">${kyccaseClient}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
-        <bpmn:incoming>Flow_1ugpg09</bpmn:incoming>
+        <bpmn:incoming>Flow_1d2jh7z</bpmn:incoming>
         <bpmn:outgoing>Flow_0ii78nb</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:scriptTask id="Activity_1mh1lzf" name="Создать KYCCASEClient" scriptFormat="groovy">
@@ -488,26 +488,34 @@ BaseDictionary getBd(int type, String code) {
 
 def pld = execution.getVariable("payloadFull")
 def json = JSON(pld)
-def initialClient = json.prop("InitialClient").prop("RequestData").prop("Clients").elements()
-KycCaseClient kyccaseClient = new KycCaseClient()
-kyccaseClient.setCaseId(execution.getVariable("caseNewOut"))
-kyccaseClient.setSourceId(initialClient[0].prop("SourceId").stringValue())
-kyccaseClient.setClientId(execution.getVariable("client"))
-kyccaseClient.setBranchCode(initialClient[0].hasProp("BranchCode") ? initialClient[0].prop("BranchCode").stringValue() : null)
-kyccaseClient.setBranchName(initialClient[0].hasProp("BranchName") ? initialClient[0].prop("BranchName").stringValue(): null)
-kyccaseClient.setCManagerName(initialClient[0].hasProp("CManagerName") ? initialClient[0].prop("CManagerName").stringValue() : null)
-kyccaseClient.setClientType(getBd(24, initialClient[0].prop("ClientType").stringValue()))
-kyccaseClient.setFullName(initialClient[0].hasProp("FullName") ? initialClient[0].prop("FullName").stringValue() : null)
-kyccaseClient.setInn(initialClient[0].hasProp("INN") ? initialClient[0].prop("INN").stringValue() : null)
-kyccaseClient.setOgrn(initialClient[0].hasProp("OGRN") ? initialClient[0].prop("OGRN").stringValue() : null)
+if (json.hasProp("InitialClient")
+        &amp;&amp; json.prop("InitialClient") != null
+        &amp;&amp; json.prop("InitialClient").hasProp("RequestData")
+        &amp;&amp; json.prop("InitialClient").prop("RequestData") != null
+        &amp;&amp; json.prop("InitialClient").prop("RequestData").hasProp("Clients") &amp;&amp; json.prop("InitialClient").prop("RequestData").prop("Clients") != null
+        &amp;&amp; json.prop("InitialClient").prop("RequestData").prop("Clients").elements().size() &gt; 0) {
+    def initialClient = json.prop("InitialClient").prop("RequestData").prop("Clients").elements()
+    KycCaseClient kyccaseClient = new KycCaseClient()
+    kyccaseClient.setCaseId(execution.getVariable("caseNewOut"))
+    kyccaseClient.setSourceId(initialClient[0].prop("SourceId").stringValue())
+    kyccaseClient.setClientId(execution.getVariable("client"))
+    kyccaseClient.setBranchCode(initialClient[0].hasProp("BranchCode") ? initialClient[0].prop("BranchCode").stringValue() : null)
+    kyccaseClient.setBranchName(initialClient[0].hasProp("BranchName") ? initialClient[0].prop("BranchName").stringValue() : null)
+    kyccaseClient.setCManagerName(initialClient[0].hasProp("CManagerName") ? initialClient[0].prop("CManagerName").stringValue() : null)
+    kyccaseClient.setClientType(getBd(24, initialClient[0].prop("ClientType").stringValue()))
+    kyccaseClient.setFullName(initialClient[0].hasProp("FullName") ? initialClient[0].prop("FullName").stringValue() : null)
+    kyccaseClient.setInn(initialClient[0].hasProp("INN") ? initialClient[0].prop("INN").stringValue() : null)
+    kyccaseClient.setOgrn(initialClient[0].hasProp("OGRN") ? initialClient[0].prop("OGRN").stringValue() : null)
 
-execution.setVariable("kyccaseClient", kyccaseClient)
-execution.setVariable("clientType", initialClient[0].prop("ClientType").stringValue())
-
-
-</bpmn:script>
+    execution.setVariable("kyccaseClient", kyccaseClient)
+    execution.setVariable("clientType", initialClient[0].prop("ClientType").stringValue())
+    execution.setVariable("emptyInitClient", false)
+} else {
+    println("Невозможно сформировать kycCaseClient, недостаточно данных из json")
+    execution.setVariable("emptyInitClient", true)
+}</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:sequenceFlow id="Flow_1ugpg09" sourceRef="Activity_1mh1lzf" targetRef="Activity_0qtkq9w" />
+      <bpmn:sequenceFlow id="Flow_1ugpg09" sourceRef="Activity_1mh1lzf" targetRef="Gateway_0hp3kmo" />
       <bpmn:sequenceFlow id="Flow_0y26mo3" sourceRef="Activity_0z7a2h2" targetRef="Activity_0zt5wir" />
       <bpmn:serviceTask id="Activity_0zt5wir" name="Получить kycClient" camunda:delegateExpression="${selectDelegate}">
         <bpmn:extensionElements>
@@ -679,6 +687,7 @@ execution.setVariable("kycCaseClientVerdoc", kycCaseClientVerdoc)</bpmn:script>
       <bpmn:exclusiveGateway id="Gateway_0n32jz6" camunda:asyncAfter="true" camunda:exclusive="false">
         <bpmn:incoming>Flow_11ze8k0</bpmn:incoming>
         <bpmn:incoming>Flow_12qcmku</bpmn:incoming>
+        <bpmn:incoming>Flow_1xfz0vz</bpmn:incoming>
         <bpmn:outgoing>Flow_0pb8ndl</bpmn:outgoing>
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_11ze8k0" sourceRef="Activity_1yf0fxx" targetRef="Gateway_0n32jz6" />
@@ -708,6 +717,15 @@ execution.setVariable("kycCaseClientVerdoc", kycCaseClientVerdoc)</bpmn:script>
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_0o0ffea" sourceRef="Gateway_1nxq5gf" targetRef="Event_0j7947s">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${createCaseError}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:exclusiveGateway id="Gateway_0hp3kmo" camunda:asyncBefore="true" default="Flow_1d2jh7z">
+        <bpmn:incoming>Flow_1ugpg09</bpmn:incoming>
+        <bpmn:outgoing>Flow_1d2jh7z</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1xfz0vz</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_1d2jh7z" sourceRef="Gateway_0hp3kmo" targetRef="Activity_0qtkq9w" />
+      <bpmn:sequenceFlow id="Flow_1xfz0vz" sourceRef="Gateway_0hp3kmo" targetRef="Gateway_0n32jz6">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${emptyInitClient}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:textAnnotation id="TextAnnotation_1ps9xhg">
         <bpmn:text>123123</bpmn:text>
@@ -1169,28 +1187,28 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
         <di:waypoint x="4340" y="540" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1qyew5k_di" bpmnElement="Flow_1qyew5k">
-        <di:waypoint x="3780" y="660" />
-        <di:waypoint x="3820" y="660" />
+        <di:waypoint x="3710" y="660" />
+        <di:waypoint x="3740" y="660" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0y26mo3_di" bpmnElement="Flow_0y26mo3">
-        <di:waypoint x="3640" y="660" />
-        <di:waypoint x="3680" y="660" />
+        <di:waypoint x="3580" y="660" />
+        <di:waypoint x="3610" y="660" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1ugpg09_di" bpmnElement="Flow_1ugpg09">
-        <di:waypoint x="3920" y="660" />
-        <di:waypoint x="3950" y="660" />
+        <di:waypoint x="3840" y="660" />
+        <di:waypoint x="3865" y="660" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0l4lpqq_di" bpmnElement="Flow_0l4lpqq">
-        <di:waypoint x="3500" y="660" />
-        <di:waypoint x="3540" y="660" />
+        <di:waypoint x="3450" y="660" />
+        <di:waypoint x="3480" y="660" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1t9bpci_di" bpmnElement="Flow_1t9bpci">
-        <di:waypoint x="3360" y="660" />
-        <di:waypoint x="3400" y="660" />
+        <di:waypoint x="3330" y="660" />
+        <di:waypoint x="3350" y="660" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_05tobo5_di" bpmnElement="Flow_05tobo5">
         <di:waypoint x="3210" y="660" />
-        <di:waypoint x="3260" y="660" />
+        <di:waypoint x="3230" y="660" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_02mx0o1_di" bpmnElement="Flow_02mx0o1">
         <di:waypoint x="3070" y="660" />
@@ -1235,6 +1253,16 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
       <bpmndi:BPMNEdge id="Flow_12p82pg_di" bpmnElement="Flow_12p82pg">
         <di:waypoint x="1630" y="660" />
         <di:waypoint x="1710" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1d2jh7z_di" bpmnElement="Flow_1d2jh7z">
+        <di:waypoint x="3915" y="660" />
+        <di:waypoint x="3950" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1xfz0vz_di" bpmnElement="Flow_1xfz0vz">
+        <di:waypoint x="3890" y="685" />
+        <di:waypoint x="3890" y="820" />
+        <di:waypoint x="4760" y="820" />
+        <di:waypoint x="4760" y="665" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_0zaunjw_di" bpmnElement="Event_0zaunjw">
         <dc:Bounds x="432" y="642" width="36" height="36" />
@@ -1284,23 +1312,8 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
       <bpmndi:BPMNShape id="Activity_1vsryur_di" bpmnElement="Activity_1ojxqyb">
         <dc:Bounds x="3110" y="620" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0v8sjgb_di" bpmnElement="Activity_00rp610">
-        <dc:Bounds x="3260" y="620" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_19j9glz_di" bpmnElement="Activity_0k5c96i">
-        <dc:Bounds x="3400" y="620" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1blg4rf_di" bpmnElement="Activity_0z7a2h2">
-        <dc:Bounds x="3540" y="620" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1kh81yx_di" bpmnElement="Activity_0qtkq9w">
         <dc:Bounds x="3950" y="620" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_12vp7v3_di" bpmnElement="Activity_1mh1lzf">
-        <dc:Bounds x="3820" y="620" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_07hgxnj_di" bpmnElement="Activity_0zt5wir">
-        <dc:Bounds x="3680" y="620" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_04ll77p_di" bpmnElement="Activity_1ebyu7i">
         <dc:Bounds x="4170" y="500" width="100" height="80" />
@@ -1345,6 +1358,24 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0j7947s_di" bpmnElement="Event_0j7947s">
         <dc:Bounds x="832" y="752" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0v8sjgb_di" bpmnElement="Activity_00rp610">
+        <dc:Bounds x="3230" y="620" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_19j9glz_di" bpmnElement="Activity_0k5c96i">
+        <dc:Bounds x="3350" y="620" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1blg4rf_di" bpmnElement="Activity_0z7a2h2">
+        <dc:Bounds x="3480" y="620" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_07hgxnj_di" bpmnElement="Activity_0zt5wir">
+        <dc:Bounds x="3610" y="620" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_12vp7v3_di" bpmnElement="Activity_1mh1lzf">
+        <dc:Bounds x="3740" y="620" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0hp3kmo_di" bpmnElement="Gateway_0hp3kmo" isMarkerVisible="true">
+        <dc:Bounds x="3865" y="635" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_0o8xeui_di" bpmnElement="Association_0o8xeui">
         <di:waypoint x="1810" y="636" />
