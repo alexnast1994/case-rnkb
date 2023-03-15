@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_04g3dby" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_04g3dby" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.2.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
   <bpmn:process id="judgmentCleanTrigger" name="Очистить тригеры для клиента" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_145zr9h</bpmn:outgoing>
@@ -29,15 +29,25 @@
           </camunda:inputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_145zr9h</bpmn:incoming>
+      <bpmn:incoming>Flow_01w2v76</bpmn:incoming>
       <bpmn:outgoing>Flow_1pa2afs</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:endEvent id="Event_0o090dt">
-      <bpmn:incoming>Flow_0u6un4h</bpmn:incoming>
+      <bpmn:incoming>Flow_1hi9usa</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1pa2afs" sourceRef="Activity_cleanClientTrigger" targetRef="Activity_cleanClientTriggerCheck" />
-    <bpmn:sequenceFlow id="Flow_0u6un4h" sourceRef="Activity_cleanClientTriggerCheck" targetRef="Event_0o090dt" />
-    <bpmn:sequenceFlow id="Flow_145zr9h" sourceRef="StartEvent_1" targetRef="Activity_cleanClientTrigger" />
+    <bpmn:sequenceFlow id="Flow_0u6un4h" sourceRef="Activity_cleanClientTriggerCheck" targetRef="Activity_0hj1qcq" />
+    <bpmn:sequenceFlow id="Flow_145zr9h" sourceRef="StartEvent_1" targetRef="Activity_04cx2ds" />
+    <bpmn:serviceTask id="Activity_04cx2ds" name="Открыть сессию" camunda:delegateExpression="${openSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_145zr9h</bpmn:incoming>
+      <bpmn:outgoing>Flow_01w2v76</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_01w2v76" sourceRef="Activity_04cx2ds" targetRef="Activity_cleanClientTrigger" />
+    <bpmn:serviceTask id="Activity_0hj1qcq" name="Закрыть сессию" camunda:delegateExpression="${closeSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_0u6un4h</bpmn:incoming>
+      <bpmn:outgoing>Flow_1hi9usa</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1hi9usa" sourceRef="Activity_0hj1qcq" targetRef="Event_0o090dt" />
     <bpmn:textAnnotation id="TextAnnotation_0cdk5vi">
       <bpmn:text>clientId
 reasonedJudgmentId</bpmn:text>
@@ -48,30 +58,44 @@ reasonedJudgmentId</bpmn:text>
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="judgmentCleanTrigger">
       <bpmndi:BPMNEdge id="Flow_145zr9h_di" bpmnElement="Flow_145zr9h">
         <di:waypoint x="228" y="187" />
-        <di:waypoint x="330" y="187" />
+        <di:waypoint x="260" y="187" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0u6un4h_di" bpmnElement="Flow_0u6un4h">
-        <di:waypoint x="590" y="187" />
-        <di:waypoint x="642" y="187" />
+        <di:waypoint x="640" y="187" />
+        <di:waypoint x="680" y="187" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1pa2afs_di" bpmnElement="Flow_1pa2afs">
-        <di:waypoint x="430" y="187" />
         <di:waypoint x="490" y="187" />
+        <di:waypoint x="540" y="187" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01w2v76_di" bpmnElement="Flow_01w2v76">
+        <di:waypoint x="360" y="187" />
+        <di:waypoint x="390" y="187" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hi9usa_di" bpmnElement="Flow_1hi9usa">
+        <di:waypoint x="780" y="187" />
+        <di:waypoint x="832" y="187" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="192" y="169" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_cleanClientTriggerCheck_di" bpmnElement="Activity_cleanClientTriggerCheck">
-        <dc:Bounds x="490" y="147" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_cleanClientTrigger_di" bpmnElement="Activity_cleanClientTrigger">
-        <dc:Bounds x="330" y="147" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0o090dt_di" bpmnElement="Event_0o090dt">
-        <dc:Bounds x="642" y="169" width="36" height="36" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0cdk5vi_di" bpmnElement="TextAnnotation_0cdk5vi">
         <dc:Bounds x="160" y="50" width="180" height="53" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_cleanClientTrigger_di" bpmnElement="Activity_cleanClientTrigger">
+        <dc:Bounds x="390" y="147" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vgpprs_di" bpmnElement="Activity_04cx2ds">
+        <dc:Bounds x="260" y="147" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_cleanClientTriggerCheck_di" bpmnElement="Activity_cleanClientTriggerCheck">
+        <dc:Bounds x="540" y="147" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1b8hv6f_di" bpmnElement="Activity_0hj1qcq">
+        <dc:Bounds x="680" y="147" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0o090dt_di" bpmnElement="Event_0o090dt">
+        <dc:Bounds x="832" y="169" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_0u01j47_di" bpmnElement="Association_0u01j47">
         <di:waypoint x="210" y="169" />

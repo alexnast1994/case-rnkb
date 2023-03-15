@@ -24,7 +24,7 @@
       <bpmn:outgoing>Flow_0v286vx</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_0hj1qcq" name="Закрыть сессию" camunda:delegateExpression="${closeSessionRnkbDelegate}">
-      <bpmn:incoming>Flow_14efkmw</bpmn:incoming>
+      <bpmn:incoming>Flow_17n2wzp</bpmn:incoming>
       <bpmn:outgoing>Flow_01253c3</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_01253c3" sourceRef="Activity_0hj1qcq" targetRef="Event_End" />
@@ -60,7 +60,7 @@
             </bpmn:script>
     </bpmn:scriptTask>
     <bpmn:subProcess id="Activity_1508q2q">
-      <bpmn:incoming>Flow_0afcxcw</bpmn:incoming>
+      <bpmn:incoming>Flow_1et5bc6</bpmn:incoming>
       <bpmn:outgoing>Flow_14efkmw</bpmn:outgoing>
       <bpmn:startEvent id="Event_1652rxe">
         <bpmn:outgoing>Flow_0pk93wk</bpmn:outgoing>
@@ -250,7 +250,7 @@ rjClient.typeOfClient = client.clientType
 
 rjClient.client = client
 rjClient.exClientId = client.exClientId
-rjClient.untrueDate = getDate(client.inn).get(0).toLocalDateTime()
+rjClient.untrueDate = !getDate(client.inn).isEmpty() &amp;&amp; getDate(client.inn) != null ? getDate(client.inn).get(0).toLocalDateTime() : null
 return rjClient</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:scriptTask id="Activity_1nxjv8d" name="RJ_CLIENTRE" scriptFormat="groovy" camunda:resultVariable="rjClientRe">
@@ -1815,8 +1815,18 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
       <bpmn:sequenceFlow id="Flow_0f82qtf" sourceRef="Activity_039qe4y" targetRef="Gateway_14q2a3u" />
       <bpmn:sequenceFlow id="Flow_17b0fs2" sourceRef="Activity_1jfr2cb" targetRef="Activity_039qe4y" />
     </bpmn:subProcess>
-    <bpmn:sequenceFlow id="Flow_0afcxcw" sourceRef="Activity_payload" targetRef="Activity_1508q2q" />
-    <bpmn:sequenceFlow id="Flow_14efkmw" sourceRef="Activity_1508q2q" targetRef="Activity_0hj1qcq" />
+    <bpmn:sequenceFlow id="Flow_0afcxcw" sourceRef="Activity_payload" targetRef="Activity_0xhr3ji" />
+    <bpmn:sequenceFlow id="Flow_14efkmw" sourceRef="Activity_1508q2q" targetRef="Activity_0dsygxy" />
+    <bpmn:serviceTask id="Activity_0xhr3ji" name="Открыть транзакцию" camunda:delegateExpression="${startTransactionDelegate}">
+      <bpmn:incoming>Flow_0afcxcw</bpmn:incoming>
+      <bpmn:outgoing>Flow_1et5bc6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1et5bc6" sourceRef="Activity_0xhr3ji" targetRef="Activity_1508q2q" />
+    <bpmn:serviceTask id="Activity_0dsygxy" name="Закрыть транзакцию" camunda:delegateExpression="${endTransactionDelegate}">
+      <bpmn:incoming>Flow_14efkmw</bpmn:incoming>
+      <bpmn:outgoing>Flow_17n2wzp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_17n2wzp" sourceRef="Activity_0dsygxy" targetRef="Activity_0hj1qcq" />
     <bpmn:textAnnotation id="TextAnnotation_1ser3at">
       <bpmn:text>clientId
                 caseIds
@@ -1830,17 +1840,25 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlAutoReasonedJudgment">
+      <bpmndi:BPMNEdge id="Flow_17n2wzp_di" bpmnElement="Flow_17n2wzp">
+        <di:waypoint x="12550" y="260" />
+        <di:waypoint x="12690" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1et5bc6_di" bpmnElement="Flow_1et5bc6">
+        <di:waypoint x="820" y="270" />
+        <di:waypoint x="910" y="270" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_14efkmw_di" bpmnElement="Flow_14efkmw">
         <di:waypoint x="12330" y="260" />
-        <di:waypoint x="12400" y="260" />
+        <di:waypoint x="12450" y="260" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0afcxcw_di" bpmnElement="Flow_0afcxcw">
         <di:waypoint x="650" y="270" />
-        <di:waypoint x="910" y="270" />
+        <di:waypoint x="720" y="270" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_01253c3_di" bpmnElement="Flow_01253c3">
-        <di:waypoint x="12500" y="260" />
-        <di:waypoint x="12572" y="260" />
+        <di:waypoint x="12790" y="260" />
+        <di:waypoint x="12892" y="260" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0v286vx_di" bpmnElement="Flow_0v286vx">
         <di:waypoint x="510" y="270" />
@@ -1861,13 +1879,13 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
         <dc:Bounds x="280" y="230" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1es98f4_di" bpmnElement="Event_End">
-        <dc:Bounds x="12572" y="242" width="36" height="36" />
+        <dc:Bounds x="12892" y="242" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1vgpprs_di" bpmnElement="Activity_04cx2ds">
         <dc:Bounds x="410" y="230" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1b8hv6f_di" bpmnElement="Activity_0hj1qcq">
-        <dc:Bounds x="12400" y="220" width="100" height="80" />
+        <dc:Bounds x="12690" y="220" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1bv3f5b_di" bpmnElement="Activity_payload">
         <dc:Bounds x="550" y="230" width="100" height="80" />
@@ -2591,6 +2609,13 @@ execution.setVariable("rjAggregateCurrencyExchangeList", rjAggregateCurrencyExch
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1jny1wi_di" bpmnElement="Activity_039qe4y">
         <dc:Bounds x="8700" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1judvsr_di" bpmnElement="Activity_0xhr3ji">
+        <dc:Bounds x="720" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0j7vzkb" bpmnElement="Activity_0dsygxy">
+        <dc:Bounds x="12450" y="220" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_1ser3at_di" bpmnElement="TextAnnotation_1ser3at">

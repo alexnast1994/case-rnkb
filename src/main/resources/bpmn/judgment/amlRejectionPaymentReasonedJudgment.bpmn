@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1qgdouj" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1qgdouj" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.2.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
   <bpmn:process id="amlRejectionPaymentReasonedJudgment" name="13. Из МС Формирование отказа по платежу + задача МИДЛ + Json при наличии ДБО" isExecutable="true">
     <bpmn:startEvent id="Event_0qnx3lv">
       <bpmn:outgoing>Flow_1pu22hm</bpmn:outgoing>
@@ -8,10 +8,9 @@
       <bpmn:incoming>Flow_1pu22hm</bpmn:incoming>
       <bpmn:outgoing>Flow_0ijxlkz</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию"
-                      camunda:delegateExpression="${openSessionRnkbDelegate}">
-        <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
-        <bpmn:outgoing>Flow_1sicgmj</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_1qwn6qf" name="Открыть сессию" camunda:delegateExpression="${openSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_0ijxlkz</bpmn:incoming>
+      <bpmn:outgoing>Flow_1sicgmj</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_1pu22hm" sourceRef="Event_0qnx3lv" targetRef="Activity_1jae6rb" />
     <bpmn:sequenceFlow id="Flow_0ijxlkz" sourceRef="Activity_1jae6rb" targetRef="Activity_1qwn6qf" />
@@ -162,11 +161,10 @@ dboRequest Информация о ДБО клиента</bpmn:text>
       <bpmn:sequenceFlow id="Flow_0s84npn" sourceRef="Activity_105rp9w" targetRef="Event_1ex9dqm" />
     </bpmn:subProcess>
     <bpmn:sequenceFlow id="Flow_1sicgmj" sourceRef="Activity_1qwn6qf" targetRef="Activity_0f9qjf6" />
-      <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию"
-                        camunda:delegateExpression="${closeSessionRnkbDelegate}">
-          <bpmn:incoming>Flow_0pr5w2a</bpmn:incoming>
-          <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
-      </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_131dz13" name="Закрыть сессию" camunda:delegateExpression="${closeSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_0pr5w2a</bpmn:incoming>
+      <bpmn:outgoing>Flow_13tvrx3</bpmn:outgoing>
+    </bpmn:serviceTask>
     <bpmn:endEvent id="Event_end">
       <bpmn:incoming>Flow_13tvrx3</bpmn:incoming>
     </bpmn:endEvent>
@@ -185,7 +183,7 @@ dboRequest Информация о ДБО клиента</bpmn:text>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_13tvrx3_di" bpmnElement="Flow_13tvrx3">
         <di:waypoint x="2540" y="290" />
-        <di:waypoint x="2622" y="290" />
+        <di:waypoint x="2642" y="290" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1sicgmj_di" bpmnElement="Flow_1sicgmj">
         <di:waypoint x="500" y="290" />
@@ -207,6 +205,9 @@ dboRequest Информация о ДБО клиента</bpmn:text>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1qwn6qf_di" bpmnElement="Activity_1qwn6qf">
         <dc:Bounds x="400" y="250" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_end_di" bpmnElement="Event_end">
+        <dc:Bounds x="2642" y="272" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0f9qjf6_di" bpmnElement="Activity_0f9qjf6" isExpanded="true">
         <dc:Bounds x="570" y="80" width="1830" height="400" />
@@ -310,9 +311,6 @@ dboRequest Информация о ДБО клиента</bpmn:text>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_131dz13_di" bpmnElement="Activity_131dz13">
         <dc:Bounds x="2440" y="250" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_end_di" bpmnElement="Event_end">
-        <dc:Bounds x="2622" y="272" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0t92369_di" bpmnElement="TextAnnotation_0t92369">
         <dc:Bounds x="159" y="133" width="167" height="30" />
