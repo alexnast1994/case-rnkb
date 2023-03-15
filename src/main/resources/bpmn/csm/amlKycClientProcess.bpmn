@@ -124,7 +124,7 @@ execution.setVariable("kycCaseClientList2List", kycCaseClientList2List)</bpmn:sc
         <bpmn:outgoing>Flow_0668o27</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:endEvent id="Event_0jfqg3s">
-        <bpmn:incoming>Flow_0pb8ndl</bpmn:incoming>
+        <bpmn:incoming>Flow_1f7bft2</bpmn:incoming>
       </bpmn:endEvent>
       <bpmn:serviceTask id="Activity_1on3bn4" name="Получить клиента" camunda:delegateExpression="${selectDelegate}">
         <bpmn:extensionElements>
@@ -469,13 +469,14 @@ execution.setVariable("kycCaseClientVersionsLists", kycCaseClientVersionsLists)<
             <camunda:inputParameter name="saveObject">${kyccaseClient}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
-        <bpmn:incoming>Flow_1d2jh7z</bpmn:incoming>
+        <bpmn:incoming>Flow_177bpxc</bpmn:incoming>
         <bpmn:outgoing>Flow_0ii78nb</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:scriptTask id="Activity_1mh1lzf" name="Создать KYCCASEClient" scriptFormat="groovy">
-        <bpmn:incoming>Flow_1qyew5k</bpmn:incoming>
-        <bpmn:outgoing>Flow_1ugpg09</bpmn:outgoing>
+        <bpmn:incoming>Flow_10v37fm</bpmn:incoming>
+        <bpmn:outgoing>Flow_1ed805a</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
+import com.prime.db.rnkb.model.Case
 import com.prime.db.rnkb.model.kyc.KycCaseClient
 
 import java.time.LocalDateTime
@@ -496,7 +497,7 @@ if (json.hasProp("InitialClient")
         &amp;&amp; json.prop("InitialClient").prop("RequestData").prop("Clients").elements().size() &gt; 0) {
     def initialClient = json.prop("InitialClient").prop("RequestData").prop("Clients").elements()
     KycCaseClient kyccaseClient = new KycCaseClient()
-    kyccaseClient.setCaseId(execution.getVariable("caseNewOut"))
+    kyccaseClient.setCaseId(execution.getVariable("caseNewOut") as Case)
     kyccaseClient.setSourceId(initialClient[0].prop("SourceId").stringValue())
     kyccaseClient.setClientId(execution.getVariable("client"))
     kyccaseClient.setBranchCode(initialClient[0].hasProp("BranchCode") ? initialClient[0].prop("BranchCode").stringValue() : null)
@@ -510,12 +511,12 @@ if (json.hasProp("InitialClient")
     execution.setVariable("kyccaseClient", kyccaseClient)
     execution.setVariable("clientType", initialClient[0].prop("ClientType").stringValue())
     execution.setVariable("emptyInitClient", false)
+    println(execution.getVariable("emptyInitClient"))
 } else {
     println("Невозможно сформировать kycCaseClient, недостаточно данных из json")
     execution.setVariable("emptyInitClient", true)
 }</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:sequenceFlow id="Flow_1ugpg09" sourceRef="Activity_1mh1lzf" targetRef="Gateway_0hp3kmo" />
       <bpmn:sequenceFlow id="Flow_0y26mo3" sourceRef="Activity_0z7a2h2" targetRef="Activity_0zt5wir" />
       <bpmn:serviceTask id="Activity_0zt5wir" name="Получить kycClient" camunda:delegateExpression="${selectDelegate}">
         <bpmn:extensionElements>
@@ -525,9 +526,8 @@ if (json.hasProp("InitialClient")
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_0y26mo3</bpmn:incoming>
-        <bpmn:outgoing>Flow_1qyew5k</bpmn:outgoing>
+        <bpmn:outgoing>Flow_10v37fm</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_1qyew5k" sourceRef="Activity_0zt5wir" targetRef="Activity_1mh1lzf" />
       <bpmn:scriptTask id="Activity_1ebyu7i" name="Создать KYCCASEClientLegal" scriptFormat="groovy">
         <bpmn:incoming>Flow_1eatndf</bpmn:incoming>
         <bpmn:outgoing>Flow_115yqhq</bpmn:outgoing>
@@ -687,12 +687,10 @@ execution.setVariable("kycCaseClientVerdoc", kycCaseClientVerdoc)</bpmn:script>
       <bpmn:exclusiveGateway id="Gateway_0n32jz6" camunda:asyncAfter="true" camunda:exclusive="false">
         <bpmn:incoming>Flow_11ze8k0</bpmn:incoming>
         <bpmn:incoming>Flow_12qcmku</bpmn:incoming>
-        <bpmn:incoming>Flow_1xfz0vz</bpmn:incoming>
-        <bpmn:outgoing>Flow_0pb8ndl</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1nfyikn</bpmn:outgoing>
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_11ze8k0" sourceRef="Activity_1yf0fxx" targetRef="Gateway_0n32jz6" />
       <bpmn:sequenceFlow id="Flow_12qcmku" sourceRef="Activity_14k0t28" targetRef="Gateway_0n32jz6" />
-      <bpmn:sequenceFlow id="Flow_0pb8ndl" sourceRef="Gateway_0n32jz6" targetRef="Event_0jfqg3s" />
       <bpmn:sequenceFlow id="Flow_0usorvv" sourceRef="Activity_1udutan" targetRef="Activity_1qo9810" />
       <bpmn:sequenceFlow id="Flow_0ec8gii" sourceRef="Event_0zaunjw" targetRef="Activity_1udutan" />
       <bpmn:serviceTask id="Activity_1udutan" name="Логирование процесса" camunda:delegateExpression="${loggerDelegate}">
@@ -718,13 +716,22 @@ execution.setVariable("kycCaseClientVerdoc", kycCaseClientVerdoc)</bpmn:script>
       <bpmn:sequenceFlow id="Flow_0o0ffea" sourceRef="Gateway_1nxq5gf" targetRef="Event_0j7947s">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${createCaseError}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:exclusiveGateway id="Gateway_0hp3kmo" camunda:asyncBefore="true" default="Flow_1d2jh7z">
-        <bpmn:incoming>Flow_1ugpg09</bpmn:incoming>
-        <bpmn:outgoing>Flow_1d2jh7z</bpmn:outgoing>
-        <bpmn:outgoing>Flow_1xfz0vz</bpmn:outgoing>
+      <bpmn:sequenceFlow id="Flow_10v37fm" sourceRef="Activity_0zt5wir" targetRef="Activity_1mh1lzf" />
+      <bpmn:exclusiveGateway id="Gateway_1bmvjq3" default="Flow_177bpxc">
+        <bpmn:incoming>Flow_1ed805a</bpmn:incoming>
+        <bpmn:outgoing>Flow_177bpxc</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1rcznvy</bpmn:outgoing>
       </bpmn:exclusiveGateway>
-      <bpmn:sequenceFlow id="Flow_1d2jh7z" sourceRef="Gateway_0hp3kmo" targetRef="Activity_0qtkq9w" />
-      <bpmn:sequenceFlow id="Flow_1xfz0vz" sourceRef="Gateway_0hp3kmo" targetRef="Gateway_0n32jz6">
+      <bpmn:sequenceFlow id="Flow_1ed805a" sourceRef="Activity_1mh1lzf" targetRef="Gateway_1bmvjq3" />
+      <bpmn:sequenceFlow id="Flow_177bpxc" sourceRef="Gateway_1bmvjq3" targetRef="Activity_0qtkq9w" />
+      <bpmn:exclusiveGateway id="Gateway_19aends">
+        <bpmn:incoming>Flow_1nfyikn</bpmn:incoming>
+        <bpmn:incoming>Flow_1rcznvy</bpmn:incoming>
+        <bpmn:outgoing>Flow_1f7bft2</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_1nfyikn" sourceRef="Gateway_0n32jz6" targetRef="Gateway_19aends" />
+      <bpmn:sequenceFlow id="Flow_1f7bft2" sourceRef="Gateway_19aends" targetRef="Event_0jfqg3s" />
+      <bpmn:sequenceFlow id="Flow_1rcznvy" sourceRef="Gateway_1bmvjq3" targetRef="Gateway_19aends">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${emptyInitClient}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:textAnnotation id="TextAnnotation_1ps9xhg">
@@ -920,25 +927,29 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlKycClientProcess">
-      <bpmndi:BPMNEdge id="Flow_1by0pmh_di" bpmnElement="Flow_1by0pmh">
-        <di:waypoint x="2150" y="130" />
-        <di:waypoint x="2215" y="130" />
+      <bpmndi:BPMNEdge id="Flow_1nxekdx_di" bpmnElement="Flow_1nxekdx">
+        <di:waypoint x="1160" y="155" />
+        <di:waypoint x="1160" y="205" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0ph1ocy_di" bpmnElement="Flow_0ph1ocy">
-        <di:waypoint x="1980" y="130" />
-        <di:waypoint x="2050" y="130" />
+      <bpmndi:BPMNEdge id="Flow_09csbu4_di" bpmnElement="Flow_09csbu4">
+        <di:waypoint x="1090" y="130" />
+        <di:waypoint x="1135" y="130" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1wdpb43_di" bpmnElement="Flow_1wdpb43">
-        <di:waypoint x="1810" y="130" />
-        <di:waypoint x="1880" y="130" />
+      <bpmndi:BPMNEdge id="Flow_1wq3y3m_di" bpmnElement="Flow_1wq3y3m">
+        <di:waypoint x="950" y="130" />
+        <di:waypoint x="990" y="130" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0llsh66_di" bpmnElement="Flow_0llsh66">
-        <di:waypoint x="1620" y="130" />
-        <di:waypoint x="1710" y="130" />
+      <bpmndi:BPMNEdge id="Flow_1tdal2p_di" bpmnElement="Flow_1tdal2p">
+        <di:waypoint x="1185" y="130" />
+        <di:waypoint x="1270" y="130" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1hyidl8_di" bpmnElement="Flow_1hyidl8">
-        <di:waypoint x="1620" y="300" />
-        <di:waypoint x="1682" y="300" />
+      <bpmndi:BPMNEdge id="Flow_1v7pagb_di" bpmnElement="Flow_1v7pagb">
+        <di:waypoint x="1160" y="255" />
+        <di:waypoint x="1160" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1pw0owq_di" bpmnElement="Flow_1pw0owq">
+        <di:waypoint x="1370" y="130" />
+        <di:waypoint x="1425" y="130" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1bxj3x2_di" bpmnElement="Flow_1bxj3x2">
         <di:waypoint x="2240" y="155" />
@@ -948,23 +959,9 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
           <dc:Bounds x="2249" y="190" width="12" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1v7pagb_di" bpmnElement="Flow_1v7pagb">
-        <di:waypoint x="1160" y="255" />
-        <di:waypoint x="1160" y="480" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1yzqqia_di" bpmnElement="Flow_1yzqqia">
-        <di:waypoint x="2265" y="130" />
-        <di:waypoint x="2310" y="130" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="2279" y="112" width="18" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_13xl7mb_di" bpmnElement="Flow_13xl7mb">
-        <di:waypoint x="1475" y="130" />
-        <di:waypoint x="1520" y="130" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1484" y="112" width="18" height="14" />
-        </bpmndi:BPMNLabel>
+      <bpmndi:BPMNEdge id="Flow_1hyidl8_di" bpmnElement="Flow_1hyidl8">
+        <di:waypoint x="1620" y="300" />
+        <di:waypoint x="1682" y="300" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0wqeg59_di" bpmnElement="Flow_0wqeg59">
         <di:waypoint x="1450" y="155" />
@@ -974,9 +971,35 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
           <dc:Bounds x="1460" y="173" width="12" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1pw0owq_di" bpmnElement="Flow_1pw0owq">
-        <di:waypoint x="1370" y="130" />
-        <di:waypoint x="1425" y="130" />
+      <bpmndi:BPMNEdge id="Flow_0llsh66_di" bpmnElement="Flow_0llsh66">
+        <di:waypoint x="1620" y="130" />
+        <di:waypoint x="1710" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13xl7mb_di" bpmnElement="Flow_13xl7mb">
+        <di:waypoint x="1475" y="130" />
+        <di:waypoint x="1520" y="130" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1484" y="112" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wdpb43_di" bpmnElement="Flow_1wdpb43">
+        <di:waypoint x="1810" y="130" />
+        <di:waypoint x="1880" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ph1ocy_di" bpmnElement="Flow_0ph1ocy">
+        <di:waypoint x="1980" y="130" />
+        <di:waypoint x="2050" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1by0pmh_di" bpmnElement="Flow_1by0pmh">
+        <di:waypoint x="2150" y="130" />
+        <di:waypoint x="2215" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1yzqqia_di" bpmnElement="Flow_1yzqqia">
+        <di:waypoint x="2265" y="130" />
+        <di:waypoint x="2310" y="130" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2279" y="112" width="18" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1poj8yf_di" bpmnElement="Flow_1poj8yf">
         <di:waypoint x="2410" y="130" />
@@ -987,14 +1010,10 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
         <di:waypoint x="5412" y="470" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1g9zlz9_di" bpmnElement="Flow_1g9zlz9">
-        <di:waypoint x="4880" y="665" />
+        <di:waypoint x="5010" y="665" />
         <di:waypoint x="5055" y="665" />
         <di:waypoint x="5055" y="470" />
         <di:waypoint x="5230" y="470" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1tdal2p_di" bpmnElement="Flow_1tdal2p">
-        <di:waypoint x="1185" y="130" />
-        <di:waypoint x="1270" y="130" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0mouvka_di" bpmnElement="Flow_0mouvka">
         <di:waypoint x="800" y="130" />
@@ -1016,27 +1035,6 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
         <di:waypoint x="188" y="130" />
         <di:waypoint x="250" y="130" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1wq3y3m_di" bpmnElement="Flow_1wq3y3m">
-        <di:waypoint x="950" y="130" />
-        <di:waypoint x="990" y="130" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_09csbu4_di" bpmnElement="Flow_09csbu4">
-        <di:waypoint x="1090" y="130" />
-        <di:waypoint x="1135" y="130" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1nxekdx_di" bpmnElement="Flow_1nxekdx">
-        <di:waypoint x="1160" y="155" />
-        <di:waypoint x="1160" y="205" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Gateway_14jv5q0_di" bpmnElement="Gateway_14jv5q0" isMarkerVisible="true">
-        <dc:Bounds x="1135" y="105" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1116" y="81" width="87" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0m11oe7_di" bpmnElement="Event_0m11oe7">
-        <dc:Bounds x="2492" y="112" width="36" height="36" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="152" y="112" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -1053,65 +1051,8 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
       <bpmndi:BPMNShape id="Activity_15o15uh_di" bpmnElement="Activity_00wprxj">
         <dc:Bounds x="700" y="90" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1kvmr0x_di" bpmnElement="Activity_0jxzcgn">
-        <dc:Bounds x="850" y="90" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_05yl2h6_di" bpmnElement="Activity_024nwig">
-        <dc:Bounds x="990" y="90" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1ci363g_di" bpmnElement="Event_1ci363g">
-        <dc:Bounds x="5412" y="452" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1vdc5v6_di" bpmnElement="Activity_1vdc5v6">
-        <dc:Bounds x="5230" y="430" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_1ue267h" bpmnElement="Activity_1cpt2gg">
-        <dc:Bounds x="2310" y="90" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1c2naab_di" bpmnElement="Activity_08gaqrz">
-        <dc:Bounds x="1270" y="90" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0hwsvy1_di" bpmnElement="Gateway_0hwsvy1" isMarkerVisible="true">
-        <dc:Bounds x="1425" y="105" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1410" y="81" width="80" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_19mnekh_di" bpmnElement="Event_19mnekh">
-        <dc:Bounds x="1682" y="282" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_163r2ux_di" bpmnElement="Activity_0ln9jyl">
-        <dc:Bounds x="1520" y="90" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0rydaub_di" bpmnElement="Activity_0fmw1xk">
-        <dc:Bounds x="1880" y="90" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_056w41b_di" bpmnElement="Gateway_056w41b" isMarkerVisible="true">
-        <dc:Bounds x="2215" y="105" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="2202" y="60" width="75" height="40" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1383s4t_di" bpmnElement="Gateway_1383s4t" isMarkerVisible="true">
-        <dc:Bounds x="1135" y="205" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0kgb543" bpmnElement="Activity_0c2mjcx">
-        <dc:Bounds x="1520" y="260" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1r0yi3m_di" bpmnElement="Activity_1mi62vq">
-        <dc:Bounds x="1710" y="90" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1fg6h5d_di" bpmnElement="Activity_1k6tf8w">
-        <dc:Bounds x="2050" y="90" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1tskgm5_di" bpmnElement="createCaseKyc" isExpanded="true">
-        <dc:Bounds x="370" y="480" width="4510" height="370" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="TextAnnotation_1ps9xhg_di" bpmnElement="TextAnnotation_1ps9xhg">
-        <dc:Bounds x="1930" y="540" width="100" height="30" />
+        <dc:Bounds x="370" y="480" width="4640" height="370" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0o0ffea_di" bpmnElement="Flow_0o0ffea">
@@ -1142,19 +1083,15 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
         <di:waypoint x="600" y="660" />
         <di:waypoint x="650" y="660" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0pb8ndl_di" bpmnElement="Flow_0pb8ndl">
-        <di:waypoint x="4785" y="640" />
-        <di:waypoint x="4822" y="640" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_12qcmku_di" bpmnElement="Flow_12qcmku">
         <di:waypoint x="4440" y="540" />
         <di:waypoint x="4760" y="540" />
-        <di:waypoint x="4760" y="615" />
+        <di:waypoint x="4760" y="605" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_11ze8k0_di" bpmnElement="Flow_11ze8k0">
         <di:waypoint x="4720" y="700" />
         <di:waypoint x="4760" y="700" />
-        <di:waypoint x="4760" y="665" />
+        <di:waypoint x="4760" y="655" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_108zdac_di" bpmnElement="Flow_108zdac">
         <di:waypoint x="4570" y="700" />
@@ -1186,17 +1123,9 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
         <di:waypoint x="4270" y="540" />
         <di:waypoint x="4340" y="540" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1qyew5k_di" bpmnElement="Flow_1qyew5k">
-        <di:waypoint x="3710" y="660" />
-        <di:waypoint x="3740" y="660" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0y26mo3_di" bpmnElement="Flow_0y26mo3">
         <di:waypoint x="3580" y="660" />
         <di:waypoint x="3610" y="660" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1ugpg09_di" bpmnElement="Flow_1ugpg09">
-        <di:waypoint x="3840" y="660" />
-        <di:waypoint x="3865" y="660" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0l4lpqq_di" bpmnElement="Flow_0l4lpqq">
         <di:waypoint x="3450" y="660" />
@@ -1254,15 +1183,31 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
         <di:waypoint x="1630" y="660" />
         <di:waypoint x="1710" y="660" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1d2jh7z_di" bpmnElement="Flow_1d2jh7z">
-        <di:waypoint x="3915" y="660" />
+      <bpmndi:BPMNEdge id="Flow_10v37fm_di" bpmnElement="Flow_10v37fm">
+        <di:waypoint x="3710" y="660" />
+        <di:waypoint x="3740" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ed805a_di" bpmnElement="Flow_1ed805a">
+        <di:waypoint x="3840" y="660" />
+        <di:waypoint x="3875" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_177bpxc_di" bpmnElement="Flow_177bpxc">
+        <di:waypoint x="3925" y="660" />
         <di:waypoint x="3950" y="660" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1xfz0vz_di" bpmnElement="Flow_1xfz0vz">
-        <di:waypoint x="3890" y="685" />
-        <di:waypoint x="3890" y="820" />
-        <di:waypoint x="4760" y="820" />
-        <di:waypoint x="4760" y="665" />
+      <bpmndi:BPMNEdge id="Flow_1nfyikn_di" bpmnElement="Flow_1nfyikn">
+        <di:waypoint x="4785" y="630" />
+        <di:waypoint x="4805" y="630" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1f7bft2_di" bpmnElement="Flow_1f7bft2">
+        <di:waypoint x="4855" y="630" />
+        <di:waypoint x="4882" y="630" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1rcznvy_di" bpmnElement="Flow_1rcznvy">
+        <di:waypoint x="3900" y="685" />
+        <di:waypoint x="3900" y="820" />
+        <di:waypoint x="4830" y="820" />
+        <di:waypoint x="4830" y="655" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_0zaunjw_di" bpmnElement="Event_0zaunjw">
         <dc:Bounds x="432" y="642" width="36" height="36" />
@@ -1278,11 +1223,11 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
         <dc:Bounds x="1710" y="620" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0jfqg3s_di" bpmnElement="Event_0jfqg3s">
-        <dc:Bounds x="4822" y="622" width="36" height="36" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1brd4g4_di" bpmnElement="Activity_1on3bn4">
         <dc:Bounds x="1340" y="620" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0kjt2l6_di" bpmnElement="Activity_1qo9810">
+        <dc:Bounds x="650" y="620" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1pxwt0h_di" bpmnElement="Activity_0jpq0gy">
         <dc:Bounds x="1930" y="620" width="100" height="80" />
@@ -1312,8 +1257,23 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
       <bpmndi:BPMNShape id="Activity_1vsryur_di" bpmnElement="Activity_1ojxqyb">
         <dc:Bounds x="3110" y="620" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0v8sjgb_di" bpmnElement="Activity_00rp610">
+        <dc:Bounds x="3230" y="620" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_19j9glz_di" bpmnElement="Activity_0k5c96i">
+        <dc:Bounds x="3350" y="620" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1blg4rf_di" bpmnElement="Activity_0z7a2h2">
+        <dc:Bounds x="3480" y="620" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1kh81yx_di" bpmnElement="Activity_0qtkq9w">
         <dc:Bounds x="3950" y="620" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_12vp7v3_di" bpmnElement="Activity_1mh1lzf">
+        <dc:Bounds x="3740" y="620" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_07hgxnj_di" bpmnElement="Activity_0zt5wir">
+        <dc:Bounds x="3610" y="620" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_04ll77p_di" bpmnElement="Activity_1ebyu7i">
         <dc:Bounds x="4170" y="500" width="100" height="80" />
@@ -1341,17 +1301,11 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
       <bpmndi:BPMNShape id="Activity_1shkzrz_di" bpmnElement="Activity_1yf0fxx">
         <dc:Bounds x="4620" y="660" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0n32jz6_di" bpmnElement="Gateway_0n32jz6" isMarkerVisible="true">
-        <dc:Bounds x="4735" y="615" width="50" height="50" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0byhmvm_di" bpmnElement="Activity_1udutan">
         <dc:Bounds x="500" y="620" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1dobyuo_di" bpmnElement="Activity_0uhej1l">
         <dc:Bounds x="1210" y="620" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0kjt2l6_di" bpmnElement="Activity_1qo9810">
-        <dc:Bounds x="650" y="620" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1nxq5gf_di" bpmnElement="Gateway_1nxq5gf" isMarkerVisible="true">
         <dc:Bounds x="825" y="635" width="50" height="50" />
@@ -1359,28 +1313,88 @@ println("Существует кейс? " + execution.getVariable("existCase"))<
       <bpmndi:BPMNShape id="Event_0j7947s_di" bpmnElement="Event_0j7947s">
         <dc:Bounds x="832" y="752" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0v8sjgb_di" bpmnElement="Activity_00rp610">
-        <dc:Bounds x="3230" y="620" width="100" height="80" />
+      <bpmndi:BPMNShape id="TextAnnotation_1ps9xhg_di" bpmnElement="TextAnnotation_1ps9xhg">
+        <dc:Bounds x="1930" y="540" width="100" height="30" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_19j9glz_di" bpmnElement="Activity_0k5c96i">
-        <dc:Bounds x="3350" y="620" width="100" height="80" />
+      <bpmndi:BPMNShape id="Gateway_0n32jz6_di" bpmnElement="Gateway_0n32jz6" isMarkerVisible="true">
+        <dc:Bounds x="4735" y="605" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1blg4rf_di" bpmnElement="Activity_0z7a2h2">
-        <dc:Bounds x="3480" y="620" width="100" height="80" />
+      <bpmndi:BPMNShape id="Gateway_1bmvjq3_di" bpmnElement="Gateway_1bmvjq3" isMarkerVisible="true">
+        <dc:Bounds x="3875" y="635" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_07hgxnj_di" bpmnElement="Activity_0zt5wir">
-        <dc:Bounds x="3610" y="620" width="100" height="80" />
+      <bpmndi:BPMNShape id="Event_0jfqg3s_di" bpmnElement="Event_0jfqg3s">
+        <dc:Bounds x="4882" y="612" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_12vp7v3_di" bpmnElement="Activity_1mh1lzf">
-        <dc:Bounds x="3740" y="620" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0hp3kmo_di" bpmnElement="Gateway_0hp3kmo" isMarkerVisible="true">
-        <dc:Bounds x="3865" y="635" width="50" height="50" />
+      <bpmndi:BPMNShape id="Gateway_19aends_di" bpmnElement="Gateway_19aends" isMarkerVisible="true">
+        <dc:Bounds x="4805" y="605" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_0o8xeui_di" bpmnElement="Association_0o8xeui">
         <di:waypoint x="1810" y="636" />
         <di:waypoint x="1949" y="570" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_1ci363g_di" bpmnElement="Event_1ci363g">
+        <dc:Bounds x="5412" y="452" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vdc5v6_di" bpmnElement="Activity_1vdc5v6">
+        <dc:Bounds x="5230" y="430" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1kvmr0x_di" bpmnElement="Activity_0jxzcgn">
+        <dc:Bounds x="850" y="90" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0m11oe7_di" bpmnElement="Event_0m11oe7">
+        <dc:Bounds x="2492" y="112" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1ue267h" bpmnElement="Activity_1cpt2gg">
+        <dc:Bounds x="2310" y="90" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_056w41b_di" bpmnElement="Gateway_056w41b" isMarkerVisible="true">
+        <dc:Bounds x="2215" y="105" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2202" y="60" width="75" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1fg6h5d_di" bpmnElement="Activity_1k6tf8w">
+        <dc:Bounds x="2050" y="90" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0rydaub_di" bpmnElement="Activity_0fmw1xk">
+        <dc:Bounds x="1880" y="90" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1r0yi3m_di" bpmnElement="Activity_1mi62vq">
+        <dc:Bounds x="1710" y="90" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0hwsvy1_di" bpmnElement="Gateway_0hwsvy1" isMarkerVisible="true">
+        <dc:Bounds x="1425" y="105" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1410" y="81" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_163r2ux_di" bpmnElement="Activity_0ln9jyl">
+        <dc:Bounds x="1520" y="90" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_19mnekh_di" bpmnElement="Event_19mnekh">
+        <dc:Bounds x="1682" y="282" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0kgb543" bpmnElement="Activity_0c2mjcx">
+        <dc:Bounds x="1520" y="260" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1c2naab_di" bpmnElement="Activity_08gaqrz">
+        <dc:Bounds x="1270" y="90" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1383s4t_di" bpmnElement="Gateway_1383s4t" isMarkerVisible="true">
+        <dc:Bounds x="1135" y="205" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_14jv5q0_di" bpmnElement="Gateway_14jv5q0" isMarkerVisible="true">
+        <dc:Bounds x="1135" y="105" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1116" y="81" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_05yl2h6_di" bpmnElement="Activity_024nwig">
+        <dc:Bounds x="990" y="90" width="100" height="80" />
+      </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>
