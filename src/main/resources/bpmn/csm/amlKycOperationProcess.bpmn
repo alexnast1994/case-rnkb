@@ -8,32 +8,81 @@
       <bpmn:incoming>Flow_1eta143</bpmn:incoming>
       <bpmn:outgoing>Flow_0aojsjg</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:scriptTask id="Activity_1et1nm9" name="Get Payload" scriptFormat="groovy">
+    <bpmn:scriptTask id="Activity_1et1nm9" name="Get Payload" scriptFormat="groovy" camunda:resultVariable="participants">
       <bpmn:incoming>Flow_0aojsjg</bpmn:incoming>
       <bpmn:outgoing>Flow_1mtxpn0</bpmn:outgoing>
-      <bpmn:script>import static org.camunda.spin.Spin.JSON
+      <bpmn:script>import camundajar.impl.scala.util.parsing.json.JSON
+
+import static org.camunda.spin.Spin.JSON
 
 def jsonStr = execution.getVariable("payload") as String
 def jsonData = JSON(jsonStr).prop("payload").prop("amlCsmKycPaymentRequest")
-execution.setVariable("jsonData", jsonData)</bpmn:script>
+
+try {
+    def participants = jsonData.prop("RequestData").prop("PaymentEvents").elements()[0].prop("Participants").elements().findAll{ it -&gt; it.hasProp("KYCList") &amp;&amp; it.hasProp("Results") &amp;&amp; it.prop("Results") != null &amp;&amp; it.prop("Results").elements().size() &gt; 0 &amp;&amp; it.prop("KYCList") != null &amp;&amp; it.prop("KYCList").elements().size() &gt; 0 &amp;&amp; it.prop("KYCList").elements().find { k -&gt; k.prop("CheckStatus").stringValue() == "1" || k.prop("CheckStatus").stringValue() == "2"}}.toString()
+    def patJson = JSON(participants)
+    if (participants.size() &gt; 0) {
+        execution.setVariable("jsonData", jsonData)
+        println("Начало записи партисипантов")
+        execution.setVariable("participants", patJson)
+        println("Записали партисипанты")
+        execution.setVariable("correctJson",  true)
+    }
+    else {
+        println("Не удалось запустить процесс, отсутствуют ключевые поля")
+        execution.setVariable("correctJson",  false)
+    }
+}
+catch (Exception e) {
+    println("Не удалось запустить процесс, отсутствуют ключевые поля")
+    println(e.getLocalizedMessage())
+    execution.setVariable("correctJson",  false)
+}
+</bpmn:script>
     </bpmn:scriptTask>
     <bpmn:sequenceFlow id="Flow_1eta143" sourceRef="StartEvent_1" targetRef="Activity_13r4h67" />
     <bpmn:sequenceFlow id="Flow_0aojsjg" sourceRef="Activity_13r4h67" targetRef="Activity_1et1nm9" />
-    <bpmn:subProcess id="Activity_046avyt">
-      <bpmn:incoming>Flow_1xwqo21</bpmn:incoming>
-      <bpmn:outgoing>Flow_14cpvbj</bpmn:outgoing>
-      <bpmn:startEvent id="Event_1q8k7ji">
-        <bpmn:outgoing>Flow_1ve5udi</bpmn:outgoing>
+    <bpmn:serviceTask id="Activity_0xhr3ji" name="Открыть транзакцию" camunda:delegateExpression="${startTransactionDelegate}">
+      <bpmn:incoming>Flow_0kd34xp</bpmn:incoming>
+      <bpmn:outgoing>Flow_1h3ldeq</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1mtxpn0" sourceRef="Activity_1et1nm9" targetRef="Activity_0gxxh7b" />
+    <bpmn:serviceTask id="Activity_0gxxh7b" name="Открыть сессию" camunda:delegateExpression="${openSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_1mtxpn0</bpmn:incoming>
+      <bpmn:outgoing>Flow_0kd34xp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0kd34xp" sourceRef="Activity_0gxxh7b" targetRef="Activity_0xhr3ji" />
+    <bpmn:endEvent id="Event_09uqy16">
+      <bpmn:incoming>Flow_0di8ron</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Activity_0qvrl0i" name="Закрыть транзакцию" camunda:delegateExpression="${endTransactionDelegate}">
+      <bpmn:incoming>Flow_1wvqr5x</bpmn:incoming>
+      <bpmn:outgoing>Flow_178dyym</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_178dyym" sourceRef="Activity_0qvrl0i" targetRef="Activity_1cpt2gg" />
+    <bpmn:serviceTask id="Activity_1cpt2gg" name="Закрыть сессию" camunda:delegateExpression="${closeSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_178dyym</bpmn:incoming>
+      <bpmn:outgoing>Flow_0di8ron</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0di8ron" sourceRef="Activity_1cpt2gg" targetRef="Event_09uqy16" />
+    <bpmn:subProcess id="Activity_0owi57j">
+      <bpmn:incoming>Flow_1h3ldeq</bpmn:incoming>
+      <bpmn:outgoing>Flow_1wvqr5x</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="${participants.elements()}" camunda:elementVariable="participant" />
+      <bpmn:startEvent id="Event_10ex7wn">
+        <bpmn:outgoing>Flow_1dl0gdg</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:sequenceFlow id="Flow_1ve5udi" sourceRef="Event_1q8k7ji" targetRef="Activity_03oe1vx" />
-      <bpmn:scriptTask id="Activity_03oe1vx" name="PAYMENTPARTICIPANTLIST" scriptFormat="groovy">
-        <bpmn:incoming>Flow_1ve5udi</bpmn:incoming>
-        <bpmn:outgoing>Flow_09heimr</bpmn:outgoing>
+      <bpmn:sequenceFlow id="Flow_1dl0gdg" sourceRef="Event_10ex7wn" targetRef="Activity_0rfafx2" />
+      <bpmn:scriptTask id="Activity_0rfafx2" name="Сформировать Patricipant" scriptFormat="groovy">
+        <bpmn:incoming>Flow_1dl0gdg</bpmn:incoming>
+        <bpmn:outgoing>Flow_1mupdfr</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
 import com.prime.db.rnkb.model.Client
 import com.prime.db.rnkb.model.Payment
 import com.prime.db.rnkb.model.PaymentParticipantList
 import org.camunda.spin.json.SpinJsonNode
+
+import java.time.LocalDateTime
 
 def json = execution.getVariable("jsonData") as SpinJsonNode
 
@@ -50,26 +99,28 @@ BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
 
-
-def paymentEvent = json.prop("RequestData").prop("PaymentEvents").elements()[0]
-
-if (paymentEvent.hasProp("Participants") &amp;&amp; paymentEvent.prop("Participants") != null &amp;&amp; paymentEvent.prop("Participants").elements().size() &gt; 0) {
-
-    List&lt;PaymentParticipantList&gt; participantListList = new ArrayList&lt;&gt;()
-
-    paymentEvent.prop("Participants").elements().each {it -&gt;
+def participant = execution.getVariable("participant") as SpinJsonNode
+List&lt;PaymentParticipantList&gt; participantListList = new ArrayList&lt;&gt;()
+try {
+    println("Старт формирования записи")
+    def kycList = participant.prop("KYCList")
+    participant.prop("KYCList").elements().findAll { k -&gt; k.prop("CheckStatus").stringValue() == "1" || k.prop("CheckStatus").stringValue() == "2" }.each { it -&gt;
 
         PaymentParticipantList participantList = new PaymentParticipantList()
-
+        println(getPayment(json.prop("ResponseData").prop("PaymentCheckResult").elements()[0].prop("SourceId").stringValue()))
         participantList.paymentId = getPayment(json.prop("ResponseData").prop("PaymentCheckResult").elements()[0].prop("SourceId").stringValue())
-        if (it.hasProp("ClientId") &amp;&amp; it.prop("ClientId") != null &amp;&amp; it.prop("ClientId").stringValue() != "") {
-            participantList.clientId = getClient(it.prop("ClientId").stringValue())
+        if (participant.hasProp("ClientId") &amp;&amp; participant.prop("ClientId") != null &amp;&amp; participant.prop("ClientId").stringValue() != "") {
+            participantList.clientId = getClient(participant.prop("ClientId").stringValue())
         }
-        participantList.otherPersonType = it.hasProp("PartType") &amp;&amp; it.prop("PartType") != null ? getBd(169, it.prop("PartType").toString()) : null
-
+        participantList.otherPersonType = participant.hasProp("PartType") &amp;&amp; participant.prop("PartType") != null ? getBd(169, participant.prop("PartType").toString()) : null
+        participantList.typeList = getBd(214, it.prop("Id").stringValue())
+        participantList.levelBlocking = Integer.parseInt(it.prop("LevelBlocking").stringValue())
+        participantList.checkStatus = Integer.parseInt(it.prop("CheckStatus").stringValue())
+        participantList.createDate = LocalDateTime.now()
         StringBuilder markerString = new StringBuilder()
-        if (it.hasProp("Results") &amp;&amp; it.prop("Results") != null &amp;&amp; it.prop("Results").elements().size() &gt; 0) {
-            def result = it.prop("Results").elements()
+        if (participant.hasProp("Results") &amp;&amp; participant.prop("Results") &amp;&amp; participant.prop("Results").elements().size() &gt; 0) {
+
+            def result = participant.prop("Results").elements()
             def fields = result[0].fieldNames().findAll { it =~ /^[D,M][0-9]*$/ }
             participantList.exId = result[0].hasProp("record") &amp;&amp; result[0].prop("record").hasProp("exId") ? result[0].prop("record").prop("exId").stringValue() : null
             participantList.num = result[0].hasProp("record") &amp;&amp; result[0].prop("record").hasProp("num") ? result[0].prop("record").prop("num").stringValue() : null
@@ -82,50 +133,95 @@ if (paymentEvent.hasProp("Participants") &amp;&amp; paymentEvent.prop("Participa
                 }
             }
             participantList.setMarkers(markerString.size() &gt; 0 ? markerString.toString().substring(0, markerString.toString().size() - 2) : "")
+            participantList.nameMatch = (Integer) (participant.prop("Results").elements().size() &gt; 0 &amp;&amp; participant.prop("Results").elements()[0].hasProp("D0") ? participant.prop("Results").elements()[0].prop("D0").numberValue() : null)
+            participantList.isActive = result[0].hasProp("record") &amp;&amp; result[0].prop("record") != null &amp;&amp; result[0].prop("record").hasProp("isActive") &amp;&amp; result[0].prop("record").prop("isActive") != null ? result[0].prop("record").prop("isActive").boolValue() : null
+            participantList.entityType = result[0].hasProp("record") &amp;&amp; result[0].prop("record") != null &amp;&amp; result[0].prop("record").hasProp("entityType") &amp;&amp; result[0].prop("record").prop("entityType") != null ? result[0].prop("record").prop("entityType").stringValue() : null
+
+
+            if (result[0].hasProp("record") &amp;&amp; result[0].prop("record") != null) {
+                execution.setVariable("isRecord", true)
+                execution.setVariable("record", result[0].prop("record"))
+            }
+            else {
+                execution.setVariable("isRecord", false)
+            }
         }
-        participantList.nameMatch = it.prop("Results").elements().size() &gt; 0 &amp;&amp; it.prop("Results").elements()[0].hasProp("D0") ? it.prop("Results").elements()[0].prop("D0").numberValue() : null
-        participantList.isActive = it.hasProp("isActive") ? it.prop("isActive").boolValue() : null
-        participantList.entityType = it.hasProp("entityType") ? it.prop("entityType").stringValue() : null
+        println("Список: " + participantList.toString())
+
         participantListList.add(participantList)
     }
+    println("Размер participantListList: " + participantListList.size())
+    if (participantListList.isEmpty()) {
+        println("Не удалось создать participantList")
+        execution.setVariable("emptyparticipantList", true)
+    }
+    else {
+        execution.setVariable("participantListList", participantListList)
+        execution.setVariable("emptyparticipantList", false)
+    }
 
-    execution.setVariable("participantListList", participantListList)
-    execution.setVariable("emptyparticipantList", false)
 }
-else {
+catch (Exception e) {
     println("Не удалось создать participantList")
+    println(e.localizedMessage)
     execution.setVariable("emptyparticipantList", true)
 }</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:exclusiveGateway id="Gateway_1pj7qzr" default="Flow_1x1bi3r">
-        <bpmn:incoming>Flow_09heimr</bpmn:incoming>
-        <bpmn:outgoing>Flow_1x1bi3r</bpmn:outgoing>
-        <bpmn:outgoing>Flow_084imaa</bpmn:outgoing>
+      <bpmn:endEvent id="Event_1a9oalu">
+        <bpmn:incoming>Flow_0jpqqrz</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:exclusiveGateway id="Gateway_076jnhf" name="Пустой?" default="Flow_1ibdn2j">
+        <bpmn:incoming>Flow_1mupdfr</bpmn:incoming>
+        <bpmn:outgoing>Flow_1aisn70</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1ibdn2j</bpmn:outgoing>
       </bpmn:exclusiveGateway>
-      <bpmn:sequenceFlow id="Flow_09heimr" sourceRef="Activity_03oe1vx" targetRef="Gateway_1pj7qzr" />
-      <bpmn:sequenceFlow id="Flow_1x1bi3r" sourceRef="Gateway_1pj7qzr" targetRef="Activity_0gitwa8" />
-      <bpmn:exclusiveGateway id="Gateway_05a1ttk">
-        <bpmn:incoming>Flow_084imaa</bpmn:incoming>
-        <bpmn:incoming>Flow_1fmq298</bpmn:incoming>
-        <bpmn:outgoing>Flow_0e6x5bo</bpmn:outgoing>
+      <bpmn:sequenceFlow id="Flow_1mupdfr" sourceRef="Activity_0rfafx2" targetRef="Gateway_076jnhf" />
+      <bpmn:exclusiveGateway id="Gateway_15w738c">
+        <bpmn:incoming>Flow_1aisn70</bpmn:incoming>
+        <bpmn:incoming>Flow_0mq5blq</bpmn:incoming>
+        <bpmn:incoming>Flow_1ej1rse</bpmn:incoming>
+        <bpmn:outgoing>Flow_0jpqqrz</bpmn:outgoing>
       </bpmn:exclusiveGateway>
-      <bpmn:sequenceFlow id="Flow_084imaa" sourceRef="Gateway_1pj7qzr" targetRef="Gateway_05a1ttk">
+      <bpmn:sequenceFlow id="Flow_1aisn70" sourceRef="Gateway_076jnhf" targetRef="Gateway_15w738c">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${emptyparticipantList}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
-      <bpmn:serviceTask id="Activity_0gitwa8" name="save delegate" camunda:delegateExpression="${saveObjectListDelegate}">
-        <bpmn:extensionElements>
-          <camunda:inputOutput>
-            <camunda:inputParameter name="outputVarName">participantListListOut</camunda:inputParameter>
-            <camunda:inputParameter name="saveObjectList">${participantListList}</camunda:inputParameter>
-          </camunda:inputOutput>
-        </bpmn:extensionElements>
-        <bpmn:incoming>Flow_1x1bi3r</bpmn:incoming>
-        <bpmn:outgoing>Flow_02ce611</bpmn:outgoing>
-      </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_02ce611" sourceRef="Activity_0gitwa8" targetRef="Activity_0q96o71" />
-      <bpmn:scriptTask id="Activity_0q96o71" name="PAYMENTNAMELIST" scriptFormat="groovy">
-        <bpmn:incoming>Flow_02ce611</bpmn:incoming>
-        <bpmn:outgoing>Flow_11yb4jq</bpmn:outgoing>
+      <bpmn:exclusiveGateway id="Gateway_1mj1665" default="Flow_0ck2hu0">
+        <bpmn:incoming>Flow_1ovaj73</bpmn:incoming>
+        <bpmn:outgoing>Flow_0ck2hu0</bpmn:outgoing>
+        <bpmn:outgoing>Flow_11aynj4</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_1ovaj73" sourceRef="Activity_0oqu8wi" targetRef="Gateway_1mj1665" />
+      <bpmn:sequenceFlow id="Flow_0ck2hu0" sourceRef="Gateway_1mj1665" targetRef="Activity_0yusdxu" />
+      <bpmn:exclusiveGateway id="Gateway_08qzlb8">
+        <bpmn:incoming>Flow_05wbb6y</bpmn:incoming>
+        <bpmn:incoming>Flow_11aynj4</bpmn:incoming>
+        <bpmn:outgoing>Flow_06ab9jq</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_05wbb6y" sourceRef="Activity_0yusdxu" targetRef="Gateway_08qzlb8" />
+      <bpmn:sequenceFlow id="Flow_06ab9jq" sourceRef="Gateway_08qzlb8" targetRef="Activity_0hhsmax" />
+      <bpmn:sequenceFlow id="Flow_11aynj4" sourceRef="Gateway_1mj1665" targetRef="Gateway_08qzlb8">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${errorName}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:exclusiveGateway id="Gateway_19mjvid" default="Flow_0k2x7z1">
+        <bpmn:incoming>Flow_0irrxbc</bpmn:incoming>
+        <bpmn:outgoing>Flow_0k2x7z1</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1mw7wy0</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_0irrxbc" sourceRef="Activity_0hhsmax" targetRef="Gateway_19mjvid" />
+      <bpmn:sequenceFlow id="Flow_0k2x7z1" sourceRef="Gateway_19mjvid" targetRef="Activity_1oadrhm" />
+      <bpmn:exclusiveGateway id="Gateway_0wog4bn">
+        <bpmn:incoming>Flow_0iszwdr</bpmn:incoming>
+        <bpmn:incoming>Flow_1mw7wy0</bpmn:incoming>
+        <bpmn:outgoing>Flow_1ng9l58</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_0iszwdr" sourceRef="Activity_1oadrhm" targetRef="Gateway_0wog4bn" />
+      <bpmn:sequenceFlow id="Flow_1mw7wy0" sourceRef="Gateway_19mjvid" targetRef="Gateway_0wog4bn">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${errorAddr}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="Flow_0jpqqrz" sourceRef="Gateway_15w738c" targetRef="Event_1a9oalu" />
+      <bpmn:scriptTask id="Activity_0oqu8wi" name="Сформировать Name" scriptFormat="groovy">
+        <bpmn:incoming>Flow_0iqn150</bpmn:incoming>
+        <bpmn:outgoing>Flow_1ovaj73</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
 import com.prime.db.rnkb.model.PaymentParticipantList
 import org.camunda.spin.json.SpinJsonNode
@@ -134,57 +230,51 @@ BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
 
-def json = execution.getVariable("jsonData") as SpinJsonNode
-def participants = json.prop("RequestData").prop("PaymentEvents").elements()[0].prop("Participants")
-List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListList") as List&lt;PaymentParticipantList&gt;
+List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListListOut") as List&lt;PaymentParticipantList&gt;
+def record = execution.getVariable("record") as SpinJsonNode
 List&lt;com.prime.db.rnkb.model.PaymentNameList&gt; paymentNameListList = new ArrayList&lt;&gt;()
 
+println("participantListListOut " + participantListList == null)
+println(participantListList)
+participantListList.stream().filter({ p -&gt; p.getTypeList() == getBd(214, record.prop("listType").stringValue()) }).each { it -&gt;
 
-participants.elements().each {it -&gt;
-
-
-    if (it.hasProp("Result") &amp;&amp; it.prop("Result") != null &amp;&amp; it.prop("Results").elements().size() &gt; 0 &amp;&amp; it.prop("Results").elements()[0].hasProp("record") &amp;&amp; it.prop("Results").elements()[0].prop("record") != null) {
-        def record = it.prop("Results").elements()[0].prop("record")
-        if (record.hasProp("nameList") &amp;&amp; record.prop("nameList") != null &amp;&amp; record.prop("nameList").elements().size() &gt; 0) {
-            record.prop("nameList").elements().each {name -&gt;
-                com.prime.db.rnkb.model.PaymentNameList paymentNameList = new com.prime.db.rnkb.model.PaymentNameList()
-                paymentNameList.paymentParticipantListId = participantListList.find {it1 -&gt; it1.exId == record.prop("record").prop("exId").stringValue()}
-                name.hasProp("nameType") &amp;&amp; name.prop("nameType") != null ? paymentNameList.nameType = getBd(280, name.prop("nameType").stringValue()) : null
-                paymentNameList.name = name.hasProp("name") ? name.prop("name").stringValue() : null
-                paymentNameList.firstName = name.hasProp("firstName") ? name.prop("firstName").stringValue() : null
-                paymentNameList.lastName = name.hasProp("lastName") ? name.prop("lastName").stringValue() : null
-                paymentNameList.middleName = name.hasProp("middleName") ? name.prop("middleName").stringValue() : null
-                paymentNameList.bestMatch = name.hasProp("name")  &amp;&amp; name.prop("name") != null &amp;&amp; it.prop("Result").hasProp("bestNatch") &amp;&amp; it.prop("Result").prop("bestNatch").hasProp("name") &amp;&amp; name.prop("name").stringValue() == it.prop("Result").prop("bestNatch").stringValue()
-                paymentNameListList.add(paymentNameList)
-            }
-
+    if (record.hasProp("nameList") &amp;&amp; record.prop("nameList") != null &amp;&amp; record.prop("nameList").elements().size() &gt; 0) {
+        record.prop("nameList").elements().each { name -&gt;
+            com.prime.db.rnkb.model.PaymentNameList paymentNameList = new com.prime.db.rnkb.model.PaymentNameList()
+            paymentNameList.paymentParticipantListId = it
+            name.hasProp("nameType") &amp;&amp; name.prop("nameType") != null ? paymentNameList.nameType = getBd(280, name.prop("nameType").stringValue()) : null
+            paymentNameList.name = name.hasProp("name") ? name.prop("name").stringValue() : null
+            paymentNameList.firstName = name.hasProp("firstName") ? name.prop("firstName").stringValue() : null
+            paymentNameList.lastName = name.hasProp("lastName") ? name.prop("lastName").stringValue() : null
+            paymentNameList.middleName = name.hasProp("middleName") ? name.prop("middleName").stringValue() : null
+            paymentNameListList.add(paymentNameList)
         }
 
     }
 
-
 }
-
-execution.setVariable("paymentNameListList", paymentNameListList)</bpmn:script>
+if (paymentNameListList.isEmpty()) {
+    println("Не записались name")
+    execution.setVariable("errorName", true)
+}
+else {
+    execution.setVariable("errorName", false)
+    execution.setVariable("paymentNameListList", paymentNameListList)
+}
+</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:endEvent id="Event_1pkn49o">
-        <bpmn:incoming>Flow_0e6x5bo</bpmn:incoming>
-      </bpmn:endEvent>
-      <bpmn:sequenceFlow id="Flow_0e6x5bo" sourceRef="Gateway_05a1ttk" targetRef="Event_1pkn49o" />
-      <bpmn:sequenceFlow id="Flow_11yb4jq" sourceRef="Activity_0q96o71" targetRef="Activity_07k4x2t" />
-      <bpmn:serviceTask id="Activity_07k4x2t" name="save delegate" camunda:delegateExpression="${saveObjectListDelegate}">
+      <bpmn:serviceTask id="Activity_0yusdxu" name="Записать name" camunda:delegateExpression="${saveObjectListDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="saveObjectList">${paymentNameListList}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
-        <bpmn:incoming>Flow_11yb4jq</bpmn:incoming>
-        <bpmn:outgoing>Flow_12wpaq4</bpmn:outgoing>
+        <bpmn:incoming>Flow_0ck2hu0</bpmn:incoming>
+        <bpmn:outgoing>Flow_05wbb6y</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_12wpaq4" sourceRef="Activity_07k4x2t" targetRef="Activity_0mmxcbx" />
-      <bpmn:scriptTask id="Activity_0mmxcbx" name="PAYMENTADDRESSLIST" scriptFormat="groovy">
-        <bpmn:incoming>Flow_12wpaq4</bpmn:incoming>
-        <bpmn:outgoing>Flow_0uopr1s</bpmn:outgoing>
+      <bpmn:scriptTask id="Activity_0hhsmax" name="Сформировать address" scriptFormat="groovy">
+        <bpmn:incoming>Flow_06ab9jq</bpmn:incoming>
+        <bpmn:outgoing>Flow_0irrxbc</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
 import com.prime.db.rnkb.model.PaymentParticipantList
 import org.camunda.spin.json.SpinJsonNode
@@ -193,49 +283,49 @@ BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
 
-def json = execution.getVariable("jsonData") as SpinJsonNode
-def participants = json.prop("RequestData").prop("PaymentEvents").elements()[0].prop("Participants")
-List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListList") as List&lt;PaymentParticipantList&gt;
+List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListListOut") as List&lt;PaymentParticipantList&gt;
+def record = execution.getVariable("record") as SpinJsonNode
 List&lt;com.prime.db.rnkb.model.PaymentAddressList&gt; paymentAddressLists = new ArrayList&lt;&gt;()
 
 
-participants.elements().each {it -&gt;
+participantListList.stream().filter({ p -&gt; p.getTypeList() == getBd(214, record.prop("listType").stringValue()) }).each { it -&gt;
 
 
-    if (it.hasProp("Result") &amp;&amp; it.prop("Result") != null &amp;&amp; it.prop("Results").elements().size() &gt; 0 &amp;&amp; it.prop("Results").elements()[0].hasProp("record") &amp;&amp; it.prop("Results").elements()[0].prop("record") != null) {
-        def record = it.prop("Results").elements()[0].prop("record")
-        if (record.hasProp("addressList") &amp;&amp; record.prop("addressList") != null &amp;&amp; record.prop("addressList").elements().size() &gt; 0) {
-            record.prop("addressList").elements().each {name -&gt;
-                com.prime.db.rnkb.model.PaymentAddressList paymentAddressList = new com.prime.db.rnkb.model.PaymentAddressList()
-                paymentAddressList.paymentParticipantListId = participantListList.find {it1 -&gt; it1.exId == record.prop("record").prop("exId").stringValue()}
-                name.hasProp("addressType") &amp;&amp; name.prop("addressType") != null ? paymentAddressList.addressType = getBd(281, name.prop("addressType").stringValue()) : null
-                paymentAddressList.addressLine = name.hasProp("addressLine") ? name.prop("addressLine").stringValue() : null
-                paymentAddressLists.add(paymentAddressList)
-            }
-
+    if (record.hasProp("addressList") &amp;&amp; record.prop("addressList") != null &amp;&amp; record.prop("addressList").elements().size() &gt; 0) {
+        record.prop("addressList").elements().each { name -&gt;
+            com.prime.db.rnkb.model.PaymentAddressList paymentAddressList = new com.prime.db.rnkb.model.PaymentAddressList()
+            paymentAddressList.paymentParticipantListId = it
+            name.hasProp("addressType") &amp;&amp; name.prop("addressType") != null ? paymentAddressList.addressType = getBd(281, name.prop("addressType").stringValue()) : null
+            paymentAddressList.addressLine = name.hasProp("addressLine") ? name.prop("addressLine").stringValue() : null
+            paymentAddressLists.add(paymentAddressList)
         }
 
     }
 
 
 }
-
-execution.setVariable("paymentAddressLists", paymentAddressLists)</bpmn:script>
+if (paymentAddressLists.isEmpty()) {
+    println("Не записались address")
+    execution.setVariable("errorAddr", true)
+} else {
+    execution.setVariable("errorAddr", false)
+    execution.setVariable("paymentAddressLists", paymentAddressLists)
+}
+</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:sequenceFlow id="Flow_0uopr1s" sourceRef="Activity_0mmxcbx" targetRef="Activity_0hfj9vx" />
-      <bpmn:serviceTask id="Activity_0hfj9vx" name="Save delegate" camunda:delegateExpression="${saveObjectListDelegate}">
+      <bpmn:serviceTask id="Activity_1oadrhm" name="Записать address" camunda:delegateExpression="${saveObjectListDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="saveObjectList">${paymentAddressLists}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
-        <bpmn:incoming>Flow_0uopr1s</bpmn:incoming>
-        <bpmn:outgoing>Flow_0tm259a</bpmn:outgoing>
+        <bpmn:incoming>Flow_0k2x7z1</bpmn:incoming>
+        <bpmn:outgoing>Flow_0iszwdr</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_0tm259a" sourceRef="Activity_0hfj9vx" targetRef="Activity_0080wiz" />
-      <bpmn:scriptTask id="Activity_0080wiz" name="PAYMENTDATEDETAILS" scriptFormat="groovy">
-        <bpmn:incoming>Flow_0tm259a</bpmn:incoming>
-        <bpmn:outgoing>Flow_1m7mfna</bpmn:outgoing>
+      <bpmn:sequenceFlow id="Flow_1ng9l58" sourceRef="Gateway_0wog4bn" targetRef="Activity_0y5djwe" />
+      <bpmn:scriptTask id="Activity_0y5djwe" name="СформироватьdateDetails" scriptFormat="groovy">
+        <bpmn:incoming>Flow_1ng9l58</bpmn:incoming>
+        <bpmn:outgoing>Flow_0dl6s2h</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
 import com.prime.db.rnkb.model.PaymentDateDetails
 import com.prime.db.rnkb.model.PaymentParticipantList
@@ -245,54 +335,83 @@ BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
 
-def json = execution.getVariable("jsonData") as SpinJsonNode
-def participants = json.prop("RequestData").prop("PaymentEvents").elements()[0].prop("Participants")
-List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListList") as List&lt;PaymentParticipantList&gt;
+List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListListOut") as List&lt;PaymentParticipantList&gt;
+def record = execution.getVariable("record") as SpinJsonNode
 List&lt;PaymentDateDetails&gt; paymentDateDetailsList = new ArrayList&lt;&gt;()
 
 
-participants.elements().each {it -&gt;
-
-
-    if (it.hasProp("Result") &amp;&amp; it.prop("Result") != null &amp;&amp; it.prop("Results").elements().size() &gt; 0 &amp;&amp; it.prop("Results").elements()[0].hasProp("record") &amp;&amp; it.prop("Results").elements()[0].prop("record") != null) {
-        def record = it.prop("Results").elements()[0].prop("record")
-        if (record.hasProp("dateDetails") &amp;&amp; record.prop("dateDetails") != null &amp;&amp; record.prop("dateDetails").elements().size() &gt; 0) {
-            record.prop("dateDetails").elements().each {name -&gt;
-                PaymentDateDetails paymentDateDetails = new PaymentDateDetails()
-                paymentDateDetails.paymentParticipantListId = participantListList.find {it1 -&gt; it1.exId == record.prop("record").prop("exId").stringValue()}
-                name.hasProp("dateTypeId") &amp;&amp; name.prop("dateTypeId") != null ? paymentDateDetails.dateTypeId = getBd(282, name.prop("dateTypeId").stringValue()) : null
-                paymentDateDetails.dateValue = name.hasProp("dateValue") ? name.prop("dateValue").stringValue() : null
-                paymentDateDetails.day = name.hasProp("day") ? name.prop("day").toString() : null
-                paymentDateDetails.month = name.hasProp("month") ? name.prop("month").toString() : null
-                paymentDateDetails.year = name.hasProp("year") ? name.prop("year").toString() : null
-                paymentDateDetailsList.add(paymentDateDetails)
-            }
-
+participantListList.stream().filter({ p -&gt; p.getTypeList() == getBd(214, record.prop("listType").stringValue()) }).each { it -&gt;
+    if (record.hasProp("dateDetails") &amp;&amp; record.prop("dateDetails") != null &amp;&amp; record.prop("dateDetails").elements().size() &gt; 0) {
+        record.prop("dateDetails").elements().each { name -&gt;
+            PaymentDateDetails paymentDateDetails = new PaymentDateDetails()
+            paymentDateDetails.paymentParticipantListId = it
+            name.hasProp("dateTypeId") &amp;&amp; name.prop("dateTypeId") != null ? paymentDateDetails.dateTypeId = getBd(282, name.prop("dateTypeId").stringValue()) : null
+            paymentDateDetails.dateValue = name.hasProp("dateValue") ? name.prop("dateValue").stringValue() : null
+            paymentDateDetails.day = name.hasProp("day") ? name.prop("day").toString() : null
+            paymentDateDetails.month = name.hasProp("month") ? name.prop("month").toString() : null
+            paymentDateDetails.year = name.hasProp("year") ? name.prop("year").toString() : null
+            paymentDateDetailsList.add(paymentDateDetails)
         }
 
     }
 
-
 }
 
-execution.setVariable("paymentDateDetailsList", paymentDateDetailsList)</bpmn:script>
+if (paymentDateDetailsList.isEmpty()) {
+    println("Не записались dateDetails")
+    execution.setVariable("dateDetailsErr", true)
+} else {
+    execution.setVariable("dateDetailsErr", false)
+    execution.setVariable("paymentDateDetailsList", paymentDateDetailsList)
+}
+</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:sequenceFlow id="Flow_1m7mfna" sourceRef="Activity_0080wiz" targetRef="Activity_0bi3h31" />
-      <bpmn:serviceTask id="Activity_0bi3h31" name="save delegate" camunda:delegateExpression="${saveObjectListDelegate}">
+      <bpmn:exclusiveGateway id="Gateway_1m9yw04" default="Flow_1mi63d8">
+        <bpmn:incoming>Flow_0dl6s2h</bpmn:incoming>
+        <bpmn:outgoing>Flow_1mi63d8</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1taihr4</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_0dl6s2h" sourceRef="Activity_0y5djwe" targetRef="Gateway_1m9yw04" />
+      <bpmn:sequenceFlow id="Flow_1mi63d8" sourceRef="Gateway_1m9yw04" targetRef="Activity_0v19s3f" />
+      <bpmn:exclusiveGateway id="Gateway_054y6s9">
+        <bpmn:incoming>Flow_0xyboqn</bpmn:incoming>
+        <bpmn:incoming>Flow_1taihr4</bpmn:incoming>
+        <bpmn:outgoing>Flow_1wneufo</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_0xyboqn" sourceRef="Activity_0v19s3f" targetRef="Gateway_054y6s9" />
+      <bpmn:sequenceFlow id="Flow_1taihr4" sourceRef="Gateway_1m9yw04" targetRef="Gateway_054y6s9">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${dateDetailsErr}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:serviceTask id="Activity_0v19s3f" name="Сохранить dateDetails" camunda:delegateExpression="${saveObjectListDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="saveObjectList">${paymentDateDetailsList}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
-        <bpmn:incoming>Flow_1m7mfna</bpmn:incoming>
-        <bpmn:outgoing>Flow_10gmals</bpmn:outgoing>
+        <bpmn:incoming>Flow_1mi63d8</bpmn:incoming>
+        <bpmn:outgoing>Flow_0xyboqn</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_10gmals" sourceRef="Activity_0bi3h31" targetRef="Activity_1muyc4q" />
-      <bpmn:scriptTask id="Activity_1muyc4q" name="PAYMENTIDENTITYATRLIST" scriptFormat="groovy">
-        <bpmn:incoming>Flow_10gmals</bpmn:incoming>
-        <bpmn:outgoing>Flow_15l5kr6</bpmn:outgoing>
+      <bpmn:sequenceFlow id="Flow_1wneufo" sourceRef="Gateway_054y6s9" targetRef="Activity_1luurdo" />
+      <bpmn:exclusiveGateway id="Gateway_18w09qk" default="Flow_1t897dk">
+        <bpmn:incoming>Flow_0ie853v</bpmn:incoming>
+        <bpmn:outgoing>Flow_1t897dk</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1y4newk</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_0ie853v" sourceRef="Activity_1luurdo" targetRef="Gateway_18w09qk" />
+      <bpmn:sequenceFlow id="Flow_1t897dk" sourceRef="Gateway_18w09qk" targetRef="Activity_0vh1ghl" />
+      <bpmn:exclusiveGateway id="Gateway_163fxrx">
+        <bpmn:incoming>Flow_1pvthxt</bpmn:incoming>
+        <bpmn:incoming>Flow_1y4newk</bpmn:incoming>
+        <bpmn:outgoing>Flow_0i1gxbb</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_1pvthxt" sourceRef="Activity_0vh1ghl" targetRef="Gateway_163fxrx" />
+      <bpmn:sequenceFlow id="Flow_1y4newk" sourceRef="Gateway_18w09qk" targetRef="Gateway_163fxrx">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${IdentityAttrErr}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:scriptTask id="Activity_1luurdo" name="Сформировать IdentityAttrList" scriptFormat="groovy">
+        <bpmn:incoming>Flow_1wneufo</bpmn:incoming>
+        <bpmn:outgoing>Flow_0ie853v</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
-import com.prime.db.rnkb.model.PaymentDateDetails
 import com.prime.db.rnkb.model.PaymentIdentityAdrList
 import com.prime.db.rnkb.model.PaymentParticipantList
 import org.camunda.spin.json.SpinJsonNode
@@ -301,51 +420,135 @@ BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
 
-def json = execution.getVariable("jsonData") as SpinJsonNode
-def participants = json.prop("RequestData").prop("PaymentEvents").elements()[0].prop("Participants")
-List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListList") as List&lt;PaymentParticipantList&gt;
+List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListListOut") as List&lt;PaymentParticipantList&gt;
+def record = execution.getVariable("record") as SpinJsonNode
 List&lt;PaymentIdentityAdrList&gt; paymentIdentityAdrLists = new ArrayList&lt;&gt;()
 
 
-participants.elements().each {it -&gt;
-
-
-    if (it.hasProp("Result") &amp;&amp; it.prop("Result") != null &amp;&amp; it.prop("Results").elements().size() &gt; 0 &amp;&amp; it.prop("Results").elements()[0].hasProp("record") &amp;&amp; it.prop("Results").elements()[0].prop("record") != null) {
-        def record = it.prop("Results").elements()[0].prop("record")
-        if (record.hasProp("identityAtrList") &amp;&amp; record.prop("identityAtrList") != null &amp;&amp; record.prop("identityAtrList").elements().size() &gt; 0) {
-            record.prop("identityAtrList").elements().each {name -&gt;
-                PaymentIdentityAdrList paymentIdentityAdrList = new PaymentIdentityAdrList()
-                paymentIdentityAdrList.paymentParticipantListId = participantListList.find {it1 -&gt; it1.exId == record.prop("record").prop("exId").stringValue()}
-                name.hasProp("idType") &amp;&amp; name.prop("idType") != null ? paymentIdentityAdrList.idType = getBd(283, name.prop("idType").stringValue()) : null
-                paymentIdentityAdrList.idValue = name.hasProp("idValue") ? name.prop("idValue").stringValue() : null
-                paymentIdentityAdrList.idSerial = name.hasProp("idSerial") ? name.prop("idSerial").stringValue() : null
-                paymentIdentityAdrList.idNumber = name.hasProp("idNumber") ? name.prop("idNumber").stringValue() : null
-                paymentIdentityAdrLists.add(paymentIdentityAdrList)
-            }
-
+participantListList.stream().filter({ p -&gt; p.getTypeList() == getBd(214, record.prop("listType").stringValue()) }).each { it -&gt;
+    if (record.hasProp("identityAtrList") &amp;&amp; record.prop("identityAtrList") != null &amp;&amp; record.prop("identityAtrList").elements().size() &gt; 0) {
+        record.prop("identityAtrList").elements().each { name -&gt;
+            PaymentIdentityAdrList paymentIdentityAdrList = new PaymentIdentityAdrList()
+            paymentIdentityAdrList.paymentParticipantListId = it
+            name.hasProp("idType") &amp;&amp; name.prop("idType") != null ? paymentIdentityAdrList.idType = getBd(283, name.prop("idType").stringValue()) : null
+            paymentIdentityAdrList.idValue = name.hasProp("idValue") ? name.prop("idValue").stringValue() : null
+            paymentIdentityAdrList.idSerial = name.hasProp("idSerial") ? name.prop("idSerial").stringValue() : null
+            paymentIdentityAdrList.idNumber = name.hasProp("idNumber") ? name.prop("idNumber").stringValue() : null
+            paymentIdentityAdrLists.add(paymentIdentityAdrList)
         }
 
     }
 
-
 }
 
-execution.setVariable("paymentIdentityAdrLists", paymentIdentityAdrLists)</bpmn:script>
+if (paymentIdentityAdrLists.isEmpty()) {
+    println("Не записались IdentityAttr")
+    execution.setVariable("IdentityAttrErr", true)
+} else {
+    execution.setVariable("IdentityAttrErr", false)
+    execution.setVariable("paymentIdentityAdrLists", paymentIdentityAdrLists)
+}</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:sequenceFlow id="Flow_15l5kr6" sourceRef="Activity_1muyc4q" targetRef="Activity_1f3d2z1" />
-      <bpmn:serviceTask id="Activity_1f3d2z1" name="save delegate" camunda:delegateExpression="${saveObjectListDelegate}">
+      <bpmn:serviceTask id="Activity_0vh1ghl" name="Сохранить IdentityAttrList" camunda:delegateExpression="${saveObjectListDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="saveObjectList">${paymentIdentityAdrLists}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
-        <bpmn:incoming>Flow_15l5kr6</bpmn:incoming>
-        <bpmn:outgoing>Flow_08aseyn</bpmn:outgoing>
+        <bpmn:incoming>Flow_1t897dk</bpmn:incoming>
+        <bpmn:outgoing>Flow_1pvthxt</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_08aseyn" sourceRef="Activity_1f3d2z1" targetRef="Activity_0370a3r" />
-      <bpmn:scriptTask id="Activity_0370a3r" name="PAYMENTCOUNTRYLIST" scriptFormat="groovy">
-        <bpmn:incoming>Flow_08aseyn</bpmn:incoming>
-        <bpmn:outgoing>Flow_0yhee2r</bpmn:outgoing>
+      <bpmn:sequenceFlow id="Flow_0i1gxbb" sourceRef="Gateway_163fxrx" targetRef="Activity_0n637ry" />
+      <bpmn:exclusiveGateway id="Gateway_0y3oioq" default="Flow_0brv9dk">
+        <bpmn:incoming>Flow_0r4hnaz</bpmn:incoming>
+        <bpmn:outgoing>Flow_0brv9dk</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1an3866</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_0r4hnaz" sourceRef="Activity_0n637ry" targetRef="Gateway_0y3oioq" />
+      <bpmn:sequenceFlow id="Flow_0brv9dk" sourceRef="Gateway_0y3oioq" targetRef="Activity_0dyi6x7" />
+      <bpmn:exclusiveGateway id="Gateway_1u241gi">
+        <bpmn:incoming>Flow_0sh1thr</bpmn:incoming>
+        <bpmn:incoming>Flow_1an3866</bpmn:incoming>
+        <bpmn:outgoing>Flow_0s05sfm</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_0sh1thr" sourceRef="Activity_0dyi6x7" targetRef="Gateway_1u241gi" />
+      <bpmn:scriptTask id="Activity_0n637ry" name="Сохранить paymentVersionsLists" scriptFormat="groovy">
+        <bpmn:incoming>Flow_0i1gxbb</bpmn:incoming>
+        <bpmn:outgoing>Flow_0r4hnaz</bpmn:outgoing>
+        <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
+import com.prime.db.rnkb.model.PaymentParticipantList
+import org.camunda.spin.json.SpinJsonNode
+
+import java.time.LocalDateTime
+
+BaseDictionary getBd(int type, String code) {
+    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
+}
+
+List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListListOut") as List&lt;PaymentParticipantList&gt;
+def record = execution.getVariable("record") as SpinJsonNode
+List&lt;com.prime.db.rnkb.model.PaymentVersionsList&gt; paymentVersionsLists = new ArrayList&lt;&gt;()
+
+
+participantListList.stream().filter({ p -&gt; p.getTypeList() == getBd(214, record.prop("listType").stringValue()) }).each { it -&gt;
+
+    if (record.hasProp("versionsList") &amp;&amp; record.prop("versionsList") != null &amp;&amp; record.prop("versionsList").elements().size() &gt; 0) {
+        record.prop("versionsList").elements().each { name -&gt;
+            com.prime.db.rnkb.model.PaymentVersionsList paymentVersionsList = new com.prime.db.rnkb.model.PaymentVersionsList()
+            paymentVersionsList.paymentParticipantListId = it
+            paymentVersionsList.listIdentifier = name.hasProp("listIdentifier") ? name.prop("listIdentifier").stringValue() : null
+            paymentVersionsList.listVersion = name.hasProp("listVersion") ? name.prop("listVersion").stringValue() : null
+            paymentVersionsList.versionDate = name.hasProp("versionDate") ? LocalDateTime.parse(name.prop("versionDate").stringValue()) : null
+            paymentVersionsList.loadDate = name.hasProp("loadDate") ? LocalDateTime.parse(name.prop("loadDate").stringValue()) : null
+            paymentVersionsList.updateDate = name.hasProp("updateDate") ? LocalDateTime.parse(name.prop("updateDate").stringValue()) : null
+            paymentVersionsList.isLastVersion = name.hasProp("isLastVersion") ? name.prop("isLastVersion").boolValue() : null
+            paymentVersionsLists.add(paymentVersionsList)
+        }
+
+    }
+
+}
+if (paymentVersionsLists.isEmpty()) {
+    println("Не записались VersionsLists")
+    execution.setVariable("VersionsListsErr", true)
+} else {
+    execution.setVariable("VersionsListsErr", false)
+    execution.setVariable("paymentVersionsLists", paymentVersionsLists)
+}</bpmn:script>
+      </bpmn:scriptTask>
+      <bpmn:serviceTask id="Activity_0dyi6x7" name="Схранить paymentVersionsLists" camunda:delegateExpression="${saveObjectListDelegate}">
+        <bpmn:extensionElements>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="saveObjectList">${paymentVersionsLists}</camunda:inputParameter>
+          </camunda:inputOutput>
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_0brv9dk</bpmn:incoming>
+        <bpmn:outgoing>Flow_0sh1thr</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="Flow_1an3866" sourceRef="Gateway_0y3oioq" targetRef="Gateway_1u241gi">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${VersionsListsErr}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="Flow_0s05sfm" sourceRef="Gateway_1u241gi" targetRef="Activity_0cdgqih" />
+      <bpmn:exclusiveGateway id="Gateway_09nk6fk" default="Flow_1txux1j">
+        <bpmn:incoming>Flow_0mvwyi4</bpmn:incoming>
+        <bpmn:outgoing>Flow_1txux1j</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1mwe9ln</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_0mvwyi4" sourceRef="Activity_0cdgqih" targetRef="Gateway_09nk6fk" />
+      <bpmn:sequenceFlow id="Flow_1txux1j" sourceRef="Gateway_09nk6fk" targetRef="Activity_17gagxc" />
+      <bpmn:exclusiveGateway id="Gateway_0fo2ppq">
+        <bpmn:incoming>Flow_1hg1hhi</bpmn:incoming>
+        <bpmn:incoming>Flow_1mwe9ln</bpmn:incoming>
+        <bpmn:outgoing>Flow_0mq5blq</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_1hg1hhi" sourceRef="Activity_17gagxc" targetRef="Gateway_0fo2ppq" />
+      <bpmn:sequenceFlow id="Flow_0mq5blq" sourceRef="Gateway_0fo2ppq" targetRef="Gateway_15w738c" />
+      <bpmn:sequenceFlow id="Flow_1mwe9ln" sourceRef="Gateway_09nk6fk" targetRef="Gateway_0fo2ppq">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${countryErr}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:scriptTask id="Activity_0cdgqih" name="Сформировать paymentCountryLists" scriptFormat="groovy">
+        <bpmn:incoming>Flow_0s05sfm</bpmn:incoming>
+        <bpmn:outgoing>Flow_0mvwyi4</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
 import com.prime.db.rnkb.model.PaymentCountryList
 import com.prime.db.rnkb.model.PaymentDateDetails
@@ -357,157 +560,111 @@ BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
 
-def json = execution.getVariable("jsonData") as SpinJsonNode
-def participants = json.prop("RequestData").prop("PaymentEvents").elements()[0].prop("Participants")
-List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListList") as List&lt;PaymentParticipantList&gt;
+List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListListOut") as List&lt;PaymentParticipantList&gt;
+def record = execution.getVariable("record") as SpinJsonNode
 List&lt;PaymentCountryList&gt; paymentCountryLists = new ArrayList&lt;&gt;()
 
 
-participants.elements().each { it -&gt;
+participantListList.stream().filter({ p -&gt; p.getTypeList() == getBd(214, record.prop("listType").stringValue()) }).each { it -&gt;
+    if (record.hasProp("countryList") &amp;&amp; record.prop("countryList") != null &amp;&amp; record.prop("countryList").elements().size() &gt; 0) {
+        record.prop("countryList").elements().each { name -&gt;
+            PaymentCountryList paymentCountryList = new PaymentCountryList()
+            paymentCountryList.paymentParticipantListId = it
+            paymentCountryList.countryType = name.hasProp("CountryType") &amp;&amp; name.prop("CountryType") != null ?  getBd(284, name.prop("CountryType").stringValue()) : null
+            paymentCountryList.countryCode = name.hasProp("CountryCode") &amp;&amp; name.prop("CountryCode") != null ? name.prop("CountryCode").stringValue() : null
+            paymentCountryList.countryName = name.hasProp("CountryName") &amp;&amp; name.prop("CountryName") != null ? name.prop("CountryType").stringValue() : null
 
-
-    if (it.hasProp("Result") &amp;&amp; it.prop("Result") != null &amp;&amp; it.prop("Results").elements().size() &gt; 0 &amp;&amp; it.prop("Results").elements()[0].hasProp("record") &amp;&amp; it.prop("Results").elements()[0].prop("record") != null) {
-        def record = it.prop("Results").elements()[0].prop("record")
-        PaymentCountryList paymentCountryList = new PaymentCountryList()
-        paymentCountryList.paymentParticipantListId = participantListList.find { it1 -&gt; it1.exId == record.prop("record").prop("exId").stringValue() }
-        paymentCountryLists.add(paymentCountryList)
-
-
+            paymentCountryLists.add(paymentCountryList)
+        }
     }
 
 
 }
-
-execution.setVariable("paymentCountryLists", paymentCountryLists)</bpmn:script>
+if (paymentCountryLists.isEmpty()) {
+    println("Не записались paymentCountryLists")
+    execution.setVariable("countryErr", true)
+} else {
+    execution.setVariable("countryErr", false)
+    execution.setVariable("paymentCountryLists", paymentCountryLists)
+}
+</bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:sequenceFlow id="Flow_0yhee2r" sourceRef="Activity_0370a3r" targetRef="Activity_0wche3j" />
-      <bpmn:serviceTask id="Activity_0wche3j" name="save delegate" camunda:delegateExpression="${saveObjectListDelegate}">
+      <bpmn:serviceTask id="Activity_17gagxc" name="Сохранить paymentCountryLists" camunda:delegateExpression="${saveObjectListDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="saveObjectList">${paymentCountryLists}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
-        <bpmn:incoming>Flow_0yhee2r</bpmn:incoming>
-        <bpmn:outgoing>Flow_1u7pppf</bpmn:outgoing>
+        <bpmn:incoming>Flow_1txux1j</bpmn:incoming>
+        <bpmn:outgoing>Flow_1hg1hhi</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_1u7pppf" sourceRef="Activity_0wche3j" targetRef="Activity_05etxdh" />
-      <bpmn:scriptTask id="Activity_05etxdh" name="PAYMENTVERSIONSLIST" scriptFormat="groovy">
-        <bpmn:incoming>Flow_1u7pppf</bpmn:incoming>
-        <bpmn:outgoing>Flow_0qvy8ax</bpmn:outgoing>
-        <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
-import com.prime.db.rnkb.model.PaymentParticipantList
-import org.camunda.spin.json.SpinJsonNode
-
-import java.time.LocalDateTime
-
-BaseDictionary getBd(int type, String code) {
-    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
-}
-
-def json = execution.getVariable("jsonData") as SpinJsonNode
-def participants = json.prop("RequestData").prop("PaymentEvents").elements()[0].prop("Participants")
-List&lt;PaymentParticipantList&gt; participantListList = execution.getVariable("participantListList") as List&lt;PaymentParticipantList&gt;
-List&lt;com.prime.db.rnkb.model.PaymentVersionsList&gt; paymentVersionsLists = new ArrayList&lt;&gt;()
-
-
-participants.elements().each {it -&gt;
-
-
-    if (it.hasProp("Result") &amp;&amp; it.prop("Result") != null &amp;&amp; it.prop("Results").elements().size() &gt; 0 &amp;&amp; it.prop("Results").elements()[0].hasProp("record") &amp;&amp; it.prop("Results").elements()[0].prop("record") != null) {
-        def record = it.prop("Results").elements()[0].prop("record")
-        if (record.hasProp("versionsList") &amp;&amp; record.prop("versionsList") != null &amp;&amp; record.prop("versionsList").elements().size() &gt; 0) {
-            record.prop("versionsList").elements().each {name -&gt;
-                com.prime.db.rnkb.model.PaymentVersionsList paymentVersionsList = new com.prime.db.rnkb.model.PaymentVersionsList()
-                paymentVersionsList.paymentParticipantListId = participantListList.find {it1 -&gt; it1.exId == record.prop("record").prop("exId").stringValue()}
-                paymentVersionsList.listIdentifier = name.hasProp("listIdentifier") ? name.prop("listIdentifier").stringValue() : null
-                paymentVersionsList.listVersion = name.hasProp("listVersion") ? name.prop("listVersion").stringValue() : null
-                paymentVersionsList.versionDate =  name.hasProp("versionDate") ? LocalDateTime.parse(name.prop("versionDate").stringValue()) : null
-                paymentVersionsList.loadDate =  name.hasProp("loadDate") ? LocalDateTime.parse(name.prop("loadDate").stringValue()) : null
-                paymentVersionsList.updateDate =  name.hasProp("updateDate") ? LocalDateTime.parse(name.prop("updateDate").stringValue()) : null
-                paymentVersionsList.isLastVersion = name.hasProp("isLastVersion") ? name.prop("isLastVersion").boolValue() : null
-                paymentVersionsLists.add(paymentVersionsList)
-            }
-
-        }
-
-    }
-
-
-}
-
-execution.setVariable("paymentVersionsLists", paymentVersionsLists)</bpmn:script>
-      </bpmn:scriptTask>
-      <bpmn:sequenceFlow id="Flow_0qvy8ax" sourceRef="Activity_05etxdh" targetRef="Activity_0x1acmo" />
-      <bpmn:serviceTask id="Activity_0x1acmo" name="save delegate" camunda:delegateExpression="${saveObjectListDelegate}">
+      <bpmn:sequenceFlow id="Flow_1ej1rse" sourceRef="Gateway_1ov00sn" targetRef="Gateway_15w738c">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!isRecord}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:exclusiveGateway id="Gateway_1ov00sn" name="Проверка record" default="Flow_1eq4bgk">
+        <bpmn:incoming>Flow_0unjpm2</bpmn:incoming>
+        <bpmn:outgoing>Flow_1ej1rse</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1eq4bgk</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sequenceFlow id="Flow_1eq4bgk" sourceRef="Gateway_1ov00sn" targetRef="Activity_0hiy949" />
+      <bpmn:serviceTask id="Activity_0hiy949" name="лог" camunda:delegateExpression="${loggerDelegate}">
+        <bpmn:incoming>Flow_1eq4bgk</bpmn:incoming>
+        <bpmn:outgoing>Flow_0iqn150</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="Flow_0iqn150" sourceRef="Activity_0hiy949" targetRef="Activity_0oqu8wi" />
+      <bpmn:serviceTask id="Activity_1oiixaw" name="Сохранить KYC_CASE_BY_LIST" camunda:delegateExpression="${saveObjectListDelegateRnkb}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="saveObjectList">${paymentVersionsLists}</camunda:inputParameter>
+            <camunda:inputParameter name="outputVarName">participantListListOut</camunda:inputParameter>
+            <camunda:inputParameter name="saveObjectList">${participantListList}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
-        <bpmn:incoming>Flow_0qvy8ax</bpmn:incoming>
-        <bpmn:outgoing>Flow_1fmq298</bpmn:outgoing>
+        <bpmn:incoming>Flow_1ibdn2j</bpmn:incoming>
+        <bpmn:outgoing>Flow_0unjpm2</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_1fmq298" sourceRef="Activity_0x1acmo" targetRef="Gateway_05a1ttk" />
+      <bpmn:sequenceFlow id="Flow_1ibdn2j" sourceRef="Gateway_076jnhf" targetRef="Activity_1oiixaw" />
+      <bpmn:sequenceFlow id="Flow_0unjpm2" sourceRef="Activity_1oiixaw" targetRef="Gateway_1ov00sn" />
     </bpmn:subProcess>
-    <bpmn:serviceTask id="Activity_0xhr3ji" name="Открыть транзакцию" camunda:delegateExpression="${startTransactionDelegate}">
-      <bpmn:incoming>Flow_0kd34xp</bpmn:incoming>
-      <bpmn:outgoing>Flow_1xwqo21</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_1xwqo21" sourceRef="Activity_0xhr3ji" targetRef="Activity_046avyt" />
-    <bpmn:sequenceFlow id="Flow_1mtxpn0" sourceRef="Activity_1et1nm9" targetRef="Activity_0gxxh7b" />
-    <bpmn:serviceTask id="Activity_0gxxh7b" name="Открыть сессию" camunda:delegateExpression="${openSessionRnkbDelegate}">
-      <bpmn:incoming>Flow_1mtxpn0</bpmn:incoming>
-      <bpmn:outgoing>Flow_0kd34xp</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_0kd34xp" sourceRef="Activity_0gxxh7b" targetRef="Activity_0xhr3ji" />
-    <bpmn:endEvent id="Event_09uqy16">
-      <bpmn:incoming>Flow_0di8ron</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_14cpvbj" sourceRef="Activity_046avyt" targetRef="Activity_0qvrl0i" />
-    <bpmn:serviceTask id="Activity_0qvrl0i" name="Закрыть транзакцию" camunda:delegateExpression="${endTransactionDelegate}">
-      <bpmn:incoming>Flow_14cpvbj</bpmn:incoming>
-      <bpmn:outgoing>Flow_178dyym</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_178dyym" sourceRef="Activity_0qvrl0i" targetRef="Activity_1cpt2gg" />
-    <bpmn:serviceTask id="Activity_1cpt2gg" name="Закрыть сессию" camunda:delegateExpression="${closeSessionRnkbDelegate}">
-      <bpmn:incoming>Flow_178dyym</bpmn:incoming>
-      <bpmn:outgoing>Flow_0di8ron</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_0di8ron" sourceRef="Activity_1cpt2gg" targetRef="Event_09uqy16" />
+    <bpmn:sequenceFlow id="Flow_1h3ldeq" sourceRef="Activity_0xhr3ji" targetRef="Activity_0owi57j" />
+    <bpmn:sequenceFlow id="Flow_1wvqr5x" sourceRef="Activity_0owi57j" targetRef="Activity_0qvrl0i" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlKycOperationProcess">
-      <bpmndi:BPMNEdge id="Flow_178dyym_di" bpmnElement="Flow_178dyym">
-        <di:waypoint x="3890" y="310" />
-        <di:waypoint x="4020" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_14cpvbj_di" bpmnElement="Flow_14cpvbj">
-        <di:waypoint x="3640" y="310" />
-        <di:waypoint x="3790" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0kd34xp_di" bpmnElement="Flow_0kd34xp">
-        <di:waypoint x="700" y="310" />
-        <di:waypoint x="740" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1mtxpn0_di" bpmnElement="Flow_1mtxpn0">
-        <di:waypoint x="530" y="310" />
-        <di:waypoint x="600" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1xwqo21_di" bpmnElement="Flow_1xwqo21">
-        <di:waypoint x="840" y="310" />
-        <di:waypoint x="990" y="310" />
+      <bpmndi:BPMNEdge id="Flow_1eta143_di" bpmnElement="Flow_1eta143">
+        <di:waypoint x="188" y="310" />
+        <di:waypoint x="260" y="310" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0aojsjg_di" bpmnElement="Flow_0aojsjg">
         <di:waypoint x="360" y="310" />
         <di:waypoint x="430" y="310" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1eta143_di" bpmnElement="Flow_1eta143">
-        <di:waypoint x="188" y="310" />
-        <di:waypoint x="260" y="310" />
+      <bpmndi:BPMNEdge id="Flow_1mtxpn0_di" bpmnElement="Flow_1mtxpn0">
+        <di:waypoint x="530" y="310" />
+        <di:waypoint x="600" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0kd34xp_di" bpmnElement="Flow_0kd34xp">
+        <di:waypoint x="700" y="310" />
+        <di:waypoint x="740" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1h3ldeq_di" bpmnElement="Flow_1h3ldeq">
+        <di:waypoint x="790" y="270" />
+        <di:waypoint x="790" y="118" />
+        <di:waypoint x="810" y="118" />
+        <di:waypoint x="810" y="60" />
+        <di:waypoint x="790" y="60" />
+        <di:waypoint x="790" y="80" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0di8ron_di" bpmnElement="Flow_0di8ron">
-        <di:waypoint x="4120" y="310" />
-        <di:waypoint x="4192" y="310" />
+        <di:waypoint x="4800" y="310" />
+        <di:waypoint x="4862" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_178dyym_di" bpmnElement="Flow_178dyym">
+        <di:waypoint x="4650" y="310" />
+        <di:waypoint x="4700" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wvqr5x_di" bpmnElement="Flow_1wvqr5x">
+        <di:waypoint x="4460" y="310" />
+        <di:waypoint x="4550" y="310" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="152" y="292" width="36" height="36" />
@@ -518,155 +675,299 @@ execution.setVariable("paymentVersionsLists", paymentVersionsLists)</bpmn:script
       <bpmndi:BPMNShape id="Activity_1ltawxt_di" bpmnElement="Activity_1et1nm9">
         <dc:Bounds x="430" y="270" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_1ue267h" bpmnElement="Activity_1cpt2gg">
-        <dc:Bounds x="4020" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_09uqy16_di" bpmnElement="Event_09uqy16">
-        <dc:Bounds x="4192" y="292" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_046avyt_di" bpmnElement="Activity_046avyt" isExpanded="true">
-        <dc:Bounds x="990" y="80" width="2650" height="460" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_1fmq298_di" bpmnElement="Flow_1fmq298">
-        <di:waypoint x="3400" y="310" />
-        <di:waypoint x="3435" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0qvy8ax_di" bpmnElement="Flow_0qvy8ax">
-        <di:waypoint x="3240" y="310" />
-        <di:waypoint x="3300" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1u7pppf_di" bpmnElement="Flow_1u7pppf">
-        <di:waypoint x="3080" y="310" />
-        <di:waypoint x="3140" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0yhee2r_di" bpmnElement="Flow_0yhee2r">
-        <di:waypoint x="2920" y="310" />
-        <di:waypoint x="2980" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_08aseyn_di" bpmnElement="Flow_08aseyn">
-        <di:waypoint x="2760" y="310" />
-        <di:waypoint x="2820" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_15l5kr6_di" bpmnElement="Flow_15l5kr6">
-        <di:waypoint x="2600" y="310" />
-        <di:waypoint x="2660" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_10gmals_di" bpmnElement="Flow_10gmals">
-        <di:waypoint x="2440" y="310" />
-        <di:waypoint x="2500" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1m7mfna_di" bpmnElement="Flow_1m7mfna">
-        <di:waypoint x="2280" y="310" />
-        <di:waypoint x="2340" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0tm259a_di" bpmnElement="Flow_0tm259a">
-        <di:waypoint x="2120" y="310" />
-        <di:waypoint x="2180" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0uopr1s_di" bpmnElement="Flow_0uopr1s">
-        <di:waypoint x="1960" y="310" />
-        <di:waypoint x="2020" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_12wpaq4_di" bpmnElement="Flow_12wpaq4">
-        <di:waypoint x="1800" y="310" />
-        <di:waypoint x="1860" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_11yb4jq_di" bpmnElement="Flow_11yb4jq">
-        <di:waypoint x="1640" y="310" />
-        <di:waypoint x="1700" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0e6x5bo_di" bpmnElement="Flow_0e6x5bo">
-        <di:waypoint x="3485" y="310" />
-        <di:waypoint x="3552" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_02ce611_di" bpmnElement="Flow_02ce611">
-        <di:waypoint x="1480" y="310" />
-        <di:waypoint x="1540" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_084imaa_di" bpmnElement="Flow_084imaa">
-        <di:waypoint x="1300" y="335" />
-        <di:waypoint x="1300" y="470" />
-        <di:waypoint x="3460" y="470" />
-        <di:waypoint x="3460" y="335" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1x1bi3r_di" bpmnElement="Flow_1x1bi3r">
-        <di:waypoint x="1325" y="310" />
-        <di:waypoint x="1380" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_09heimr_di" bpmnElement="Flow_09heimr">
-        <di:waypoint x="1220" y="310" />
-        <di:waypoint x="1275" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1ve5udi_di" bpmnElement="Flow_1ve5udi">
-        <di:waypoint x="1066" y="310" />
-        <di:waypoint x="1120" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Event_1q8k7ji_di" bpmnElement="Event_1q8k7ji">
-        <dc:Bounds x="1030" y="292" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0s0og2b_di" bpmnElement="Activity_03oe1vx">
-        <dc:Bounds x="1120" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1pj7qzr_di" bpmnElement="Gateway_1pj7qzr" isMarkerVisible="true">
-        <dc:Bounds x="1275" y="285" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_05a1ttk_di" bpmnElement="Gateway_05a1ttk" isMarkerVisible="true">
-        <dc:Bounds x="3435" y="285" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1q8qaw5_di" bpmnElement="Activity_0gitwa8">
-        <dc:Bounds x="1380" y="270" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0n916ei_di" bpmnElement="Activity_0q96o71">
-        <dc:Bounds x="1540" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1pkn49o_di" bpmnElement="Event_1pkn49o">
-        <dc:Bounds x="3552" y="292" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1hc3jzv_di" bpmnElement="Activity_07k4x2t">
-        <dc:Bounds x="1700" y="270" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0qkksf1_di" bpmnElement="Activity_0mmxcbx">
-        <dc:Bounds x="1860" y="270" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1n0dq9k_di" bpmnElement="Activity_0hfj9vx">
-        <dc:Bounds x="2020" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_06pcivp_di" bpmnElement="Activity_0080wiz">
-        <dc:Bounds x="2180" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1rxfjsv_di" bpmnElement="Activity_0bi3h31">
-        <dc:Bounds x="2340" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1ektmpf_di" bpmnElement="Activity_1muyc4q">
-        <dc:Bounds x="2500" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_05545t1_di" bpmnElement="Activity_1f3d2z1">
-        <dc:Bounds x="2660" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0kowcf2_di" bpmnElement="Activity_0370a3r">
-        <dc:Bounds x="2820" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0bqmlrw_di" bpmnElement="Activity_0wche3j">
-        <dc:Bounds x="2980" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1hwpvbq_di" bpmnElement="Activity_05etxdh">
-        <dc:Bounds x="3140" y="270" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0uieia8_di" bpmnElement="Activity_0x1acmo">
-        <dc:Bounds x="3300" y="270" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1judvsr_di" bpmnElement="Activity_0xhr3ji">
         <dc:Bounds x="740" y="270" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0rcn6vc_di" bpmnElement="Activity_0gxxh7b">
         <dc:Bounds x="600" y="270" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_09uqy16_di" bpmnElement="Event_09uqy16">
+        <dc:Bounds x="4862" y="292" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1ue267h" bpmnElement="Activity_1cpt2gg">
+        <dc:Bounds x="4700" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0awbn9b_di" bpmnElement="Activity_0qvrl0i">
-        <dc:Bounds x="3790" y="270" width="100" height="80" />
+        <dc:Bounds x="4550" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0owi57j_di" bpmnElement="Activity_0owi57j" isExpanded="true">
+        <dc:Bounds x="760" y="80" width="3700" height="410" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1dl0gdg_di" bpmnElement="Flow_1dl0gdg">
+        <di:waypoint x="898" y="310" />
+        <di:waypoint x="920" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mupdfr_di" bpmnElement="Flow_1mupdfr">
+        <di:waypoint x="1020" y="310" />
+        <di:waypoint x="1045" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1aisn70_di" bpmnElement="Flow_1aisn70">
+        <di:waypoint x="1070" y="335" />
+        <di:waypoint x="1070" y="450" />
+        <di:waypoint x="4310" y="450" />
+        <di:waypoint x="4310" y="335" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ovaj73_di" bpmnElement="Flow_1ovaj73">
+        <di:waypoint x="1580" y="310" />
+        <di:waypoint x="1615" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ck2hu0_di" bpmnElement="Flow_0ck2hu0">
+        <di:waypoint x="1665" y="310" />
+        <di:waypoint x="1700" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05wbb6y_di" bpmnElement="Flow_05wbb6y">
+        <di:waypoint x="1800" y="310" />
+        <di:waypoint x="1845" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06ab9jq_di" bpmnElement="Flow_06ab9jq">
+        <di:waypoint x="1895" y="310" />
+        <di:waypoint x="1930" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11aynj4_di" bpmnElement="Flow_11aynj4">
+        <di:waypoint x="1640" y="335" />
+        <di:waypoint x="1640" y="410" />
+        <di:waypoint x="1870" y="410" />
+        <di:waypoint x="1870" y="335" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0irrxbc_di" bpmnElement="Flow_0irrxbc">
+        <di:waypoint x="2030" y="310" />
+        <di:waypoint x="2065" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0k2x7z1_di" bpmnElement="Flow_0k2x7z1">
+        <di:waypoint x="2115" y="310" />
+        <di:waypoint x="2150" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0iszwdr_di" bpmnElement="Flow_0iszwdr">
+        <di:waypoint x="2250" y="310" />
+        <di:waypoint x="2285" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mw7wy0_di" bpmnElement="Flow_1mw7wy0">
+        <di:waypoint x="2090" y="335" />
+        <di:waypoint x="2090" y="390" />
+        <di:waypoint x="2310" y="390" />
+        <di:waypoint x="2310" y="335" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jpqqrz_di" bpmnElement="Flow_0jpqqrz">
+        <di:waypoint x="4335" y="310" />
+        <di:waypoint x="4372" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ej1rse_di" bpmnElement="Flow_1ej1rse">
+        <di:waypoint x="1270" y="285" />
+        <di:waypoint x="1270" y="160" />
+        <di:waypoint x="4310" y="160" />
+        <di:waypoint x="4310" y="285" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ng9l58_di" bpmnElement="Flow_1ng9l58">
+        <di:waypoint x="2335" y="310" />
+        <di:waypoint x="2370" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0dl6s2h_di" bpmnElement="Flow_0dl6s2h">
+        <di:waypoint x="2470" y="310" />
+        <di:waypoint x="2505" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mi63d8_di" bpmnElement="Flow_1mi63d8">
+        <di:waypoint x="2555" y="310" />
+        <di:waypoint x="2590" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xyboqn_di" bpmnElement="Flow_0xyboqn">
+        <di:waypoint x="2690" y="310" />
+        <di:waypoint x="2725" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1taihr4_di" bpmnElement="Flow_1taihr4">
+        <di:waypoint x="2530" y="335" />
+        <di:waypoint x="2530" y="400" />
+        <di:waypoint x="2750" y="400" />
+        <di:waypoint x="2750" y="335" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wneufo_di" bpmnElement="Flow_1wneufo">
+        <di:waypoint x="2775" y="310" />
+        <di:waypoint x="2810" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ie853v_di" bpmnElement="Flow_0ie853v">
+        <di:waypoint x="2910" y="310" />
+        <di:waypoint x="2945" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1t897dk_di" bpmnElement="Flow_1t897dk">
+        <di:waypoint x="2995" y="310" />
+        <di:waypoint x="3030" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1pvthxt_di" bpmnElement="Flow_1pvthxt">
+        <di:waypoint x="3130" y="310" />
+        <di:waypoint x="3165" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1y4newk_di" bpmnElement="Flow_1y4newk">
+        <di:waypoint x="2970" y="335" />
+        <di:waypoint x="2970" y="420" />
+        <di:waypoint x="3190" y="420" />
+        <di:waypoint x="3190" y="335" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0i1gxbb_di" bpmnElement="Flow_0i1gxbb">
+        <di:waypoint x="3215" y="310" />
+        <di:waypoint x="3250" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0r4hnaz_di" bpmnElement="Flow_0r4hnaz">
+        <di:waypoint x="3350" y="310" />
+        <di:waypoint x="3385" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0brv9dk_di" bpmnElement="Flow_0brv9dk">
+        <di:waypoint x="3435" y="310" />
+        <di:waypoint x="3470" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0sh1thr_di" bpmnElement="Flow_0sh1thr">
+        <di:waypoint x="3570" y="310" />
+        <di:waypoint x="3605" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1an3866_di" bpmnElement="Flow_1an3866">
+        <di:waypoint x="3410" y="335" />
+        <di:waypoint x="3410" y="420" />
+        <di:waypoint x="3630" y="420" />
+        <di:waypoint x="3630" y="335" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0s05sfm_di" bpmnElement="Flow_0s05sfm">
+        <di:waypoint x="3655" y="310" />
+        <di:waypoint x="3690" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mvwyi4_di" bpmnElement="Flow_0mvwyi4">
+        <di:waypoint x="3790" y="310" />
+        <di:waypoint x="3825" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1txux1j_di" bpmnElement="Flow_1txux1j">
+        <di:waypoint x="3875" y="310" />
+        <di:waypoint x="3910" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hg1hhi_di" bpmnElement="Flow_1hg1hhi">
+        <di:waypoint x="4010" y="310" />
+        <di:waypoint x="4045" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mq5blq_di" bpmnElement="Flow_0mq5blq">
+        <di:waypoint x="4095" y="310" />
+        <di:waypoint x="4285" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mwe9ln_di" bpmnElement="Flow_1mwe9ln">
+        <di:waypoint x="3850" y="335" />
+        <di:waypoint x="3850" y="410" />
+        <di:waypoint x="4070" y="410" />
+        <di:waypoint x="4070" y="335" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1eq4bgk_di" bpmnElement="Flow_1eq4bgk">
+        <di:waypoint x="1295" y="310" />
+        <di:waypoint x="1320" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0iqn150_di" bpmnElement="Flow_0iqn150">
+        <di:waypoint x="1420" y="310" />
+        <di:waypoint x="1480" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ibdn2j_di" bpmnElement="Flow_1ibdn2j">
+        <di:waypoint x="1095" y="310" />
+        <di:waypoint x="1120" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0unjpm2_di" bpmnElement="Flow_0unjpm2">
+        <di:waypoint x="1220" y="310" />
+        <di:waypoint x="1245" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Gateway_1mj1665_di" bpmnElement="Gateway_1mj1665" isMarkerVisible="true">
+        <dc:Bounds x="1615" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_08qzlb8_di" bpmnElement="Gateway_08qzlb8" isMarkerVisible="true">
+        <dc:Bounds x="1845" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_19mjvid_di" bpmnElement="Gateway_19mjvid" isMarkerVisible="true">
+        <dc:Bounds x="2065" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0wog4bn_di" bpmnElement="Gateway_0wog4bn" isMarkerVisible="true">
+        <dc:Bounds x="2285" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1lpvq25_di" bpmnElement="Activity_0yusdxu">
+        <dc:Bounds x="1700" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0yn9orh_di" bpmnElement="Activity_0hhsmax">
+        <dc:Bounds x="1930" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0mh7vs7_di" bpmnElement="Activity_1oadrhm">
+        <dc:Bounds x="2150" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0xwqqy3_di" bpmnElement="Activity_0oqu8wi">
+        <dc:Bounds x="1480" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0qp3r38_di" bpmnElement="Activity_0y5djwe">
+        <dc:Bounds x="2370" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1m9yw04_di" bpmnElement="Gateway_1m9yw04" isMarkerVisible="true">
+        <dc:Bounds x="2505" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_054y6s9_di" bpmnElement="Gateway_054y6s9" isMarkerVisible="true">
+        <dc:Bounds x="2725" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_04ysube_di" bpmnElement="Activity_0v19s3f">
+        <dc:Bounds x="2590" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_18w09qk_di" bpmnElement="Gateway_18w09qk" isMarkerVisible="true">
+        <dc:Bounds x="2945" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_163fxrx_di" bpmnElement="Gateway_163fxrx" isMarkerVisible="true">
+        <dc:Bounds x="3165" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_13ioofu_di" bpmnElement="Activity_1luurdo">
+        <dc:Bounds x="2810" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0esmzyh_di" bpmnElement="Activity_0vh1ghl">
+        <dc:Bounds x="3030" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0y3oioq_di" bpmnElement="Gateway_0y3oioq" isMarkerVisible="true">
+        <dc:Bounds x="3385" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1u241gi_di" bpmnElement="Gateway_1u241gi" isMarkerVisible="true">
+        <dc:Bounds x="3605" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0zttqfn_di" bpmnElement="Activity_0n637ry">
+        <dc:Bounds x="3250" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_001zywg_di" bpmnElement="Activity_0dyi6x7">
+        <dc:Bounds x="3470" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1a9oalu_di" bpmnElement="Event_1a9oalu">
+        <dc:Bounds x="4372" y="292" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_15w738c_di" bpmnElement="Gateway_15w738c" isMarkerVisible="true">
+        <dc:Bounds x="4285" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_09nk6fk_di" bpmnElement="Gateway_09nk6fk" isMarkerVisible="true">
+        <dc:Bounds x="3825" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0fo2ppq_di" bpmnElement="Gateway_0fo2ppq" isMarkerVisible="true">
+        <dc:Bounds x="4045" y="285" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0sanyec_di" bpmnElement="Activity_0cdgqih">
+        <dc:Bounds x="3690" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1opv1is_di" bpmnElement="Activity_17gagxc">
+        <dc:Bounds x="3910" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_10ex7wn_di" bpmnElement="Event_10ex7wn">
+        <dc:Bounds x="862" y="292" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_023wunj_di" bpmnElement="Activity_0rfafx2">
+        <dc:Bounds x="920" y="270" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_076jnhf_di" bpmnElement="Gateway_076jnhf" isMarkerVisible="true">
+        <dc:Bounds x="1045" y="285" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1048" y="261" width="43" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1ov00sn_di" bpmnElement="Gateway_1ov00sn" isMarkerVisible="true">
+        <dc:Bounds x="1245" y="285" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1228" y="342" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_18j4tdz_di" bpmnElement="Activity_0hiy949">
+        <dc:Bounds x="1320" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0dxcw6h_di" bpmnElement="Activity_1oiixaw">
+        <dc:Bounds x="1120" y="270" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

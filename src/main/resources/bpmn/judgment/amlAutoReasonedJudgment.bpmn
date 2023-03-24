@@ -715,11 +715,8 @@ OkvedProj getOkvedByInn(String inn) {
 def client = execution.getVariable("clientBase") as Client
 def okveds =  execution.getVariable("okveds") as ArrayList&lt;Okved&gt;
 def okved = okveds != null &amp;&amp; !okveds.isEmpty() &amp;&amp; okveds.size() &gt; 0 ? okveds.get(0) : null
-println("OKVEDSIMPLE: " + okved.toString())
 def egrul = getEgrulOkvedByInn(client.inn)
-println("EGRULOKVED: " + egrul.name)
 def egrip = getEgripOkvedByInn(client.inn)
-println("EGRIPOKVED: " + egrip.toString())
 boolean egrName = false
 boolean egrCode = false
 
