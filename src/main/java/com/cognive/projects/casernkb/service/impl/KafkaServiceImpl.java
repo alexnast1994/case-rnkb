@@ -317,7 +317,12 @@ public class KafkaServiceImpl implements KafkaService {
     }
 
     public void sendError(String processName, String key, Exception ex) {
-        sessionCacheService.closeAndRemove(key);
+        try {
+            sessionCacheService.closeAndRemove(key);
+        }
+        catch (Exception e) {
+            log.warn("Нет открытых сессий");
+        }
         if (!(properties.getErrorTopic() != null && !properties.getErrorTopic().isEmpty())) {
             return;
         }
