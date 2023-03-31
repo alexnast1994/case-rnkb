@@ -51,7 +51,7 @@ public class PaymentResponseTest {
 
         Payment payment = new Payment();
         Case ss = new Case();
-        ss.setId(4);
+
 
 //        Map<String, Object> selectResult = new HashMap<>();
 //        selectResult.put("payment", payment);
