@@ -34,7 +34,7 @@ kyc2list.each { k ->
             kycCaseClientIdentityAtrList.issuingAuthority = n.hasProp("issuingAuthority") && n.prop("issuingAuthority") != null ? n.prop("issuingAuthority").stringValue() : null
             kycCaseClientIdentityAtrList.dateOfDocument = n.hasProp("dateOfDocument") && n.prop("dateOfDocument") != null ? n.prop("dateOfDocument").stringValue() : null
             kycCaseClientIdentityAtrList.expiryDateOfDocument = n.hasProp("expiryDateOfDocument") && n.prop("expiryDateOfDocument") != null ? n.prop("expiryDateOfDocument").stringValue() : null
-            kycCaseClientIdentityAtrList.validDoc = n.hasProp("validDoc") && n.prop("validDoc") != null ? n.prop("validDoc").stringValue() : null
+            kycCaseClientIdentityAtrList.validDoc = n.hasProp("validDoc") && n.prop("validDoc") != null ? n.prop("validDoc").toString() : null
             kycCaseClientIdentityAtrLists.add(kycCaseClientIdentityAtrList)
         }
     }

@@ -1,4 +1,6 @@
+import com.prime.db.rnkb.model.Address
 import com.prime.db.rnkb.model.BaseDictionary
+import com.prime.db.rnkb.model.Client
 import com.prime.db.rnkb.model.kyc.KycCaseClient
 import com.prime.db.rnkb.model.kyc.KycCaseClientAddress
 
@@ -19,25 +21,59 @@ List<KycCaseClientAddress> kycAddress = new ArrayList<>()
 KycCaseClient kycCaseClient = execution.getVariable("kyccaseClientOutNew") as KycCaseClient
 
 try {
-    def addresses = json.prop("InitialClient").prop("RequestData").prop("Clients").elements()[0].prop("Addresses").elements()
-    addresses.each {a ->
-        KycCaseClientAddress kycCaseClientAddress = new KycCaseClientAddress()
-        kycCaseClientAddress.kycCaseByListId = kycCaseClient
-        kycCaseClientAddress.sourceSystem = a.hasProp("SourceSystem") && a.prop("SourceSystem") != null ? getBd(59, a.prop("SourceSystem").stringValue()) : null
-        kycCaseClientAddress.exAddress = a.hasProp("SourceId") && a.prop("SourceId") != null ? a.prop("SourceId").stringValue() : null
-        kycCaseClientAddress.type = a.hasProp("Type") && a.prop("Type") != null ? getBd(3, a.prop("Type").stringValue()) : null
-        kycCaseClientAddress.dateModify = a.hasProp("DateModify") && a.prop("DateModify") != null ? LocalDate.parse(a.prop("DateModify").stringValue()).atStartOfDay() : null
-        kycCaseClientAddress.isMain = a.hasProp("IsMain") && a.prop("IsMain") != null ? a.prop("IsMain").boolValue() : null
-        kycCaseClientAddress.addressLine = a.hasProp("AddressLine") && a.prop("AddressLine") != null ? a.prop("AddressLine").stringValue() : null
-        kycCaseClientAddress.addressCode = a.hasProp("AddressCode") && a.prop("AddressCode") != null ? a.prop("AddressCode").stringValue() : null
-        kycCaseClientAddress.countryCode = a.hasProp("CountryCode") && a.prop("CountryCode") != null ? getBd(40, a.prop("CountryCode").stringValue()) : null
-        kycCaseClientAddress.country = a.hasProp("Country") && a.prop("Country") != null ? a.prop("Country").stringValue() : null
-        kycCaseClientAddress.okato = a.hasProp("OKATO") && a.prop("OKATO") != null ? a.prop("OKATO").stringValue() : null
-        kycCaseClientAddress.cityName = a.hasProp("CityName") && a.prop("CityName") != null ? a.prop("CityName").stringValue() : null
-        kycAddress.add(kycCaseClientAddress)
+    if (json.hasProp("InitialClient") && json.prop("InitialClient") != null && json.prop("InitialClient").hasProp("RequestData")) {
+        def addresses = json.prop("InitialClient").prop("RequestData").prop("Clients").elements()[0].prop("Addresses").elements()
+        addresses.each {a ->
+            KycCaseClientAddress kycCaseClientAddress = new KycCaseClientAddress()
+            kycCaseClientAddress.kycCaseByListId = kycCaseClient
+            kycCaseClientAddress.sourceSystem = a.hasProp("SourceSystem") && a.prop("SourceSystem") != null ? getBd(59, a.prop("SourceSystem").stringValue()) : null
+            kycCaseClientAddress.exAddress = a.hasProp("SourceId") && a.prop("SourceId") != null ? a.prop("SourceId").stringValue() : null
+            kycCaseClientAddress.type = a.hasProp("Type") && a.prop("Type") != null ? getBd(3, a.prop("Type").stringValue()) : null
+            kycCaseClientAddress.dateModify = a.hasProp("DateModify") && a.prop("DateModify") != null ? LocalDate.parse(a.prop("DateModify").stringValue()).atStartOfDay() : null
+            kycCaseClientAddress.isMain = a.hasProp("IsMain") && a.prop("IsMain") != null ? a.prop("IsMain").boolValue() : null
+            kycCaseClientAddress.addressLine = a.hasProp("AddressLine") && a.prop("AddressLine") != null ? a.prop("AddressLine").stringValue() : null
+            kycCaseClientAddress.addressCode = a.hasProp("AddressCode") && a.prop("AddressCode") != null ? a.prop("AddressCode").stringValue() : null
+            kycCaseClientAddress.countryCode = a.hasProp("CountryCode") && a.prop("CountryCode") != null ? getBd(40, a.prop("CountryCode").stringValue()) : null
+            kycCaseClientAddress.country = a.hasProp("Country") && a.prop("Country") != null ? a.prop("Country").stringValue() : null
+            kycCaseClientAddress.okato = a.hasProp("OKATO") && a.prop("OKATO") != null ? a.prop("OKATO").stringValue() : null
+            kycCaseClientAddress.cityName = a.hasProp("CityName") && a.prop("CityName") != null ? a.prop("CityName").stringValue() : null
+            kycAddress.add(kycCaseClientAddress)
+        }
+        execution.setVariable("kycAddress", kycAddress)
+        execution.setVariable("addressFail", false)
     }
-    execution.setVariable("kycAddress", kycAddress)
-    execution.setVariable("addressFail", false)
+    else {
+        def clients = execution.getVariable("client") as List<Client>
+        def client = clients.get(0)
+        List<Address> addresses = client.getAddressList()
+        if (addresses.isEmpty()) {
+            println("Не удалось создать Kyc_address для клиента " + client.getId())
+            execution.setVariable("addressFail", true)
+        }
+        else {
+            addresses.each {a ->
+                KycCaseClientAddress kycCaseClientAddress = new KycCaseClientAddress()
+                kycCaseClientAddress.kycCaseByListId = kycCaseClient
+                kycCaseClientAddress.sourceSystem = a.getSourceSystem()
+                kycCaseClientAddress.exAddress = a.getExAddress()
+                kycCaseClientAddress.type = a.getType()
+                kycCaseClientAddress.dateModify = a.getDateModify()
+                kycCaseClientAddress.isMain = a.getIsMain()
+                kycCaseClientAddress.addressLine = a.getAddressLine()
+                kycCaseClientAddress.addressCode = a.getAddressCode()
+                kycCaseClientAddress.countryCode = a.getCountryCode()
+                kycCaseClientAddress.country = a.getCountry()
+                kycCaseClientAddress.okato = a.getOkato()
+                kycCaseClientAddress.cityName = a.getCityName()
+                kycAddress.add(kycCaseClientAddress)
+            }
+            execution.setVariable("kycAddress", kycAddress)
+            execution.setVariable("addressFail", false)
+        }
+
+
+    }
+
 }
 catch (Exception e) {
     execution.setVariable("addressFail", true)

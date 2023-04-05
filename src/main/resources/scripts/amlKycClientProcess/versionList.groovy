@@ -30,7 +30,6 @@ kyc2list.each { k ->
             kycCaseClientVersionsList.setLoadDate(n.hasProp("loadDate") && n.prop("loadDate") != null ? LocalDateTime.parse(n.prop("loadDate").stringValue()):null)
             kycCaseClientVersionsList.setUpdateDate(n.hasProp("updateDate") && n.prop("updateDate") != null ? LocalDateTime.parse(n.prop("updateDate").stringValue()):null)
             kycCaseClientVersionsList.setIsLastVersion(n.hasProp("isLastVersion") && n.prop("isLastVersion") != null ? n.prop("isLastVersion").boolValue():null)
-            kycCaseClientVersionsList.setSignOfTerrorist(record.hasProp("signOfTerrorist") && record.prop("signOfTerrorist") != null ? record.prop("signOfTerrorist").numberValue() == 1 : null)
             kycCaseClientVersionsLists.add(kycCaseClientVersionsList)
         }
     }
