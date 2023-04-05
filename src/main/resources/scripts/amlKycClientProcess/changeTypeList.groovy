@@ -2,18 +2,20 @@ import com.cognive.projects.casernkb.model.projection.KycCaseProjection
 import com.prime.db.rnkb.model.BaseDictionary
 import com.prime.db.rnkb.model.Case
 import com.prime.db.rnkb.model.kyc.KycCaseClientList2
+import org.camunda.spin.json.SpinJsonNode
 
 import static org.camunda.spin.Spin.JSON
 
 def pld = execution.getVariable("payload")
 def json = JSON(pld)
-def jsonFull = execution.getVariable("payloadFull")
+def jsonFull = execution.getVariable("payloadFull") as SpinJsonNode
 def executionId = jsonFull.prop("executionId")
 def KYCList = json.prop("ResponseData").prop("ClientCheckResult").elements()[0].prop("KYCList")
 
 def typeLists = []
 KYCList.elements().stream().map({ r -> r.prop("Id").stringValue() }).each { i -> typeLists.add(i as String) }
 println("Шаг 1")
+println(executionId)
 println(typeLists.toString())
 
 List<KycCaseProjection> getCases(String exId) {
@@ -36,6 +38,10 @@ BaseDictionary getBd(int type, String code) {
 
 List<KycCaseClientList2> getKyc(List<Long> caseId) {
     kycCaseByListRepo.getByCaseId(caseId)
+}
+
+void updateStatus(Long kyc) {
+    kycCaseByListRepo.updateStatus(kyc)
 }
 
 println("Шаг 3")
@@ -69,12 +75,23 @@ if (toChange.isEmpty()) {
         println(getBd(286, "7").getId())
         println(c.getStatus().getId() == getBd(286, "7").getId())
         kycCaseClientList2s.each { k ->
-            if ((k.matchType == getBd(290, "1") && executionId != null) || (k.matchType == getBd(290, "2") && executionId == null)) {
+            BaseDictionary b = getBd(290, "2");
+
+            println("Проход по kyc_case_by_list")
+            println(k.getMatchType().getId())
+            println(b.getId())
+            println(getBd(290, "1"))
+            println(executionId)
+            println("Условие 1" + executionId.isNull())
+            println("Условие 2" + k.getMatchType().getId() == b.getId())
+            if ((k.getMatchType().getId() == getBd(290, "1").getId() && !executionId.isNull()) || (k.getMatchType().getId() == getBd(290, "2").getId() && executionId.isNull())) {
+                println("Зашли в изменение")
                 println(k.getKycCaseClient639pDetailsLists())
                 k.matchType = getBd(290, "3")
+                updateStatus(k.getId())
             }
         }
-        println("KYC с измененными статусами: " + kycCaseClientList2.toString())
+        println("KYC с измененными статусами: " + kycCaseClientList2s.collect { it -> it.matchType.code }.toString())
         if (c.getStatus().getId() == getBd(286, "1").getId() || c.getStatus().getId() == getBd(286, "2").getId()) {
             println("Шаг 6")
             execution.setVariable("createCase", true)
@@ -87,20 +104,10 @@ if (toChange.isEmpty()) {
             println("Шаг 9")
         }
     }
-    if (!kycCaseClientList2.isEmpty()) {
-        execution.setVariable("kycCaseClientList2sChanged", kycCaseClientList2s)
-        execution.setVariable("fillByList", true)
-    } else {
-        execution.setVariable("fillByList", false)
-    }
 }
 
 if (execution.getVariable("createCase") == null) {
     println("Шаг 12")
     execution.setVariable("createCase", false)
-}
-if (execution.getVariable("fillByList") == null) {
-    println("Шаг 13")
-    execution.setVariable("fillByList", false)
 }
 println("Шаг 10")

@@ -95,10 +95,6 @@ spring:
           destination: ${TOPIC_PIPELINE_INPUT}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
-        savePipelineResponsePaymentMessageInput-in-0:
-          destination: ${TOPIC_PIPELINE_RESPONSE_SAVER_INPUT:rnkb-so-check-result}
-          group: ${KAFKA_GROUP:case-rnkb}
-          binder: kafka
         saveRiskResponseMessageInput-in-0:
           destination: ${TOPIC_RISK_RESPONSE_SAVE_INPUT:rnkb-risk-scoring-resp}
           group: ${KAFKA_GROUP:case-rnkb}
@@ -136,7 +132,7 @@ spring:
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
       function:
-        definition: commonMessageInput;csmMessageInput;pipelineMessageInput;savePipelineResponsePaymentMessageInput;saveRiskResponseMessageInput;kycCaseCreationInput;kycOperationCreationInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput
+        definition: commonMessageInput;csmMessageInput;pipelineMessageInput;saveRiskResponseMessageInput;kycCaseCreationInput;kycOperationCreationInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput
 
 server:
   port: ${SERVER_PORT:8193}

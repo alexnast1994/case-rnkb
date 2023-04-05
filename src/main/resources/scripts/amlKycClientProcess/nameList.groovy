@@ -39,7 +39,7 @@ try {
                     kycCaseClientNameList.yearOfBirth = n.hasProp("yearOfBirth") && n.prop("yearOfBirth") != null ? n.prop("yearOfBirth").toString() : null
                     kycCaseClientNameList.placeOfBirth = n.hasProp("placeOfBirth") && n.prop("placeOfBirth") != null ? n.prop("placeOfBirth").stringValue() : null
                     kycCaseClientNameList.inn = n.hasProp("inn") && n.prop("inn") != null ? n.prop("inn").stringValue() : null
-                    kycCaseClientNameList.inn = n.hasProp("snils") && n.prop("snils") != null ? n.prop("snils").stringValue() : null
+                    kycCaseClientNameList.snils = n.hasProp("snils") && n.prop("snils") != null ? n.prop("snils").stringValue() : null
                     kycCaseClientNameList.registrationDate = n.hasProp("registrationDate") && n.prop("registrationDate") != null ? n.prop("registrationDate").stringValue() : null
                     kycCaseClientNameList.placeOfRegistration = n.hasProp("placeOfRegistration") && n.prop("placeOfRegistration") != null ? n.prop("placeOfRegistration").stringValue() : null
                     kycCaseClientNameList.ogrn = n.hasProp("ogrn") && n.prop("ogrn") != null ? n.prop("ogrn").stringValue() : null
