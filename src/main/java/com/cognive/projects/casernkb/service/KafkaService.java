@@ -10,4 +10,6 @@ public interface KafkaService {
     void sendZkResponseAnswer(AMLResponse response);
 
     void sendError(String processName, String key, Exception ex);
+
+    void sendSimpleMessage(String topic, String message, String key);
 }

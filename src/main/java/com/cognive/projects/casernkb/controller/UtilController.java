@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 public class UtilController {
+
+    /*
     private static final String VERSION = "/version";
     private static final String ALIVE = "/alive";
     private final BuildProperties buildProperties;
@@ -24,4 +26,7 @@ public class UtilController {
     public ResponseEntity<Void> getAlive() {
         return ResponseEntity.ok().build();
     }
+
+    */
+
 }

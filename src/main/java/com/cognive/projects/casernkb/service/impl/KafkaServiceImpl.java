@@ -26,6 +26,7 @@ import org.camunda.bpm.engine.variable.value.ObjectValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -56,6 +57,8 @@ public class KafkaServiceImpl implements KafkaService {
     private final StreamBridge streamBridge;
     private final KafkaServerProperties properties;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final KafkaTemplate<String, String> kafkaTemplate;
     @Setter(onMethod_ = {@Autowired})
     private ZkRequestService zkRequestService;
 
@@ -227,6 +230,19 @@ public class KafkaServiceImpl implements KafkaService {
                 .build();
 
         streamBridge.send(binding, message);
+    }
+
+    @Override
+    public void sendSimpleMessage(String topic, String message, String key) {
+
+        if (topic == null)
+            throw new IllegalArgumentException("Unknown topic configuration");
+        log.info("topic: " + topic);
+
+        Message<?> messageToKafka = MessageBuilder.withPayload(message)
+                .setHeader(KafkaHeaders.MESSAGE_KEY, key)
+                .build();
+        streamBridge.send(topic, messageToKafka);
     }
 
     @Override

@@ -12,4 +12,7 @@ public interface BaseDictRepo  extends IBaseDslRepository<BaseDictionary, QBaseD
 
     @Query("select a from BaseDictionary a where a.type.code = :baseDictionaryTypeCode and a.charCode = :charCode and a.isActive = true")
     BaseDictionary getByBaseDictionaryTypeCodeAndCharCode(@Param("baseDictionaryTypeCode") Integer baseDictionaryTypeCode, @Param("charCode") String charCode);
+
+    @Query("select a from BaseDictionary a where a.id = :id")
+    BaseDictionary getById(Long id);
 }
