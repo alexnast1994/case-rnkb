@@ -23,4 +23,5 @@ public class ZkCreate implements Serializable {
     private Long client;
     @NotNull(message = "requestType can not be empty!")
     private Integer requestType;
+    private String lastDate;
 }

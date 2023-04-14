@@ -13,7 +13,9 @@ import java.io.InputStream;
 @ConfigurationProperties(prefix = "zk")
 public class ZkProperties {
     private String legalDocPattern;
+    private String legalDocPatternTable;
     private String individualDocPattern;
+    private String individualDocPatternTable;
 
     public InputStream getPattern(String name) throws IOException {
         Resource resource = new ClassPathResource("docx/" + name);
