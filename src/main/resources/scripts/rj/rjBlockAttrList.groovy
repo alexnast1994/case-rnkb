@@ -1,5 +1,3 @@
-package temp.rj
-
 import com.prime.db.rnkb.model.af.AfBlockAttributesList
 import com.prime.db.rnkb.model.commucation.judgment.RjBlockAttributesList
 import com.prime.db.rnkb.model.commucation.judgment.RjClient

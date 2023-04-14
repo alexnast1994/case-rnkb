@@ -1,5 +1,3 @@
-package temp.rj
-
 import com.prime.db.rnkb.model.CaseRules
 import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
 import com.prime.db.rnkb.model.commucation.judgment.RjRule

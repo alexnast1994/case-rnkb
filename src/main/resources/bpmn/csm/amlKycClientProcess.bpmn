@@ -24,7 +24,8 @@ execution.setVariable("sourceId", clientCheckResult[0].prop("SourceId").stringVa
 execution.setVariable("kycSourceId", jsonFull.hasProp("InitialClient") &amp;&amp; jsonFull.prop("InitialClient") != null &amp;&amp; jsonFull.prop("InitialClient").hasProp("RequestData")  ? jsonFull.prop("InitialClient").prop("RequestData").prop("Clients").elements()[0].prop("SourceId").stringValue() : clientCheckResult[0].prop("SourceId").stringValue())
 execution.setVariable("payload", jsonData)
 execution.setVariable("executionId", executionId)
-execution.setVariable("payloadFull", jsonFull)</bpmn:script>
+execution.setVariable("payloadFull", jsonFull)
+execution.setVariable("recreate", false)</bpmn:script>
     </bpmn:scriptTask>
     <bpmn:sequenceFlow id="Flow_14wmxoh" sourceRef="Activity_1mffk8u" targetRef="Activity_1dmsgze" />
     <bpmn:serviceTask id="Activity_1dmsgze" name="Логирование процесса" camunda:delegateExpression="${loggerDelegate}">
@@ -58,6 +59,7 @@ execution.setVariable("payloadFull", jsonFull)</bpmn:script>
         <bpmn:outgoing>Flow_12p82pg</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
 import com.prime.db.rnkb.model.kyc.KycCaseClientList2
+import org.camunda.spin.json.SpinJsonNode
 
 import java.time.LocalDateTime
 
@@ -65,11 +67,12 @@ import static org.camunda.spin.Spin.JSON
 
 def pld = execution.getVariable("payload")
 def json = JSON(pld)
+def recreate = execution.getVariable("recreate") as Boolean
 
 BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
-def jsonFull = execution.getVariable("payloadFull")
+def jsonFull = execution.getVariable("payloadFull") as SpinJsonNode
 List&lt;KycCaseClientList2&gt; kycCaseClientList2List = []
 def kycList = json.prop("ResponseData").prop("ClientCheckResult").elements()[0].prop("KYCList").elements()
 def filteredList = kycList.findAll { k -&gt;
@@ -113,7 +116,30 @@ filteredList.each { l -&gt;
     kycCaseClientList2.dateStart = record.hasProp("dateStart") &amp;&amp; record.prop("dateStart") != null ? LocalDateTime.parse(record.prop("dateStart").stringValue()) : null
     kycCaseClientList2.dateDeactivate = record.hasProp("dateDeactivate") &amp;&amp; record.prop("dateDeactivate") != null ? LocalDateTime.parse(record.prop("dateDeactivate").stringValue()) : null
     kycCaseClientList2.numberOfSolution = record.hasProp("numberOfSolution") &amp;&amp; record.prop("numberOfSolution") != null ? record.prop("numberOfSolution").stringValue() : null
-    kycCaseClientList2.matchType = jsonFull.hasProp("executionId") &amp;&amp; jsonFull.prop("executionId") != null ?  getBd(290, "2") : getBd(290, "1")
+    if (recreate) {
+        BaseDictionary b = execution.getVariable("lastType") as BaseDictionary
+        println(b.getCode())
+        if (jsonFull.hasProp("executionId") &amp;&amp; !jsonFull.prop("executionId").isNull() &amp;&amp; b.getCode() == "1") {
+            kycCaseClientList2.matchType =  getBd(290, "3")
+        }
+        else if (jsonFull.hasProp("executionId") &amp;&amp; jsonFull.prop("executionId").isNull() &amp;&amp; b.getCode() == "1") {
+            kycCaseClientList2.matchType =  getBd(290, "1")
+        }
+        else if (jsonFull.hasProp("executionId") &amp;&amp; jsonFull.prop("executionId").isNull() &amp;&amp; b.getCode() == "2") {
+            kycCaseClientList2.matchType =  getBd(290, "3")
+        }
+        else if (jsonFull.hasProp("executionId") &amp;&amp; !jsonFull.prop("executionId").isNull() &amp;&amp; b.getCode() == "2") {
+            kycCaseClientList2.matchType =  getBd(290, "2")
+        }
+        else if (b.getCode() == "3") {
+            kycCaseClientList2.matchType =  getBd(290, "3")
+        }
+    }
+    else {
+        def executionId = jsonFull.hasProp("executionId") ? jsonFull.prop("executionId") : null
+        println(executionId)
+        kycCaseClientList2.matchType = executionId.isNull() ? getBd(290, "1") : getBd(290, "2")
+    }
     kycCaseClientList2.signOfTerrorist = record.hasProp("signOfTerrorist") &amp;&amp; record.prop("signOfTerrorist") != null ? record.prop("signOfTerrorist").numberValue() == 1 : null
     kycCaseClientList2List.add(kycCaseClientList2)
 }
@@ -156,7 +182,6 @@ import static org.camunda.spin.Spin.JSON
 def pld = execution.getVariable("payload")
 def json = JSON(pld)
 
-
 BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
@@ -167,7 +192,6 @@ try {
     caseNew.setName(getBd(18,"5").getName())
     caseNew.setStatus(json.prop("Clients").elements()[0].prop("Results").elements()[0].prop("rulesResult").elements()[0].prop("autoDecision").boolValue() == true ? getBd(286, "3") : getBd(286, "1"))
     caseNew.setCreationdate(LocalDateTime.now())
-
     execution.setVariable("createCaseError", false)
     execution.setVariable("case", caseNew)
 }
@@ -553,7 +577,7 @@ try {
         kyccaseClient.setOgrnDate(initialClient[0].hasProp("OGRNDate") &amp;&amp; initialClient[0].prop("OGRNDate") != null ? LocalDate.parse(initialClient[0].prop("OGRNDate").stringValue()).atStartOfDay()  : null)
         kyccaseClient.setClientMark(initialClient[0].hasProp("ClientMark") &amp;&amp; initialClient[0].prop("ClientMark") != null ? getBd(22, initialClient[0].prop("ClientMark").stringValue())  : null)
         kyccaseClient.setKio(initialClient[0].hasProp("KIO") &amp;&amp; initialClient[0].prop("KIO") != null ? initialClient[0].prop("KIO").stringValue() : null)
-
+        kyccaseClient.key = json.hasProp("amlCsmKycClientRequest") &amp;&amp; json.prop("amlCsmKycClientRequest").hasProp("Clients") &amp;&amp; json.prop("amlCsmKycClientRequest").prop("Clients").elements().size() &gt; 0 &amp;&amp; json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].hasProp("Results") &amp;&amp; json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements().size() &gt; 0 &amp;&amp; json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].hasProp("key") &amp;&amp; !json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].prop("key").isNull() ? json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].prop("key").stringValue() : null
         execution.setVariable("kyccaseClient", kyccaseClient)
         execution.setVariable("clientType", initialClient[0].prop("ClientType").stringValue())
         println(initialClient[0].prop("ClientType").stringValue())
@@ -575,6 +599,7 @@ try {
         kyccaseClient.ogrn = client.getOgrn()
         kyccaseClient.ogrnDate = client.getOgrnDate()
         kyccaseClient.kio = client.getKio()
+        kyccaseClient.key = json.hasProp("amlCsmKycClientRequest") &amp;&amp; json.prop("amlCsmKycClientRequest").hasProp("Clients") &amp;&amp; json.prop("amlCsmKycClientRequest").prop("Clients").elements().size() &gt; 0 &amp;&amp; json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].hasProp("Results") &amp;&amp; json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements().size() &gt; 0 &amp;&amp; json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].hasProp("key") &amp;&amp; !json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].prop("key").isNull() ? json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].prop("key").stringValue() : null
 
         execution.setVariable("kyccaseClient", kyccaseClient)
         execution.setVariable("clientType", client.clientType == null ? "" : client.clientType.code)
@@ -826,7 +851,7 @@ else {
 
 </bpmn:script>
       </bpmn:scriptTask>
-      <bpmn:exclusiveGateway id="Gateway_0n32jz6" camunda:asyncAfter="true" camunda:exclusive="false">
+      <bpmn:exclusiveGateway id="Gateway_0n32jz6">
         <bpmn:incoming>Flow_12qcmku</bpmn:incoming>
         <bpmn:incoming>Flow_0kzvo2e</bpmn:incoming>
         <bpmn:outgoing>Flow_1nfyikn</bpmn:outgoing>
@@ -1346,12 +1371,12 @@ List&lt;KycCaseProjection&gt; getCases(String exId) {
     caseRepo.getLatestCaseByClientIdAndExIdAndNumAndTypeList1(exId);
 }
 
-List&lt;Case&gt; getCasesObj(List&lt;Long&gt; id) {
-    caseRepo.findCasesByIds(id);
-}
-
 void updateStatusCase(Long id, Long status) {
     caseRepo.updateStatusCase(id, status)
+}
+
+List&lt;Case&gt; getCasesObj(List&lt;Long&gt; id) {
+    caseRepo.findCasesByIds(id);
 }
 
 println("Шаг 2")
@@ -1378,7 +1403,6 @@ def toClone = cases.findAll { it -&gt; !typeLists.contains(it.typeList) }
 
 
 List&lt;Case&gt; changeCases = []
-List&lt;KycCaseClientList2&gt; kycCaseClientList2 = new ArrayList&lt;&gt;()
 if (toClone.isEmpty()) {
     List&lt;Case&gt; toCloneCases = getCasesObj(toClone.collect { it -&gt; it.cased })
     execution.setVariable("toClone", toCloneCases)
@@ -1393,31 +1417,9 @@ if (toChange.isEmpty()) {
     List&lt;KycCaseClientList2&gt; kycCaseClientList2s = getKyc(toChangeCases.collect { c -&gt; c.getId() })
     println("Изначальный kyc: " + kycCaseClientList2s.toString())
     toChangeCases.each { c -&gt;
-        println(c.getStatus())
-        println(c.getId())
-        println(c.getStatus().getId())
-        println(getBd(286, "7").getId())
-        println(c.getStatus().getId() == getBd(286, "7").getId())
-        kycCaseClientList2s.each { k -&gt;
-            BaseDictionary b = getBd(290, "2");
-
-            println("Проход по kyc_case_by_list")
-            println(k.getMatchType().getId())
-            println(b.getId())
-            println(getBd(290, "1"))
-            println(executionId)
-            println("Условие 1" + executionId.isNull())
-            println("Условие 2" + k.getMatchType().getId() == b.getId())
-            if ((k.getMatchType().getId() == getBd(290, "1").getId() &amp;&amp; !executionId.isNull()) || (k.getMatchType().getId() == getBd(290, "2").getId() &amp;&amp; executionId.isNull())) {
-                println("Зашли в изменение")
-                println(k.getKycCaseClient639pDetailsLists())
-                k.matchType = getBd(290, "3")
-                updateStatus(k.getId())
-            }
-        }
-        println("KYC с измененными статусами: " + kycCaseClientList2s.collect { it -&gt; it.matchType.code }.toString())
         if (c.getStatus().getId() == getBd(286, "1").getId() || c.getStatus().getId() == getBd(286, "2").getId()) {
             println("Шаг 6")
+            c.getStatus().getId() == getBd(286, "1").getId() ? execution.setVariable("recreate", true) : execution.setVariable("recreate", false)
             execution.setVariable("createCase", true)
             println("Шаг 7")
             updateStatusCase(c.getId(), getBd(286, "7").getId())
@@ -1428,12 +1430,16 @@ if (toChange.isEmpty()) {
             println("Шаг 9")
         }
     }
+    if (execution.getVariable("createCase") == true) {
+        execution.setVariable("lastType", toChangeCases.get(0).getKycCaseByLists().get(0).getMatchType())
+    }
 }
 
 if (execution.getVariable("createCase") == null) {
     println("Шаг 12")
     execution.setVariable("createCase", false)
 }
+
 println("Шаг 10")</bpmn:script>
     </bpmn:scriptTask>
     <bpmn:scriptTask id="Activity_08gaqrz" name="Получить список TypeList" scriptFormat="groovy">
@@ -2536,6 +2542,9 @@ else {
       <bpmndi:BPMNShape id="Activity_15o15uh_di" bpmnElement="Activity_00wprxj">
         <dc:Bounds x="670" y="510" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0qifu4k_di" bpmnElement="Gateway_0qifu4k" isMarkerVisible="true">
+        <dc:Bounds x="1305" y="375" width="50" height="50" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1tskgm5_di" bpmnElement="createCaseKyc" isExpanded="true">
         <dc:Bounds x="550" y="830" width="4730" height="460" />
         <bpmndi:BPMNLabel />
@@ -2701,9 +2710,6 @@ else {
       <bpmndi:BPMNShape id="Activity_0f01t3i_di" bpmnElement="Activity_09l15q2">
         <dc:Bounds x="4680" y="1110" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0jfqg3s_di" bpmnElement="Event_0jfqg3s">
-        <dc:Bounds x="5212" y="1032" width="36" height="36" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_19aends_di" bpmnElement="Gateway_19aends" isMarkerVisible="true">
         <dc:Bounds x="5125" y="1025" width="50" height="50" />
       </bpmndi:BPMNShape>
@@ -2718,6 +2724,9 @@ else {
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1shkzrz_di" bpmnElement="Activity_1yf0fxx">
         <dc:Bounds x="4880" y="1110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0jfqg3s_di" bpmnElement="Event_0jfqg3s">
+        <dc:Bounds x="5222" y="1032" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_12p82pg_di" bpmnElement="Flow_12p82pg">
         <di:waypoint x="1550" y="1080" />
@@ -2782,7 +2791,7 @@ else {
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1f7bft2_di" bpmnElement="Flow_1f7bft2">
         <di:waypoint x="5175" y="1050" />
-        <di:waypoint x="5212" y="1050" />
+        <di:waypoint x="5222" y="1050" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1rcznvy_di" bpmnElement="Flow_1rcznvy">
         <di:waypoint x="3830" y="1105" />
@@ -3525,9 +3534,6 @@ else {
           <dc:Bounds x="2184.5" y="523.5" width="73" height="53" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0qifu4k_di" bpmnElement="Gateway_0qifu4k" isMarkerVisible="true">
-        <dc:Bounds x="1305" y="325" width="50" height="50" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_17g1c9d_di" bpmnElement="Gateway_17g1c9d" isMarkerVisible="true">
         <dc:Bounds x="1315" y="725" width="50" height="50" />
       </bpmndi:BPMNShape>
@@ -3618,7 +3624,7 @@ else {
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0psexmt_di" bpmnElement="Flow_0psexmt">
         <di:waypoint x="1330" y="525" />
-        <di:waypoint x="1330" y="375" />
+        <di:waypoint x="1330" y="425" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1fhv7xk_di" bpmnElement="Flow_1fhv7xk">
         <di:waypoint x="8120" y="305" />
@@ -3643,7 +3649,7 @@ else {
         <di:waypoint x="7600" y="305" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_02n31n8_di" bpmnElement="Flow_02n31n8">
-        <di:waypoint x="1330" y="325" />
+        <di:waypoint x="1330" y="375" />
         <di:waypoint x="1330" y="300" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_10chyhg_di" bpmnElement="Flow_10chyhg">
@@ -3661,8 +3667,8 @@ else {
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1nlx91x_di" bpmnElement="Flow_1nlx91x">
         <di:waypoint x="2150" y="525" />
-        <di:waypoint x="2150" y="350" />
-        <di:waypoint x="1355" y="350" />
+        <di:waypoint x="2150" y="400" />
+        <di:waypoint x="1355" y="400" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1wa8tza_di" bpmnElement="Flow_1wa8tza">
         <di:waypoint x="2125" y="650" />

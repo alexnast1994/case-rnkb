@@ -38,7 +38,7 @@ try {
         kyccaseClient.setOgrnDate(initialClient[0].hasProp("OGRNDate") && initialClient[0].prop("OGRNDate") != null ? LocalDate.parse(initialClient[0].prop("OGRNDate").stringValue()).atStartOfDay()  : null)
         kyccaseClient.setClientMark(initialClient[0].hasProp("ClientMark") && initialClient[0].prop("ClientMark") != null ? getBd(22, initialClient[0].prop("ClientMark").stringValue())  : null)
         kyccaseClient.setKio(initialClient[0].hasProp("KIO") && initialClient[0].prop("KIO") != null ? initialClient[0].prop("KIO").stringValue() : null)
-
+        kyccaseClient.key = json.hasProp("amlCsmKycClientRequest") && json.prop("amlCsmKycClientRequest").hasProp("Clients") && json.prop("amlCsmKycClientRequest").prop("Clients").elements().size() > 0 && json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].hasProp("Results") && json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements().size() > 0 && json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].hasProp("key") && !json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].prop("key").isNull() ? json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].prop("key").stringValue() : null
         execution.setVariable("kyccaseClient", kyccaseClient)
         execution.setVariable("clientType", initialClient[0].prop("ClientType").stringValue())
         println(initialClient[0].prop("ClientType").stringValue())
@@ -60,6 +60,7 @@ try {
         kyccaseClient.ogrn = client.getOgrn()
         kyccaseClient.ogrnDate = client.getOgrnDate()
         kyccaseClient.kio = client.getKio()
+        kyccaseClient.key = json.hasProp("amlCsmKycClientRequest") && json.prop("amlCsmKycClientRequest").hasProp("Clients") && json.prop("amlCsmKycClientRequest").prop("Clients").elements().size() > 0 && json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].hasProp("Results") && json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements().size() > 0 && json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].hasProp("key") && !json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].prop("key").isNull() ? json.prop("amlCsmKycClientRequest").prop("Clients").elements()[0].prop("Results").elements()[0].prop("key").stringValue() : null
 
         execution.setVariable("kyccaseClient", kyccaseClient)
         execution.setVariable("clientType", client.clientType == null ? "" : client.clientType.code)

@@ -22,12 +22,12 @@ List<KycCaseProjection> getCases(String exId) {
     caseRepo.getLatestCaseByClientIdAndExIdAndNumAndTypeList1(exId);
 }
 
-List<Case> getCasesObj(List<Long> id) {
-    caseRepo.findCasesByIds(id);
-}
-
 void updateStatusCase(Long id, Long status) {
     caseRepo.updateStatusCase(id, status)
+}
+
+List<Case> getCasesObj(List<Long> id) {
+    caseRepo.findCasesByIds(id);
 }
 
 println("Шаг 2")
@@ -54,7 +54,6 @@ def toClone = cases.findAll { it -> !typeLists.contains(it.typeList) }
 
 
 List<Case> changeCases = []
-List<KycCaseClientList2> kycCaseClientList2 = new ArrayList<>()
 if (toClone.isEmpty()) {
     List<Case> toCloneCases = getCasesObj(toClone.collect { it -> it.cased })
     execution.setVariable("toClone", toCloneCases)
@@ -69,31 +68,9 @@ if (toChange.isEmpty()) {
     List<KycCaseClientList2> kycCaseClientList2s = getKyc(toChangeCases.collect { c -> c.getId() })
     println("Изначальный kyc: " + kycCaseClientList2s.toString())
     toChangeCases.each { c ->
-        println(c.getStatus())
-        println(c.getId())
-        println(c.getStatus().getId())
-        println(getBd(286, "7").getId())
-        println(c.getStatus().getId() == getBd(286, "7").getId())
-        kycCaseClientList2s.each { k ->
-            BaseDictionary b = getBd(290, "2");
-
-            println("Проход по kyc_case_by_list")
-            println(k.getMatchType().getId())
-            println(b.getId())
-            println(getBd(290, "1"))
-            println(executionId)
-            println("Условие 1" + executionId.isNull())
-            println("Условие 2" + k.getMatchType().getId() == b.getId())
-            if ((k.getMatchType().getId() == getBd(290, "1").getId() && !executionId.isNull()) || (k.getMatchType().getId() == getBd(290, "2").getId() && executionId.isNull())) {
-                println("Зашли в изменение")
-                println(k.getKycCaseClient639pDetailsLists())
-                k.matchType = getBd(290, "3")
-                updateStatus(k.getId())
-            }
-        }
-        println("KYC с измененными статусами: " + kycCaseClientList2s.collect { it -> it.matchType.code }.toString())
         if (c.getStatus().getId() == getBd(286, "1").getId() || c.getStatus().getId() == getBd(286, "2").getId()) {
             println("Шаг 6")
+            c.getStatus().getId() == getBd(286, "1").getId() ? execution.setVariable("recreate", true) : execution.setVariable("recreate", false)
             execution.setVariable("createCase", true)
             println("Шаг 7")
             updateStatusCase(c.getId(), getBd(286, "7").getId())
@@ -104,10 +81,14 @@ if (toChange.isEmpty()) {
             println("Шаг 9")
         }
     }
+    if (execution.getVariable("createCase") == true) {
+        execution.setVariable("lastType", toChangeCases.get(0).getKycCaseByLists().get(0).getMatchType())
+    }
 }
 
 if (execution.getVariable("createCase") == null) {
     println("Шаг 12")
     execution.setVariable("createCase", false)
 }
+
 println("Шаг 10")
