@@ -1,126 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0nqmese" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.2.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:process id="amlCsmRequest" name="Обработка запросов от csm" isExecutable="true">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0nqmese" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.2.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="amlCsmRequest" name="Обработка запросов от csm" isExecutable="false">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_0e0sljh</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:sequenceFlow id="Flow_0e0sljh" sourceRef="StartEvent_1" targetRef="Gateway_13n9x1d" />
-    <bpmn:callActivity id="Activity_kycPayment" name="Kyc payment" calledElement="amlCsmKycPaymentRequest">
-      <bpmn:extensionElements>
-        <camunda:in source="payload" target="payload" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_06obfm1</bpmn:incoming>
-      <bpmn:outgoing>Flow_1cgobtn</bpmn:outgoing>
-    </bpmn:callActivity>
-    <bpmn:exclusiveGateway id="Gateway_13n9x1d" default="Flow_1joxx2w">
-      <bpmn:incoming>Flow_0e0sljh</bpmn:incoming>
-      <bpmn:outgoing>Flow_06obfm1</bpmn:outgoing>
-      <bpmn:outgoing>Flow_1joxx2w</bpmn:outgoing>
-      <bpmn:outgoing>Flow_157in7d</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:sequenceFlow id="Flow_06obfm1" name="online payment" sourceRef="Gateway_13n9x1d" targetRef="Activity_kycPayment">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${processName == "operationProcess"}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0e0sljh" sourceRef="StartEvent_1" targetRef="Event_noActivity" />
     <bpmn:endEvent id="Event_noActivity">
-      <bpmn:incoming>Flow_1joxx2w</bpmn:incoming>
+      <bpmn:incoming>Flow_0e0sljh</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1joxx2w" sourceRef="Gateway_13n9x1d" targetRef="Event_noActivity" />
-    <bpmn:callActivity id="Activity_kycClient" name="Kyc Client" calledElement="amlCsmKycClientRequest">
-      <bpmn:extensionElements>
-        <camunda:in source="payload" target="payload" />
-        <camunda:in source="processName" target="processName" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_157in7d</bpmn:incoming>
-      <bpmn:outgoing>Flow_1xyzeup</bpmn:outgoing>
-    </bpmn:callActivity>
-    <bpmn:sequenceFlow id="Flow_157in7d" name="online/offline clients" sourceRef="Gateway_13n9x1d" targetRef="Activity_kycClient">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${processName == "clientProcess" || processName == "offlineCreateCase"}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:endEvent id="Event_encKycPayement">
-      <bpmn:incoming>Flow_1cgobtn</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1cgobtn" sourceRef="Activity_kycPayment" targetRef="Event_encKycPayement" />
-    <bpmn:endEvent id="Event_endKycClient">
-      <bpmn:incoming>Flow_1xyzeup</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1xyzeup" sourceRef="Activity_kycClient" targetRef="Event_endKycClient" />
+    <bpmn:endEvent id="Event_endKycClient" />
     <bpmn:textAnnotation id="TextAnnotation_17oqi0m">
       <bpmn:text>17. Сохранение результатов Онлайн от поисковой машины по платежам</bpmn:text>
     </bpmn:textAnnotation>
-    <bpmn:association id="Association_0eswsl5" sourceRef="Activity_kycPayment" targetRef="TextAnnotation_17oqi0m" />
     <bpmn:textAnnotation id="TextAnnotation_0cwastb">
       <bpmn:text>19. Сохранение результатов Онлайн/Офлайн от поисковой машины по клиентам</bpmn:text>
     </bpmn:textAnnotation>
-    <bpmn:association id="Association_14jivz5" sourceRef="Activity_kycClient" targetRef="TextAnnotation_0cwastb" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlCsmRequest">
-      <bpmndi:BPMNShape id="TextAnnotation_0cwastb_di" bpmnElement="TextAnnotation_0cwastb">
-        <dc:Bounds x="530" y="290" width="100" height="96" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_1xyzeup_di" bpmnElement="Flow_1xyzeup">
-        <di:waypoint x="580" y="450" />
-        <di:waypoint x="792" y="450" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1cgobtn_di" bpmnElement="Flow_1cgobtn">
-        <di:waypoint x="470" y="250" />
-        <di:waypoint x="792" y="250" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_157in7d_di" bpmnElement="Flow_157in7d">
-        <di:waypoint x="295" y="450" />
-        <di:waypoint x="480" y="450" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="299" y="416" width="62" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1joxx2w_di" bpmnElement="Flow_1joxx2w">
-        <di:waypoint x="270" y="475" />
-        <di:waypoint x="270" y="512" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_06obfm1_di" bpmnElement="Flow_06obfm1">
-        <di:waypoint x="270" y="425" />
-        <di:waypoint x="270" y="250" />
-        <di:waypoint x="370" y="250" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="298" y="186" width="76" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0e0sljh_di" bpmnElement="Flow_0e0sljh">
         <di:waypoint x="188" y="450" />
-        <di:waypoint x="245" y="450" />
+        <di:waypoint x="332" y="450" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="152" y="432" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_13n9x1d_di" bpmnElement="Gateway_13n9x1d" isMarkerVisible="true">
-        <dc:Bounds x="245" y="425" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0nc03g9_di" bpmnElement="Event_noActivity">
-        <dc:Bounds x="252" y="512" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_0449mm1_di" bpmnElement="Event_endKycClient">
+        <dc:Bounds x="792" y="432" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_17oqi0m_di" bpmnElement="TextAnnotation_17oqi0m">
         <dc:Bounds x="540" y="80" width="100" height="96" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0449mm1_di" bpmnElement="Event_endKycClient">
-        <dc:Bounds x="792" y="432" width="36" height="36" />
+      <bpmndi:BPMNShape id="TextAnnotation_0cwastb_di" bpmnElement="TextAnnotation_0cwastb">
+        <dc:Bounds x="530" y="290" width="100" height="96" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1awmxh5_di" bpmnElement="Event_encKycPayement">
-        <dc:Bounds x="792" y="232" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_0nc03g9_di" bpmnElement="Event_noActivity">
+        <dc:Bounds x="332" y="432" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1y13r70_di" bpmnElement="Activity_kycPayment">
-        <dc:Bounds x="370" y="210" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0h6ekyb_di" bpmnElement="Activity_kycClient">
-        <dc:Bounds x="480" y="410" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Association_0eswsl5_di" bpmnElement="Association_0eswsl5">
-        <di:waypoint x="466" y="212" />
-        <di:waypoint x="540" y="148" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_14jivz5_di" bpmnElement="Association_14jivz5">
-        <di:waypoint x="544" y="410" />
-        <di:waypoint x="552" y="386" />
-      </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>
