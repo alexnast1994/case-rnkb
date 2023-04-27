@@ -1,11 +1,7 @@
 package com.cognive.projects.casernkb.model.KycDecisionResponse;
 
-import com.cognive.projects.casernkb.config.jackson.serialization.LocalDateTimeSerializer;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,21 +25,13 @@ public class AmlRequestDto implements Serializable {
     @JsonProperty("TimeStamp")
     private Date timeStamp;
     @JsonProperty("SourceSystemId")
-    private String sourceSystemId;
+    private Integer sourceSystemId;
     @JsonProperty("SourceSystem")
     private String sourceSystem;
     @JsonProperty("RequestType")
     private String requestType;
     @JsonProperty("ObjectType")
     private String objectType;
-    @JsonProperty("ObjectSubType")
-    private String objectSubType;
-    @JsonProperty("ObjectDesc")
-    private String objectDesc;
-    @JsonProperty("ObjCreateDate")
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime objCreateDate;
     @JsonProperty("User")
     private String user;
     @JsonProperty("Version")

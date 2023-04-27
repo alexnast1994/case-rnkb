@@ -163,12 +163,10 @@ responseDataDto.setClientCheckResultDtos(clientCheckResultDtos)
 
 AmlRequestDto out = new AmlRequestDto()
 out.setId(UUID.randomUUID().toString())
-out.setSourceSystemId("1000")
+out.setSourceSystemId(1000)
 out.setSourceSystem("AML")
 out.setRequestType("Notify")
 out.setObjectType("Client")
-out.setObjectSubType("")
-out.setObjectDesc("")
 if(requestUser != null) {
     out.setUser(requestUser.getUsername())
 }
@@ -194,7 +192,6 @@ import com.prime.db.rnkb.model.kyc.KycCaseClientList2
 def resultCaseIds = execution.getVariable("resultCaseIds") as List
 
 def checkStatus = execution.getVariable("checkStatus") as String
-def decisionResult = execution.getVariable("decisionResult") as String
 def kycCheckStatus = execution.getVariable("kycCheckStatus") as boolean
 def commentFlag = execution.getVariable("commentFlag") as boolean
 SysUser requestUser = execution.getVariable("requestUser")
@@ -212,11 +209,16 @@ resultCaseIds.forEach({ caseId -&gt;
     if (requestUser != null) {
         clientCheckResultDto.setDecisionByUser(requestUser.getUsername())
     }
+    Case aCase = caseRepo.getOne(caseId)
+
+    clientCheckResultDto.setDecisionDate(aCase.getDecisiondate() as String)
     if (commentFlag) {
-        Case aCase = caseRepo.getOne(caseId)
-        clientCheckResultDto.setComment(aCase.getCaseCommentList().toString())
+        String caseComment = aCase.getCaseCommentList().stream()
+                .max({ cc1, cc2 -&gt; (cc1.getCreationDate() &lt;=&gt; cc2.getCreationDate()) })
+                .get().getComment()
+        clientCheckResultDto.setComment(caseComment != null ? caseComment : "")
     } else {
-        clientCheckResultDto.setComment(decisionResult)
+        clientCheckResultDto.setComment("Не подлежит контролю")
     }
 
     def kycListDtos = []
@@ -290,10 +292,6 @@ execution.setVariable("clientCheckResultDtos", clientCheckResultDtos)</bpmn:scri
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlCaseSendDecision">
-      <bpmndi:BPMNShape id="TextAnnotation_1ekfrnh_di" bpmnElement="TextAnnotation_1ekfrnh">
-        <dc:Bounds x="147" y="100" width="293" height="41" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="179" y="199" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -305,13 +303,6 @@ execution.setVariable("clientCheckResultDtos", clientCheckResultDtos)</bpmn:scri
         <dc:Bounds x="390" y="177" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0jnm47i_di" bpmnElement="Activity_0jnm47i">
-        <dc:Bounds x="2280" y="177" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_06nkhe8_di" bpmnElement="Event_06nkhe8">
-        <dc:Bounds x="2432" y="199" width="36" height="36" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_064pee2_di" bpmnElement="Activity_064pee2" isExpanded="true">
         <dc:Bounds x="540" y="80" width="1640" height="298" />
       </bpmndi:BPMNShape>
@@ -321,30 +312,6 @@ execution.setVariable("clientCheckResultDtos", clientCheckResultDtos)</bpmn:scri
       <bpmndi:BPMNShape id="Activity_1mgp5aq_di" bpmnElement="Activity_1mgp5aq">
         <dc:Bounds x="660" y="177" width="100" height="80" />
         <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_16mgdcw_di" bpmnElement="Gateway_16mgdcw" isMarkerVisible="true">
-        <dc:Bounds x="1355" y="192" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1y3ej1a_di" bpmnElement="Event_1y3ej1a">
-        <dc:Bounds x="2032" y="199" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1knh38o_di" bpmnElement="Activity_1knh38o">
-        <dc:Bounds x="1450" y="177" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_18c8atx_di" bpmnElement="Activity_08u5p49">
-        <dc:Bounds x="1750" y="177" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_00ipisp_di" bpmnElement="Activity_00ipisp">
-        <dc:Bounds x="1610" y="177" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0esu92u_di" bpmnElement="Activity_0h81umr">
-        <dc:Bounds x="1890" y="177" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1ozfg3k_di" bpmnElement="Event_1ozfg3k">
-        <dc:Bounds x="1342" y="322" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1riqnwb_di" bpmnElement="Activity_1riqnwb" isExpanded="true">
         <dc:Bounds x="810" y="152" width="480" height="130" />
@@ -376,6 +343,30 @@ execution.setVariable("clientCheckResultDtos", clientCheckResultDtos)</bpmn:scri
         <di:waypoint x="1170" y="222" />
         <di:waypoint x="1212" y="222" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_1y3ej1a_di" bpmnElement="Event_1y3ej1a">
+        <dc:Bounds x="2032" y="199" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ozfg3k_di" bpmnElement="Event_1ozfg3k">
+        <dc:Bounds x="1342" y="322" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1knh38o_di" bpmnElement="Activity_1knh38o">
+        <dc:Bounds x="1450" y="177" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_18c8atx_di" bpmnElement="Activity_08u5p49">
+        <dc:Bounds x="1750" y="177" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_00ipisp_di" bpmnElement="Activity_00ipisp">
+        <dc:Bounds x="1610" y="177" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_16mgdcw_di" bpmnElement="Gateway_16mgdcw" isMarkerVisible="true">
+        <dc:Bounds x="1355" y="192" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0esu92u_di" bpmnElement="Activity_0h81umr">
+        <dc:Bounds x="1890" y="177" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1fv66g4_di" bpmnElement="Flow_1fv66g4">
         <di:waypoint x="606" y="217" />
         <di:waypoint x="660" y="217" />
@@ -383,6 +374,14 @@ execution.setVariable("clientCheckResultDtos", clientCheckResultDtos)</bpmn:scri
       <bpmndi:BPMNEdge id="Flow_0saudyz_di" bpmnElement="Flow_0saudyz">
         <di:waypoint x="760" y="217" />
         <di:waypoint x="810" y="217" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10emi2h_di" bpmnElement="Flow_10emi2h">
+        <di:waypoint x="1710" y="217" />
+        <di:waypoint x="1750" y="217" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1k345f3_di" bpmnElement="Flow_1k345f3">
+        <di:waypoint x="1550" y="217" />
+        <di:waypoint x="1610" y="217" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_06dua7k_di" bpmnElement="Flow_06dua7k">
         <di:waypoint x="1290" y="217" />
@@ -394,30 +393,29 @@ execution.setVariable("clientCheckResultDtos", clientCheckResultDtos)</bpmn:scri
         <di:waypoint x="1360" y="282" />
         <di:waypoint x="1360" y="322" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0bnpb7o_di" bpmnElement="Flow_0bnpb7o">
-        <di:waypoint x="1405" y="217" />
-        <di:waypoint x="1450" y="217" />
+      <bpmndi:BPMNEdge id="Flow_0vbqwuj_di" bpmnElement="Flow_0vbqwuj">
+        <di:waypoint x="1850" y="217" />
+        <di:waypoint x="1890" y="217" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1x5c7ze_di" bpmnElement="Flow_1x5c7ze">
         <di:waypoint x="1990" y="217" />
         <di:waypoint x="2032" y="217" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1k345f3_di" bpmnElement="Flow_1k345f3">
-        <di:waypoint x="1550" y="217" />
-        <di:waypoint x="1610" y="217" />
+      <bpmndi:BPMNEdge id="Flow_0bnpb7o_di" bpmnElement="Flow_0bnpb7o">
+        <di:waypoint x="1405" y="217" />
+        <di:waypoint x="1450" y="217" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_10emi2h_di" bpmnElement="Flow_10emi2h">
-        <di:waypoint x="1710" y="217" />
-        <di:waypoint x="1750" y="217" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0vbqwuj_di" bpmnElement="Flow_0vbqwuj">
-        <di:waypoint x="1850" y="217" />
-        <di:waypoint x="1890" y="217" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_0feuze1_di" bpmnElement="Association_0feuze1">
-        <di:waypoint x="197" y="199" />
-        <di:waypoint x="197" y="141" />
-      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Activity_0jnm47i_di" bpmnElement="Activity_0jnm47i">
+        <dc:Bounds x="2280" y="177" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_06nkhe8_di" bpmnElement="Event_06nkhe8">
+        <dc:Bounds x="2432" y="199" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1ekfrnh_di" bpmnElement="TextAnnotation_1ekfrnh">
+        <dc:Bounds x="147" y="100" width="293" height="41" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0an41wp_di" bpmnElement="Flow_0an41wp">
         <di:waypoint x="215" y="217" />
         <di:waypoint x="244" y="217" />
@@ -437,6 +435,10 @@ execution.setVariable("clientCheckResultDtos", clientCheckResultDtos)</bpmn:scri
       <bpmndi:BPMNEdge id="Flow_1icnrr9_di" bpmnElement="Flow_1icnrr9">
         <di:waypoint x="2380" y="217" />
         <di:waypoint x="2432" y="217" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0feuze1_di" bpmnElement="Association_0feuze1">
+        <di:waypoint x="197" y="199" />
+        <di:waypoint x="197" y="141" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
