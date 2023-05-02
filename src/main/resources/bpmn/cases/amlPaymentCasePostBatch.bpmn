@@ -236,7 +236,7 @@
       <bpmn:sequenceFlow id="Flow_06lsc37" sourceRef="Activity_0y6jre5" targetRef="Gateway_1w23zc6" />
       <bpmn:sequenceFlow id="Flow_1k9y2g5" sourceRef="Gateway_1w23zc6" targetRef="Activity_0y09n4q">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">
-          ${caseOperations != null and caseOperations.isEmpty() == false}
+          ${execution.hasVariable("caseOperations") == true and caseOperations.isEmpty() == false}
         </bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:subProcess id="Activity_0y09n4q">
