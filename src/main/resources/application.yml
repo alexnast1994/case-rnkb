@@ -149,7 +149,7 @@ server:
       header-name: ${CSM_PROCESS_NAME_HEADER:processName}
       process-name: ${CSM_PROCESS_NAME:amlCsmRequest}
     pipeline:
-      process-name: ${PIPELINE_PROCESS_NAME:amlPipelineRequest}
+      process-name: ${PIPELINE_PROCESS_NAME:amlPaymentCasePostBatch}
       mapping:
         pipeline-payment-response: ${PIPELINE_PAYMENT_RESPONSE_ID:2b605119-16db-47d9-a087-cd1ad87731f3}
     kyc:
