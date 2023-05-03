@@ -1383,21 +1383,26 @@ execution.setVariable("emptyProfileAggGeneral", false)
       <bpmn:scriptTask id="Activity_0l1uo50" name="RJ_RISKLEVEL" scriptFormat="groovy">
         <bpmn:incoming>Flow_0u4jl76</bpmn:incoming>
         <bpmn:outgoing>Flow_0ow1tp9</bpmn:outgoing>
-        <bpmn:script>import com.prime.db.rnkb.model.RiskLevel
+        <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
+import com.prime.db.rnkb.model.RiskLevel
 import com.prime.db.rnkb.model.commucation.judgment.RjClient
 import com.prime.db.rnkb.model.commucation.judgment.RjRiskLevel
+
+BaseDictionary getStatus(String code) {
+    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(245, code);
+}
 
 List&lt;RiskLevel&gt; riskLevelList = execution.getVariable("risklevel") as List&lt;RiskLevel&gt;
 def rjClient = execution.getVariable("rjClient") as RjClient
 List&lt;RjRiskLevel&gt; rjRiskLevels = new ArrayList&lt;&gt;()
 if (!riskLevelList.isEmpty() &amp;&amp; riskLevelList != null) {
-   
+
     riskLevelList.each {r -&gt;
         RjRiskLevel riskLevel = new RjRiskLevel()
         riskLevel.rjClientId = rjClient
         riskLevel.scoreSum = r.scoreSum
         riskLevel.levelRisk = r.levelRisk
-        riskLevel.typeOfRisk = r.typeOfRisk
+        riskLevel.typeOfRisk = getStatus(r.typeOfRisk) 
         rjRiskLevels.add(riskLevel)
     }
     execution.setVariable("rjRiskLevels", rjRiskLevels)
