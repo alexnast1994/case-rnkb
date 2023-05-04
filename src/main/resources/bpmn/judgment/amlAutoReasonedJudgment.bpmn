@@ -399,7 +399,7 @@ else {
 
 def typeRj = getTypeRj(execution.getVariable("typeRj"))
 
-reasonedJudgment.status = getStatus("5")
+reasonedJudgment.status = getStatus("1")
 Client client = execution.getVariable("clientBase")
 reasonedJudgment.clientId = client
 reasonedJudgment.jobStatus = getJobStatus("1")
