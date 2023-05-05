@@ -192,17 +192,11 @@ public class KafkaServiceImpl implements KafkaService {
     public Consumer<Message<String>> pipelineMessageInput() {
         return x -> {
             runProcess(x, () -> {
-                PipelineResponse pipelineResponse = getPipelineResponse(x.getPayload());
-                log.info("Pipeline workflow id: {}, mapping: {}, status: {}",
-                        pipelineResponse.getWorkflowId(),
-                        pipelineResponse.getMappingName(),
-                        pipelineResponse.getStatus());
 
                 Map<String, Object> variables = new HashMap<>();
-                variables.put("processName", pipelineResponse.getMappingName());
-
+                variables.put("payload", x.getPayload());
                 return new Process(properties.getPipeline().getProcessName(),
-                        !pipelineResponse.isDone(),
+                        false,
                         variables);
             });
         };

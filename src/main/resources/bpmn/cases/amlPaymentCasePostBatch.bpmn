@@ -5,7 +5,7 @@
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
                   xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_09y5nmf"
-                  targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.5.0"
+                  targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.9.0"
                   modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
   <bpmn:message id="Message_0sxqgfv" name="message-drools"/>
   <bpmn:process id="amlPaymentCasePostBatch" name="0. Формирование кейса Постконтроль СО" isExecutable="true">
@@ -235,7 +235,9 @@
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_06lsc37" sourceRef="Activity_0y6jre5" targetRef="Gateway_1w23zc6" />
       <bpmn:sequenceFlow id="Flow_1k9y2g5" sourceRef="Gateway_1w23zc6" targetRef="Activity_0y09n4q">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${caseOperations.isEmpty() == false and caseOperations != null and caseOperations.size() &gt; 0}        </bpmn:conditionExpression>
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">
+          ${execution.hasVariable("caseOperations") == true and caseOperations.isEmpty() == false}
+        </bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:subProcess id="Activity_0y09n4q">
         <bpmn:incoming>Flow_1k9y2g5</bpmn:incoming>

@@ -26,21 +26,30 @@ BaseDictionary getClientType(String code) {
 }
 
 ReasonedJudgment reasonedJudgment = new ReasonedJudgment()
+if (!execution.getVariable("nonCase") as Boolean) {
 
-def case1 = execution.getVariable("caseBase") as Case
-def caseDic = case1.caseType as BaseDictionary
+    def case1 = execution.getVariable("caseBase") as Case
+    def caseDic = case1.caseType as BaseDictionary
 
-if (caseDic.code == "3") {
-    reasonedJudgment.typeOfControl = getTypeOfControl("1")
+    if (caseDic.code == "3") {
+        reasonedJudgment.typeOfControl = getTypeOfControl("1")
+    }
+
+    if (caseDic.code == "4") {
+        reasonedJudgment.typeOfControl = getTypeOfControl("2")
+    }
+
+}
+else {
+
+    reasonedJudgment.typeOfControl = getTypeOfControl("3")
+
 }
 
-if (caseDic.code == "4") {
-    reasonedJudgment.typeOfControl = getTypeOfControl("2")
-}
 
 def typeRj = getTypeRj(execution.getVariable("typeRj"))
 
-reasonedJudgment.status = getStatus("5")
+reasonedJudgment.status = getStatus("1")
 Client client = execution.getVariable("clientBase")
 reasonedJudgment.clientId = client
 reasonedJudgment.jobStatus = getJobStatus("1")

@@ -1,8 +1,11 @@
-package temp.rj
-
+import com.prime.db.rnkb.model.BaseDictionary
 import com.prime.db.rnkb.model.RiskLevel
 import com.prime.db.rnkb.model.commucation.judgment.RjClient
 import com.prime.db.rnkb.model.commucation.judgment.RjRiskLevel
+
+BaseDictionary getStatus(String code) {
+    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(245, code);
+}
 
 List<RiskLevel> riskLevelList = execution.getVariable("risklevel") as List<RiskLevel>
 def rjClient = execution.getVariable("rjClient") as RjClient
@@ -14,7 +17,7 @@ if (!riskLevelList.isEmpty() && riskLevelList != null) {
         riskLevel.rjClientId = rjClient
         riskLevel.scoreSum = r.scoreSum
         riskLevel.levelRisk = r.levelRisk
-        riskLevel.typeOfRisk = r.typeOfRisk
+        riskLevel.typeOfRisk = getStatus(r.typeOfRisk)
         rjRiskLevels.add(riskLevel)
     }
     execution.setVariable("rjRiskLevels", rjRiskLevels)
