@@ -58,7 +58,11 @@ public class DocServiceImpl implements DocService {
             additionalInfo = additionalInfo.replaceAll(mask, zkCreate.getLastDate());
             conclusion = conclusion.replaceAll(mask, zkCreate.getLastDate());
         }
-        return new DocxRequestData(id, date, legalName, legalInn, header, payments, requestInfo, additionalInfo, conclusion, individualBd.getId().equals(client.getClientType().getId()));
+        boolean isIndividual = false;
+        if (client.getClientType() != null) {
+            isIndividual = individualBd.getId().equals(client.getClientType().getId());
+        }
+        return new DocxRequestData(id, date, legalName, legalInn, header, payments, requestInfo, additionalInfo, conclusion, isIndividual);
     }
 
     @Override
