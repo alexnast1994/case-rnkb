@@ -160,15 +160,15 @@ execution.setVariable("clientId", clientId)</bpmn:script>
           <camunda:in source="${reasonedJudgmentId}" target="reasonedJudgmentId" />
           <camunda:in source="session" target="session" />
         </bpmn:extensionElements>
-        <bpmn:incoming>Flow_0xff7fb</bpmn:incoming>
+        <bpmn:incoming>Flow_14mxq93</bpmn:incoming>
         <bpmn:outgoing>Flow_1ub362d</bpmn:outgoing>
       </bpmn:callActivity>
       <bpmn:endEvent id="Event_0fcawxn">
-        <bpmn:incoming>Flow_1m2oge2</bpmn:incoming>
+        <bpmn:incoming>Flow_1ub362d</bpmn:incoming>
       </bpmn:endEvent>
-      <bpmn:sequenceFlow id="Flow_1ub362d" sourceRef="Activity_cleanTriggers" targetRef="Activity_153j32t" />
+      <bpmn:sequenceFlow id="Flow_1ub362d" sourceRef="Activity_cleanTriggers" targetRef="Event_0fcawxn" />
       <bpmn:sequenceFlow id="Flow_1fa2f8g" sourceRef="Gateway_0oiud9p" targetRef="Activity_getClientId" />
-      <bpmn:sequenceFlow id="Flow_14mxq93" sourceRef="Activity_getClientId" targetRef="Activity_09pt7yx" />
+      <bpmn:sequenceFlow id="Flow_14mxq93" sourceRef="Activity_getClientId" targetRef="Activity_cleanTriggers" />
       <bpmn:scriptTask id="Activity_0us54of" name="Payload" scriptFormat="groovy">
         <bpmn:incoming>Flow_19dpd0j</bpmn:incoming>
         <bpmn:outgoing>Flow_14k7hbc</bpmn:outgoing>
@@ -196,16 +196,6 @@ execution.setVariable("reasonedJudgmentId", reasonedJudgmentId)
         <bpmn:outgoing>Flow_0xeeoks</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="Flow_0xeeoks" sourceRef="Activity_1tkqvrz" targetRef="Event_0j006qh" />
-      <bpmn:serviceTask id="Activity_09pt7yx" name="StartTransactionDelegate" camunda:delegateExpression="${startTransactionDelegate}">
-        <bpmn:incoming>Flow_14mxq93</bpmn:incoming>
-        <bpmn:outgoing>Flow_0xff7fb</bpmn:outgoing>
-      </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_0xff7fb" sourceRef="Activity_09pt7yx" targetRef="Activity_cleanTriggers" />
-      <bpmn:serviceTask id="Activity_153j32t" name="EndTransactionDelegate" camunda:delegateExpression="${endTransactionDelegate}">
-        <bpmn:incoming>Flow_1ub362d</bpmn:incoming>
-        <bpmn:outgoing>Flow_1m2oge2</bpmn:outgoing>
-      </bpmn:serviceTask>
-      <bpmn:sequenceFlow id="Flow_1m2oge2" sourceRef="Activity_153j32t" targetRef="Event_0fcawxn" />
     </bpmn:subProcess>
     <bpmn:sequenceFlow id="Flow_12ek4a9" sourceRef="Activity_1qwn6qf" targetRef="Activity_0us8edk" />
     <bpmn:sequenceFlow id="Flow_1pzming" sourceRef="Activity_0us8edk" targetRef="Activity_131dz13" />
@@ -274,7 +264,7 @@ ID процессов</bpmn:text>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_14mxq93_di" bpmnElement="Flow_14mxq93">
         <di:waypoint x="1200" y="430" />
-        <di:waypoint x="1230" y="430" />
+        <di:waypoint x="1360" y="430" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1fa2f8g_di" bpmnElement="Flow_1fa2f8g">
         <di:waypoint x="980" y="302" />
@@ -283,7 +273,7 @@ ID процессов</bpmn:text>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1ub362d_di" bpmnElement="Flow_1ub362d">
         <di:waypoint x="1460" y="430" />
-        <di:waypoint x="1490" y="430" />
+        <di:waypoint x="1632" y="430" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1yf1kca_di" bpmnElement="Flow_1yf1kca">
         <di:waypoint x="1550" y="277" />
@@ -309,14 +299,6 @@ ID процессов</bpmn:text>
         <di:waypoint x="910" y="277" />
         <di:waypoint x="955" y="277" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0xff7fb_di" bpmnElement="Flow_0xff7fb">
-        <di:waypoint x="1330" y="430" />
-        <di:waypoint x="1360" y="430" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1m2oge2_di" bpmnElement="Flow_1m2oge2">
-        <di:waypoint x="1590" y="430" />
-        <di:waypoint x="1632" y="430" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_0ea9sb1_di" bpmnElement="Event_0ea9sb1">
         <dc:Bounds x="592" y="259" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -338,8 +320,14 @@ ID процессов</bpmn:text>
       <bpmndi:BPMNShape id="Event_0j006qh_di" bpmnElement="Event_0j006qh">
         <dc:Bounds x="1752" y="259" width="36" height="36" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0nz8wtb_di" bpmnElement="Activity_getClientId">
+        <dc:Bounds x="1100" y="390" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0lrus7s_di" bpmnElement="Activity_cleanTriggers">
         <dc:Bounds x="1360" y="390" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0fcawxn_di" bpmnElement="Event_0fcawxn">
+        <dc:Bounds x="1632" y="412" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0us54of_di" bpmnElement="Activity_0us54of">
         <dc:Bounds x="680" y="237" width="100" height="80" />
@@ -349,18 +337,6 @@ ID процессов</bpmn:text>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1tkqvrz_di" bpmnElement="Activity_1tkqvrz">
         <dc:Bounds x="1590" y="237" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0nz8wtb_di" bpmnElement="Activity_getClientId">
-        <dc:Bounds x="1100" y="390" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0fcawxn_di" bpmnElement="Event_0fcawxn">
-        <dc:Bounds x="1632" y="412" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0byjpsz" bpmnElement="Activity_09pt7yx">
-        <dc:Bounds x="1230" y="390" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0jahm46" bpmnElement="Activity_153j32t">
-        <dc:Bounds x="1490" y="390" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0o5xg26_di" bpmnElement="TextAnnotation_0o5xg26">
         <dc:Bounds x="159" y="143" width="271" height="96" />
