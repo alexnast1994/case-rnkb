@@ -47,19 +47,28 @@ public class DocServiceImpl implements DocService {
         var legalInn = client.getInn();
         var header = baseDictionaryService.getName(baseDictionaryRepository.findById(zkCreate.getHeader()).orElseThrow());
         var payments = paymentRepository.findAllById(zkCreate.getOperations());
-        var requestInfo = baseDictionaryToString(baseDictionaryRepository.findAllById(zkCreate.getRequestedInformation()));
-        var additionalInfo = baseDictionaryToString(baseDictionaryRepository.findAllById(zkCreate.getAdditionally()));
-        var conclusion = baseDictionaryToString(baseDictionaryRepository.findAllById(zkCreate.getConclusion()));
+        var conclusion = baseDictionaryToString(getBdListSaveOrder(zkCreate.getConclusion()));
+        var additionalInfo = baseDictionaryToString(getBdListSaveOrder(zkCreate.getAdditionally()));
+        var requestInfo = baseDictionaryToString(getBdListSaveOrder(zkCreate.getRequestedInformation()));
         var individualBd = baseDictionaryRepository.getByBaseDictionaryTypeCodeAndCode(24, "4");
-        return new DocxRequestData(id, date, legalName, legalInn, header, payments, requestInfo, additionalInfo, conclusion, individualBd.getId().equals(client.getClientType().getId()));
+        if (zkCreate.getLastDate() != null) {
+            String mask = "ХХ.ХХ.ХХХХ";
+            header = header.replaceAll(mask, zkCreate.getLastDate());
+            requestInfo = requestInfo.replaceAll(mask, zkCreate.getLastDate());
+            additionalInfo = additionalInfo.replaceAll(mask, zkCreate.getLastDate());
+            conclusion = conclusion.replaceAll(mask, zkCreate.getLastDate());
+        }
+        boolean isIndividual = false;
+        if (client.getClientType() != null) {
+            isIndividual = individualBd.getId().equals(client.getClientType().getId());
+        }
+        return new DocxRequestData(id, date, legalName, legalInn, header, payments, requestInfo, additionalInfo, conclusion, isIndividual);
     }
 
     @Override
     public XWPFDocument generateDoc(DocxRequestData docxRequestData) throws IOException {
         var dataParams = DocxRequestData.getDataParams(docxRequestData);
-        var path = docxRequestData.isIndividual()
-                ? zkProperties.getIndividualDocPattern()
-                : zkProperties.getLegalDocPattern();
+        var path = getDocxPattern(docxRequestData);
         var is = FileUtils.openInputStream(new File(path));
         try {
             XWPFDocument xwpfDocument = new XWPFDocument(is);
@@ -76,20 +85,36 @@ public class DocServiceImpl implements DocService {
             for (XWPFParagraph paragraph : xwpfDocument.getParagraphs()) {
                 for (XWPFRun run : paragraph.getRuns()) {
                     String text = run.text();
-                    if (
-                            text != null
-                                    && text.contains(entry.getKey())
-                                    && entry.getValue() != null
-                                    && !entry.getValue().isEmpty()
-                    ) {
-                        text = text.replace(entry.getKey(), entry.getValue());
-                        run.setText(text, 0);
+                    if (text != null
+                            && text.contains(entry.getKey())) {
+                        if (entry.getValue() == null
+                                || entry.getValue().isEmpty()) {
+                            text = text.replace(entry.getKey(), "");
+                            run.setText(text, 0);
+                        } else {
+                            text = text.replace(entry.getKey(), entry.getValue());
+                            if (text.contains("\n")) {
+                                getLineForEachElements(text, run);
+                            } else {
+                                run.setText(text, 0);
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
+    private void getLineForEachElements(String text, XWPFRun run) {
+        String[] lines = text.split("\n");
+        run.addTab();
+        run.setText(lines[0], 0);
+        for (int i = 1; i < lines.length; i++) {
+            run.addBreak();
+            run.addTab();
+            run.setText(lines[i]);
+        }
+    }
 
     private void fillTable(DocxRequestData docxRequestData, XWPFDocument xwpfDocument) {
         for (XWPFTable xwpfTable : xwpfDocument.getTables()) {
@@ -101,5 +126,28 @@ public class DocServiceImpl implements DocService {
         return baseDictionaries.stream()
                 .map(baseDictionaryService::getName)
                 .collect(Collectors.joining("\n"));
+    }
+
+    private List<BaseDictionary> getBdListSaveOrder(List<Long> idsList) {
+        return idsList.stream().map(str -> baseDictionaryRepository.findById(str).orElseThrow())
+                .collect(Collectors.toList());
+    }
+
+    private String getDocxPattern(DocxRequestData docxRequestData) {
+        String path;
+        if (docxRequestData.getPayments().size() > 0) {
+            if (docxRequestData.isIndividual()) {
+                path = zkProperties.getIndividualDocPatternTable();
+            } else {
+                path = zkProperties.getLegalDocPatternTable();
+            }
+        } else {
+            if (docxRequestData.isIndividual()) {
+                path = zkProperties.getIndividualDocPattern();
+            } else {
+                path = zkProperties.getLegalDocPattern();
+            }
+        }
+        return path;
     }
 }
