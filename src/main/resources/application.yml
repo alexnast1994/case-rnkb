@@ -163,7 +163,9 @@ server:
     zk-aml-response-output-topic: ${TOPIC_ZK_RESPONSE_OUT:rnkb-responseClient-resp}
 zk:
   legal-doc-pattern: ${LEGAL_DOC_PATTERN:PatternLegal.docx}
+  legal-doc-pattern-table: ${LEGAL_DOC_PATTERN_TABLE:PatternLegalTable.docx}
   individual-doc-pattern: ${INDIVIDUAL_DOC_PATTERN:PatternIndividual.docx}
+  individual-doc-pattern-table: ${INDIVIDUAL_DOC_PATTERN_TABLE:PatternIndividualTable.docx}
 logging:
   level:
     org.springframework: ERROR

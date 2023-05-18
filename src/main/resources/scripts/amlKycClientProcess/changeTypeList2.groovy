@@ -14,6 +14,10 @@ List<Case> getCases(String exId) {
 }
 println("Шаг 2")
 
+void updateStatusCase(Long id, Long status) {
+    caseRepo.updateStatusCase(id, status)
+}
+
 BaseDictionary getBd(int type, String code) {
     baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
 }
@@ -33,8 +37,8 @@ cases.each{c ->
             cloneCases.add(c)
         }
         if (!changeCases.any{i -> i.getId() == c.getId()}) {
-            c.setStatus(getBd(286, "7"))
-            changeCases.add(c)
+            println("Шаг с добавлением нового кейса")
+            updateStatusCase(c.getId(), getBd(286, "7").getId())
         }
 
     }
