@@ -89,15 +89,15 @@ kycCaseClientList2sOld.each { it ->
         List<KycCaseClientIdentityAtrList> kycCaseClientIdentityAtrLists = []
         kycCaseClientIdentityAtrLists1.each {it1 ->
             KycCaseClientIdentityAtrList k = new KycCaseClientIdentityAtrList()
-            k.idValue = k.idValue
-            k.idType = k.idType
-            k.idSerial = k.idSerial
-            k.idNumber = k.idNumber
-            k.comment = k.comment
-            k.dateDocument = k.dateDocument
-            k.issuingAuthority = k.issuingAuthority
-            k.expiryDateOfDocument = k.expiryDateOfDocument
-            k.validDoc = k.validDoc
+            k.idValue = it1.idValue
+            k.idType = it1.idType
+            k.idSerial = it1.idSerial
+            k.idNumber = it1.idNumber
+            k.comment = it1.comment
+            k.dateDocument = it1.dateDocument
+            k.issuingAuthority = it1.issuingAuthority
+            k.expiryDateOfDocument = it1.expiryDateOfDocument
+            k.validDoc = it1.validDoc
             kycCaseClientIdentityAtrLists.add(k)
         }
         kycCaseClientIdentityAtrLists.each {k ->
@@ -110,9 +110,9 @@ kycCaseClientList2sOld.each { it ->
         List<KycCaseClientCountryList> kycCaseClientCountryLists = []
         kycCaseClientCountryLists1.each {it1 ->
             KycCaseClientCountryList k = new KycCaseClientCountryList()
-            k.countryCode = k.countryCode
-            k.countryType = k.countryType
-            k.countryName = k.countryName
+            k.countryCode = it1.countryCode
+            k.countryType = it1.countryType
+            k.countryName = it1.countryName
             kycCaseClientCountryLists.add(k)
         }
         kycCaseClientCountryListsNew.each {k ->
@@ -125,12 +125,12 @@ kycCaseClientList2sOld.each { it ->
         List<KycCaseClientVersionsList> kycCaseClientVersionsLists = []
         kycCaseClientVersionsLists1.each {it1 ->
             KycCaseClientVersionsList k = new KycCaseClientVersionsList()
-            k.listIdentifier = k.listIdentifier
-            k.listVersion = k.listVersion
-            k.versionDate = k.versionDate
-            k.loadDate = k.loadDate
-            k.updateDate = k.updateDate
-            k.isLastVersion = k.isLastVersion
+            k.listIdentifier = it1.listIdentifier
+            k.listVersion = it1.listVersion
+            k.versionDate = it1.versionDate
+            k.loadDate = it1.loadDate
+            k.updateDate = it1.updateDate
+            k.isLastVersion = it1.isLastVersion
             kycCaseClientVersionsLists.add(k)
         }
         kycCaseClientVersionsLists.each {k ->
