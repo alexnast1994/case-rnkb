@@ -620,7 +620,7 @@ catch (Exception e) {
             <camunda:inputParameter name="selectQuery">SELECT c FROM Client c WHERE c.exClientId = '${kycSourceId}'</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
-        <bpmn:incoming>Flow_12usd1q</bpmn:incoming>
+        <bpmn:incoming>Flow_1gr0f4p</bpmn:incoming>
         <bpmn:outgoing>Flow_10v37fm</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:scriptTask id="Activity_1ebyu7i" name="Создать KYCCASEClientLegal" scriptFormat="groovy">
@@ -1122,10 +1122,9 @@ catch (Exception e) {
       <bpmn:exclusiveGateway id="Gateway_0is2nr4">
         <bpmn:incoming>Flow_179hbbu</bpmn:incoming>
         <bpmn:incoming>Flow_10qlsyu</bpmn:incoming>
-        <bpmn:outgoing>Flow_12usd1q</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1leegut</bpmn:outgoing>
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_179hbbu" sourceRef="Activity_0z7a2h2" targetRef="Gateway_0is2nr4" />
-      <bpmn:sequenceFlow id="Flow_12usd1q" sourceRef="Gateway_0is2nr4" targetRef="Activity_0zt5wir" />
       <bpmn:sequenceFlow id="Flow_1au8qei" sourceRef="Gateway_1o8kvmt" targetRef="Activity_0z7a2h2" />
       <bpmn:sequenceFlow id="Flow_10qlsyu" sourceRef="Gateway_1o8kvmt" targetRef="Gateway_0is2nr4">
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${versionErr}</bpmn:conditionExpression>
@@ -1303,6 +1302,15 @@ catch (Exception e) {
         <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${emptyVerdoc}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="Flow_0kzvo2e" sourceRef="Gateway_163em5k" targetRef="Gateway_0n32jz6" />
+      <bpmn:intermediateCatchEvent id="Event_0vxu7fp">
+        <bpmn:incoming>Flow_1leegut</bpmn:incoming>
+        <bpmn:outgoing>Flow_1gr0f4p</bpmn:outgoing>
+        <bpmn:timerEventDefinition id="TimerEventDefinition_1un6u78">
+          <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT2S</bpmn:timeDuration>
+        </bpmn:timerEventDefinition>
+      </bpmn:intermediateCatchEvent>
+      <bpmn:sequenceFlow id="Flow_1leegut" sourceRef="Gateway_0is2nr4" targetRef="Event_0vxu7fp" />
+      <bpmn:sequenceFlow id="Flow_1gr0f4p" sourceRef="Event_0vxu7fp" targetRef="Activity_0zt5wir" />
     </bpmn:subProcess>
     <bpmn:endEvent id="Event_1ci363g">
       <bpmn:incoming>Flow_1kwzn44</bpmn:incoming>
@@ -2503,6 +2511,10 @@ else {
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlKycClientProcess">
+      <bpmndi:BPMNEdge id="Flow_0aiyxug_di" bpmnElement="Flow_0aiyxug">
+        <di:waypoint x="1380" y="260" />
+        <di:waypoint x="1935" y="260" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0on52bb_di" bpmnElement="Flow_0on52bb">
         <di:waypoint x="1570" y="550" />
         <di:waypoint x="2125" y="550" />
@@ -2641,10 +2653,6 @@ else {
       <bpmndi:BPMNEdge id="Flow_0bebf6m_di" bpmnElement="Flow_0bebf6m">
         <di:waypoint x="188" y="550" />
         <di:waypoint x="230" y="550" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0aiyxug_di" bpmnElement="Flow_0aiyxug">
-        <di:waypoint x="1380" y="260" />
-        <di:waypoint x="1935" y="260" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="152" y="532" width="36" height="36" />
@@ -2805,10 +2813,6 @@ else {
         <di:waypoint x="3135" y="1220" />
         <di:waypoint x="3180" y="1220" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_12usd1q_di" bpmnElement="Flow_12usd1q">
-        <di:waypoint x="3350" y="1195" />
-        <di:waypoint x="3350" y="1120" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_179hbbu_di" bpmnElement="Flow_179hbbu">
         <di:waypoint x="3280" y="1220" />
         <di:waypoint x="3325" y="1220" />
@@ -2964,6 +2968,14 @@ else {
       <bpmndi:BPMNEdge id="Flow_12p82pg_di" bpmnElement="Flow_12p82pg">
         <di:waypoint x="1550" y="1080" />
         <di:waypoint x="1570" y="1080" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1leegut_di" bpmnElement="Flow_1leegut">
+        <di:waypoint x="3350" y="1195" />
+        <di:waypoint x="3350" y="1178" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gr0f4p_di" bpmnElement="Flow_1gr0f4p">
+        <di:waypoint x="3350" y="1142" />
+        <di:waypoint x="3350" y="1120" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_0zaunjw_di" bpmnElement="Event_0zaunjw">
         <dc:Bounds x="612" y="1062" width="36" height="36" />
@@ -3143,6 +3155,9 @@ else {
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_0a8umnh_di" bpmnElement="Gateway_0a8umnh" isMarkerVisible="true">
         <dc:Bounds x="4805" y="1125" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ahhmsw_di" bpmnElement="Event_0vxu7fp">
+        <dc:Bounds x="3332" y="1142" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1ci363g_di" bpmnElement="Event_1ci363g">
         <dc:Bounds x="5592" y="872" width="36" height="36" />
