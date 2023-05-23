@@ -57,7 +57,7 @@ reasonedJudgment.typeRj = typeRj
 
 String conclusion = "По результатам проверки деятельности, анализа выписок и всех имеющихся у Банка документов и информации о Клиенте и его контрагентах"
 
-if (client.clientType.code == "3" || client.clientType.code == "5") {
+if (client.clientType != null && (client.clientType.code == "3" || client.clientType.code == "5")) {
     if (typeRj.code == "1") {
         conclusion = conclusion + " деятельность Клиента соответствует заявленным масштабам, признаки сомнительности отсутствуют. Операции Клиента осуществляются в рамках заявленной деятельности и соответствуют общепринятой рыночной практике."
     }
@@ -65,7 +65,7 @@ if (client.clientType.code == "3" || client.clientType.code == "5") {
         conclusion = conclusion + " признать операции Клиента, указанные в прилагаемом списке, подозрительными и направить по ним сообщения в Уполномоченный орган в установленный законом срок."
     }
 }
-else if (client.clientType.code == "4") {
+else if (client.clientType != null && client.clientType.code == "4") {
     if (typeRj.code == "1") {
         conclusion = conclusion + " признаки сомнительности отсутствуют."
     }

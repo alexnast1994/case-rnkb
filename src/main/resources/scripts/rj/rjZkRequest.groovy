@@ -1,5 +1,3 @@
-package temp.rj
-
 import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
 import com.prime.db.rnkb.model.commucation.judgment.Rjzkrequest
 import com.prime.db.rnkb.model.commucation.request.Request
@@ -16,6 +14,7 @@ String dateEnd = execution.getVariable("offDate") as String
 
 try {
     List<Request> requestList = getRequests(clientId, LocalDateTime.parse(dateStart),LocalDateTime.parse(dateEnd))
+    println(requestList.toString())
     if (!requestList.isEmpty() && requestList != null) {
         execution.setVariable("requestList", requestList)
         List<Rjzkrequest> rjzkrequestList = new ArrayList<>()
@@ -43,6 +42,5 @@ try {
 }
 catch (Exception e) {
     execution.setVariable("emptyrequestList", true)
-    println "Ошибка при получении requestList " + e.localizedMessage
+    println "Ошибка при получении requestList" + e.localizedMessage
 }
-
