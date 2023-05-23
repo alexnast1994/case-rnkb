@@ -264,35 +264,39 @@ return rjClient</bpmn:script>
         <bpmn:incoming>Flow_01wrt3k</bpmn:incoming>
         <bpmn:outgoing>Flow_06xamdo</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
-                    import com.prime.db.rnkb.model.Client
-                    import com.prime.db.rnkb.model.ClientIndividual
-                    import com.prime.db.rnkb.model.ClientRelation
-                    import com.prime.db.rnkb.model.commucation.judgment.RjClient
-                    import com.prime.db.rnkb.model.commucation.judgment.RjClientRe
-                    import org.slf4j.LoggerFactory
-                    def log = LoggerFactory.getLogger(this.class)
+import com.prime.db.rnkb.model.Client
+import com.prime.db.rnkb.model.ClientIndividual
+import com.prime.db.rnkb.model.ClientRelation
+import com.prime.db.rnkb.model.commucation.judgment.RjClient
+import com.prime.db.rnkb.model.commucation.judgment.RjClientRe
+import org.slf4j.LoggerFactory
 
-                    def rjClient = execution.getVariable("rjClient") as RjClient
+def log = LoggerFactory.getLogger(this.class)
+
+def rjClient = execution.getVariable("rjClient") as RjClient
 def client = execution.getVariable("clientBase") as Client
-def clientIndividual = new ClientIndividual()
 def rjClientRe = new RjClientRe()
-if(client.clientIndividual!=null){
-    clientIndividual=client.clientIndividual
-    rjClientRe.birthDate = clientIndividual.birthdate
-}
+
 def clientRelation = execution.getVariable("clientRelationBase") as ClientRelation
 
 
 rjClientRe.rjclient = rjClient
 rjClientRe.exToClientId = client
 rjClientRe.toClientId = client
-if(clientRelation!=null){
+if (clientRelation != null) {
+    if (clientRelation.toClientId != null) {
+        rjClientRe.fullname = clientRelation.toClientId.fullName
+        if (clientRelation.toClientId.clientIndividual != null) {
+            rjClientRe.birthDate = clientRelation.toClientId.clientIndividual.birthdate
+        }
+
+    }
     rjClientRe.relationType = clientRelation.relationType
     rjClientRe.isEIOChild = clientRelation.iseiochild
-    if(client.inn!=null){
+    if (client.inn != null) {
         rjClientRe.inn = Long.valueOf(client.inn)
     }
-    if(client.ogrn!=null){
+    if (client.ogrn != null) {
         rjClientRe.ogrn = Long.valueOf(client.ogrn)
     }
     rjClientRe.isEIOToDateDate = clientRelation.iseiotodatedate
@@ -840,6 +844,7 @@ if (clientAccounts != null &amp;&amp; clientAccounts.size() &gt; 0) {
         RjAccount rjAccount = new RjAccount()
         rjAccount.rjclient = execution.getVariable("rjClient") as RjClient
         rjAccount.accountcontracttype = clientAccount.accountcontracttype
+        rjAccount.accountcontractname = clientAccount.accountcontractname
         rjAccount.agreementnumber = clientAccount.agreementnumber
         rjAccount.accountnumber = clientAccount.accountnumber
         rjAccount.startdate = clientAccount.startdate
@@ -2014,6 +2019,10 @@ execution.setVariable("rjRecommendations", rjRecommendations)</bpmn:script>
       <bpmndi:BPMNShape id="Activity_1508q2q_di" bpmnElement="Activity_1508q2q" isExpanded="true">
         <dc:Bounds x="810" y="80" width="11670" height="480" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_183kxyb_di" bpmnElement="Flow_183kxyb">
+        <di:waypoint x="5160" y="340" />
+        <di:waypoint x="5180" y="340" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0wcbj47_di" bpmnElement="Flow_0wcbj47">
         <di:waypoint x="4420" y="340" />
         <di:waypoint x="4440" y="340" />
@@ -2316,10 +2325,6 @@ execution.setVariable("rjRecommendations", rjRecommendations)</bpmn:script>
         <di:waypoint x="5040" y="340" />
         <di:waypoint x="5060" y="340" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_183kxyb_di" bpmnElement="Flow_183kxyb">
-        <di:waypoint x="5160" y="340" />
-        <di:waypoint x="5180" y="340" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0zkgxvg_di" bpmnElement="Flow_0zkgxvg">
         <di:waypoint x="5280" y="340" />
         <di:waypoint x="5305" y="340" />
@@ -2595,9 +2600,6 @@ execution.setVariable("rjRecommendations", rjRecommendations)</bpmn:script>
       <bpmndi:BPMNShape id="Activity_1u86afc_di" bpmnElement="Activity_1msvyzc">
         <dc:Bounds x="4940" y="300" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_030a0tx_di" bpmnElement="Activity_0fb2oxw">
-        <dc:Bounds x="5060" y="300" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0hbx3x0_di" bpmnElement="Activity_199mx1h">
         <dc:Bounds x="5380" y="300" width="100" height="80" />
       </bpmndi:BPMNShape>
@@ -2807,6 +2809,9 @@ execution.setVariable("rjRecommendations", rjRecommendations)</bpmn:script>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0triv7o_di" bpmnElement="Activity_0awlcs3">
         <dc:Bounds x="4440" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_030a0tx_di" bpmnElement="Activity_0fb2oxw">
+        <dc:Bounds x="5060" y="300" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1judvsr_di" bpmnElement="Activity_0xhr3ji">
         <dc:Bounds x="670" y="230" width="100" height="80" />

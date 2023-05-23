@@ -1,4 +1,3 @@
-package temp.rj
 
 import com.prime.db.rnkb.model.Address
 import com.prime.db.rnkb.model.commucation.judgment.RjAddress

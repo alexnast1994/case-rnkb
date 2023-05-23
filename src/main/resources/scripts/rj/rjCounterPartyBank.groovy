@@ -63,6 +63,3 @@ else {
     println "Не удалось найти банки для данных ИНН"
     execution.setVariable("emptyBank", true)
 }
-
-
-
