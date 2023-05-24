@@ -1642,6 +1642,7 @@ String dateEnd = execution.getVariable("offDate") as String
 
 try {
     List&lt;Request&gt; requestList = getRequests(clientId, LocalDateTime.parse(dateStart),LocalDateTime.parse(dateEnd))
+    println(requestList.toString())
     if (!requestList.isEmpty() &amp;&amp; requestList != null) {
         execution.setVariable("requestList", requestList)
         List&lt;Rjzkrequest&gt; rjzkrequestList = new ArrayList&lt;&gt;()
@@ -1653,9 +1654,6 @@ try {
             rjzkrequest.fullInf = r.fullInf
             rjzkrequest.overDue = r.overdue
             rjzkrequest.dateOfExecution = r.dateOfExecution
-            if (r.answerList != null &amp;&amp; r.answerList.size() &gt; 0) {
-                rjzkrequest.dateOfResponse = r.answerList.get(0).dateOfResponse
-            }
             rjzkrequest.zkRequestId = r
             rjzkrequestList.add(rjzkrequest)
             execution.setVariable("rjzkrequestList", rjzkrequestList)

@@ -26,9 +26,6 @@ try {
             rjzkrequest.fullInf = r.fullInf
             rjzkrequest.overDue = r.overdue
             rjzkrequest.dateOfExecution = r.dateOfExecution
-            if (r.answerList != null && r.answerList.size() > 0) {
-                rjzkrequest.dateOfResponse = r.answerList.get(0).dateOfResponse
-            }
             rjzkrequest.zkRequestId = r
             rjzkrequestList.add(rjzkrequest)
             execution.setVariable("rjzkrequestList", rjzkrequestList)
