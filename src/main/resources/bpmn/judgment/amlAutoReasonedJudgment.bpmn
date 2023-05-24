@@ -40,7 +40,7 @@ def payloadObject = jsonData.prop("payload").prop("amlAutoReasonedJudgment")
 
 def clientId = payloadObject.prop("clientId").numberValue().longValue()
 def typeRj = payloadObject.prop("typeRj").stringValue()
-def caseElements = typeRj != "3" &amp;&amp; payloadObject.hasProp("caseIds") &amp;&amp; payloadObject.prop("caseIds") != null &amp;&amp; payloadObject.prop("caseIds").elements().size() &gt; 0 ? payloadObject.prop("caseIds").elements() : null
+def caseElements = (typeRj == "1" || typeRj == "2") &amp;&amp; payloadObject.hasProp("caseIds") &amp;&amp; payloadObject.prop("caseIds") != null &amp;&amp; payloadObject.prop("caseIds").elements().size() &gt; 0 ? payloadObject.prop("caseIds").elements() : null
 def startDate = payloadObject.prop("startDate").stringValue()
 def offDate = payloadObject.prop("offDate").stringValue()
 
@@ -395,8 +395,9 @@ else {
 
 
 def typeRj = getTypeRj(execution.getVariable("typeRj"))
-
-reasonedJudgment.status = getStatus("5")
+def typeRjJson = execution.getVariable("typeRj")
+println("Тайп rj: " + typeRjJson)
+reasonedJudgment.status = typeRjJson == "1" || typeRjJson == "2" ? getStatus("5") : getStatus("1")
 Client client = execution.getVariable("clientBase")
 reasonedJudgment.clientId = client
 reasonedJudgment.jobStatus = getJobStatus("1")

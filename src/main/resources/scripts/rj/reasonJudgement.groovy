@@ -48,8 +48,9 @@ else {
 
 
 def typeRj = getTypeRj(execution.getVariable("typeRj"))
-
-reasonedJudgment.status = getStatus("1")
+def typeRjJson = execution.getVariable("typeRj")
+println("Тайп rj: " + typeRjJson)
+reasonedJudgment.status = typeRjJson == "1" || typeRjJson == "2" ? getStatus("5") : getStatus("1")
 Client client = execution.getVariable("clientBase")
 reasonedJudgment.clientId = client
 reasonedJudgment.jobStatus = getJobStatus("1")
