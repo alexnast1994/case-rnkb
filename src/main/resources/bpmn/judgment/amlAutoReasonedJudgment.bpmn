@@ -1949,7 +1949,7 @@ BaseDictionary getJobStatus(String code) {
 }
 
 RjZkFormRequest saveForm(RjZkFormRequest formRequest) {
-    rjFormOfRequestRepo.save(formRequest)
+    rjFormOfRequestRepo.saveAndFlush(formRequest)
 }
 
 List&lt;Request&gt; req = execution.getVariable("requestList") as List&lt;Request&gt;
