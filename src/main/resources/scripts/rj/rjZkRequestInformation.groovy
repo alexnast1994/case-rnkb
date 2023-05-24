@@ -31,11 +31,6 @@ if (!requestedInformations.isEmpty() && requestedInformations != null) {
         RjZkRequestInformation rjZkRequestInformation = new RjZkRequestInformation()
         rjZkRequestInformation.rjZkRequestId = rjzkrequests.find { a.requestId.id == it.zkRequestId.id}
         rjZkRequestInformation.statusOfProviding = a.statusOfProviding
-        RjZkFormRequest formRequest = new RjZkFormRequest()
-        formRequest.codInf = a.formOfReq.codInf
-        formRequest.info = a.formOfReq.codInf
-        formRequest.dateForm = a.formOfReq.dateForm
-        rjZkRequestInformation.formOfReqId = saveForm(formRequest)
         rjZkRequestInformations.add(rjZkRequestInformation)
     }
     execution.setVariable("rjZkRequestInformations",rjZkRequestInformations)
