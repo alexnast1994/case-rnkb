@@ -1,5 +1,3 @@
-package temp.rj
-
 import com.prime.db.rnkb.model.ClientAccount
 import com.prime.db.rnkb.model.commucation.judgment.RjAccount
 import com.prime.db.rnkb.model.commucation.judgment.RjClient
@@ -12,6 +10,7 @@ if (clientAccounts != null && clientAccounts.size() > 0) {
         RjAccount rjAccount = new RjAccount()
         rjAccount.rjclient = execution.getVariable("rjClient") as RjClient
         rjAccount.accountcontracttype = clientAccount.accountcontracttype
+        rjAccount.accountcontractname = clientAccount.accountcontractname
         rjAccount.agreementnumber = clientAccount.agreementnumber
         rjAccount.accountnumber = clientAccount.accountnumber
         rjAccount.startdate = clientAccount.startdate

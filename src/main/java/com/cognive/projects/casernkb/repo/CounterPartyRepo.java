@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface CounterPartyRepo extends JpaRepository<RjCounterparty, Long> {
 
-    @Query(value = "select rjc from RjCounterparty rjc where rjc.rjId = :rj")
-    List<RjCounterparty> getRjCounterparty(ReasonedJudgment rj);
+    @Query(value = "select rjc from RjCounterparty rjc where rjc.rjId.id = :rj")
+    List<RjCounterparty> getRjCounterparty(Long rj);
 
 }

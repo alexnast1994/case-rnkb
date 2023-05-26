@@ -1,4 +1,4 @@
-package temp.rj
+
 
 import com.cognive.projects.casernkb.model.projection.BankProjection
 import com.prime.db.rnkb.model.FieldAggGeneral
@@ -18,7 +18,7 @@ List<BankProjection> getPayeeBanks(List<String> inn) {
     paymentRepo.getPayeeBanks(inn)
 }
 
-List<RjCounterparty> getRjCounterparty(ReasonedJudgment rj) {
+List<RjCounterparty> getRjCounterparty(Long rj) {
     counterPartyRepo.getRjCounterparty(rj)
 }
 
@@ -27,7 +27,7 @@ String dateStart = execution.getVariable("startDate") as String
 String dateEnd = execution.getVariable("offDate") as String
 
 println("Начало записи банков")
-List<RjCounterparty> rjCounterparties = getRjCounterparty(execution.getVariable("reasonedJudgment") as ReasonedJudgment)
+List<RjCounterparty> rjCounterparties = execution.getVariable("rjCounterparties") as List<RjCounterparty>
 println("Инн контрагентов: " + rjCounterparties.collect{it.inn})
 List<BankProjection> bankList = new ArrayList<>()
 bankList.addAll(getPayerBanks(rjCounterparties.collect { it.inn }))
@@ -63,6 +63,3 @@ else {
     println "Не удалось найти банки для данных ИНН"
     execution.setVariable("emptyBank", true)
 }
-
-
-

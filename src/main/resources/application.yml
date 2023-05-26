@@ -73,6 +73,7 @@ spring:
           configuration:
             max.request.size: 104857600
             max.poll.records: 1
+            max.poll.interval.ms: 600000
             security.protocol: ${KAFKA_SECURITY_PROTOCOL}
             ssl.truststore.location: ${KAFKA_SSL_TRUSTSTORE_LOCATION}
             ssl.truststore.password: ${KAFKA_SSL_TRUSTSTORE_PASSWORD}

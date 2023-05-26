@@ -48,8 +48,9 @@ else {
 
 
 def typeRj = getTypeRj(execution.getVariable("typeRj"))
-
-reasonedJudgment.status = getStatus("1")
+def typeRjJson = execution.getVariable("typeRj")
+println("Тайп rj: " + typeRjJson)
+reasonedJudgment.status = typeRjJson == "1" || typeRjJson == "2" ? getStatus("5") : getStatus("1")
 Client client = execution.getVariable("clientBase")
 reasonedJudgment.clientId = client
 reasonedJudgment.jobStatus = getJobStatus("1")
@@ -57,7 +58,7 @@ reasonedJudgment.typeRj = typeRj
 
 String conclusion = "По результатам проверки деятельности, анализа выписок и всех имеющихся у Банка документов и информации о Клиенте и его контрагентах"
 
-if (client.clientType.code == "3" || client.clientType.code == "5") {
+if (client.clientType != null && (client.clientType.code == "3" || client.clientType.code == "5")) {
     if (typeRj.code == "1") {
         conclusion = conclusion + " деятельность Клиента соответствует заявленным масштабам, признаки сомнительности отсутствуют. Операции Клиента осуществляются в рамках заявленной деятельности и соответствуют общепринятой рыночной практике."
     }
@@ -65,7 +66,7 @@ if (client.clientType.code == "3" || client.clientType.code == "5") {
         conclusion = conclusion + " признать операции Клиента, указанные в прилагаемом списке, подозрительными и направить по ним сообщения в Уполномоченный орган в установленный законом срок."
     }
 }
-else if (client.clientType.code == "4") {
+else if (client.clientType != null && client.clientType.code == "4") {
     if (typeRj.code == "1") {
         conclusion = conclusion + " признаки сомнительности отсутствуют."
     }
