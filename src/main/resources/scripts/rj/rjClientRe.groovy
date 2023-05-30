@@ -4,34 +4,43 @@ import com.prime.db.rnkb.model.commucation.judgment.RjClientRe
 
 
 def rjClient = execution.getVariable("rjClient") as RjClient
-def rjClientRe = new RjClientRe()
-
-def clientRelation = execution.getVariable("clientRelationBase") as ClientRelation
 
 
-rjClientRe.rjclient = rjClient
+def clientRelation = execution.getVariable("clientRelationBase") as List<ClientRelation>
 
-if (clientRelation != null) {
-    if (clientRelation.toClientId != null) {
-        rjClientRe.fullname = clientRelation.toClientId.fullName
-        if (clientRelation.toClientId.clientIndividual != null) {
-            rjClientRe.birthDate = clientRelation.toClientId.clientIndividual.birthdate
+List<RjClientRe> rjClientReList = new ArrayList<>()
+
+print(clientRelation.size())
+if (clientRelation != null && clientRelation.size() > 0) {
+    clientRelation.each {it ->
+        RjClientRe rjClientRe = new RjClientRe()
+        rjClientRe.rjclient = rjClient
+        if (it.toClientId != null) {
+            rjClientRe.fullname = it.toClientId.fullName
+            if (it.toClientId.clientIndividual != null) {
+                rjClientRe.birthDate = it.toClientId.clientIndividual.birthdate
+            }
+            if (it.toClientId.inn != null) {
+                rjClientRe.inn = Long.valueOf(it.toClientId.inn)
+            }
+            if (it.toClientId.ogrn != null) {
+                rjClientRe.ogrn = Long.valueOf(it.toClientId.ogrn)
+            }
+
+            rjClientRe.clientMark = it.toClientId.clientMark
         }
-        if (clientRelation.toClientId.inn != null) {
-            rjClientRe.inn = Long.valueOf(clientRelation.toClientId.inn)
-        }
-        if (clientRelation.toClientId.ogrn != null) {
-            rjClientRe.ogrn = Long.valueOf(clientRelation.toClientId.ogrn)
-        }
-
-        rjClientRe.clientMark = clientRelation.toClientId.clientMark
+        rjClientRe.toClientId = it.toClientId
+        rjClientRe.relationType = it.relationType
+        rjClientRe.isEIOChild = it.iseiochild
+        rjClientRe.isEIOToDateDate = it.iseiotodatedate
+        rjClientRe.isEIOFromDate = it.iseiofromdate
+        rjClientRe.sharePercent = it.sharepercent
+        rjClientReList.add(rjClientRe)
     }
-    rjClientRe.toClientId = clientRelation.toClientId
-    rjClientRe.relationType = clientRelation.relationType
-    rjClientRe.isEIOChild = clientRelation.iseiochild
-    rjClientRe.isEIOToDateDate = clientRelation.iseiotodatedate
-    rjClientRe.isEIOFromDate = clientRelation.iseiofromdate
-    rjClientRe.sharePercent = clientRelation.sharepercent
-}
+    execution.setVariable("rjClientReList",rjClientReList)
+    execution.setVariable("emptyrjClientReList",false)
 
-return rjClientRe
+}
+else {
+    execution.setVariable("emptyrjClientReList",true)
+}

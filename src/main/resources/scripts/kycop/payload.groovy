@@ -12,6 +12,7 @@ try {
         execution.setVariable("jsonData", jsonData)
         println("Начало записи партисипантов")
         execution.setVariable("participants", patJson)
+        execution.setVariable("otherPersons", other)
         println("Записали партисипанты")
         execution.setVariable("correctJson",  true)
     }

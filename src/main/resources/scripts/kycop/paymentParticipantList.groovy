@@ -2,6 +2,7 @@ import com.prime.db.rnkb.model.BaseDictionary
 import com.prime.db.rnkb.model.Client
 import com.prime.db.rnkb.model.Payment
 import com.prime.db.rnkb.model.PaymentParticipantList
+import org.camunda.spin.SpinList
 import org.camunda.spin.json.SpinJsonNode
 
 import java.time.LocalDateTime
@@ -22,6 +23,7 @@ BaseDictionary getBd(int type, String code) {
 }
 
 def participant = execution.getVariable("participant") as SpinJsonNode
+def otherPersons = json.hasProp("OtherPersons") && json.prop("OtherPersons") != null && json.prop("OtherPersons").elements().size() > 0 ? json.prop("OtherPersons") : null
 List<PaymentParticipantList> participantListList = new ArrayList<>()
 try {
     println("Старт формирования записи")
@@ -34,7 +36,16 @@ try {
         if (participant.hasProp("ClientId") && participant.prop("ClientId") != null && participant.prop("ClientId").stringValue() != "") {
             participantList.clientId = getClient(participant.prop("ClientId").stringValue())
         }
-        participantList.otherPersonType = participant.hasProp("PartType") && participant.prop("PartType") != null ? getBd(169, participant.prop("PartType").toString()) : null
+
+        if (participant.hasProp("PartType") && participant.prop("PartType") != null && participant.prop("PartType").numberValue() == 19) {
+
+            participantList.otherPersonType = participant.hasProp("OtherPersonType") && participant.prop("OtherPersonType") != null ? getBd(169, participant.prop("OtherPersonType").stringValue()) : getBd(169, participant.prop("PartType").toString())
+
+        }
+        else {
+            participantList.otherPersonType =  participant.hasProp("PartType") && participant.prop("PartType") != null ? getBd(169, participant.prop("PartType").toString()) : null
+
+        }
         participantList.typeList = getBd(214, it.prop("Id").stringValue())
         participantList.levelBlocking = Integer.parseInt(it.prop("LevelBlocking").stringValue())
         participantList.checkStatus = Integer.parseInt(it.prop("CheckStatus").stringValue())
