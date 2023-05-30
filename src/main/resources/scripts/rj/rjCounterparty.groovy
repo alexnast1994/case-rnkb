@@ -1,5 +1,3 @@
-package temp.rj
-
 import com.cognive.projects.casernkb.model.CounterPartyFinal
 import com.cognive.projects.casernkb.model.projection.CounterpartyAgg
 import com.cognive.projects.casernkb.model.projection.Egrip

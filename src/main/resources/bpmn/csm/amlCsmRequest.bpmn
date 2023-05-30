@@ -8,7 +8,6 @@
     <bpmn:endEvent id="Event_noActivity">
       <bpmn:incoming>Flow_0e0sljh</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:endEvent id="Event_endKycClient" />
     <bpmn:textAnnotation id="TextAnnotation_17oqi0m">
       <bpmn:text>17. Сохранение результатов Онлайн от поисковой машины по платежам</bpmn:text>
     </bpmn:textAnnotation>
@@ -25,17 +24,14 @@
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="152" y="432" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0449mm1_di" bpmnElement="Event_endKycClient">
-        <dc:Bounds x="792" y="432" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_0nc03g9_di" bpmnElement="Event_noActivity">
+        <dc:Bounds x="332" y="432" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_17oqi0m_di" bpmnElement="TextAnnotation_17oqi0m">
         <dc:Bounds x="540" y="80" width="100" height="96" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0cwastb_di" bpmnElement="TextAnnotation_0cwastb">
         <dc:Bounds x="530" y="290" width="100" height="96" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0nc03g9_di" bpmnElement="Event_noActivity">
-        <dc:Bounds x="332" y="432" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
