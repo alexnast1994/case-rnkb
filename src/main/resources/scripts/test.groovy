@@ -1,34 +1,61 @@
-import static org.camunda.spin.Spin.JSON
+import com.prime.db.rnkb.model.Case
+import com.prime.db.rnkb.model.CaseUser
+import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
+import com.prime.db.rnkb.model.commucation.judgment.ClientReasonedJudgment
+import com.prime.db.rnkb.model.BaseDictionary
 
-def jsonStr = execution.getVariable("payload")
-def jsonData = JSON(jsonStr)
+import java.time.LocalDateTime
 
-def payloadObject = jsonData.prop("payload").prop("amlAutoReasonedJudgment")
-
-def clientId = payloadObject.prop("clientId").numberValue().longValue()
-def typeRj = payloadObject.prop("typeRj").stringValue()
-def caseElements = typeRj != "3" && payloadObject.hasProp("caseIds") && payloadObject.prop("caseIds") != null && payloadObject.prop("caseIds").elements().size() > 0 ? payloadObject.prop("caseIds").elements() : null
-def startDate = payloadObject.prop("startDate").stringValue()
-def offDate = payloadObject.prop("offDate").stringValue()
-
-
-def caseIds = []
-if (caseElements != null) {
-    execution.setVariable("nonCase", false)
-    caseElements.each { caseElement ->
-        caseIds.add(caseElement.numberValue().longValue())
-    }
-    def caseIdsString = caseIds.inject { first, second ->
-        "$first,$second"
-    }
-    execution.setVariable("caseIds", caseIds)
-    execution.setVariable("caseIdsString", caseIdsString)
-}
-else {
-    execution.setVariable("nonCase", true)
+BaseDictionary getBd(Integer typeCode, String code) {
+    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(typeCode, code);
 }
 
-execution.setVariable("clientId", clientId)
-execution.setVariable("startDate", startDate)
-execution.setVariable("offDate", offDate)
-execution.setVariable("typeRj", typeRj)
+ReasonedJudgment judgment = execution.getVariable("reasonedJudgment")
+
+def cases = []
+def caseUsers = []
+def callProcesses = false
+
+BaseDictionary status = null
+BaseDictionary caseStatus = null
+
+if(judgment.typeRj.getCode() == "2" && judgment.typeOfControl.getCode() == "1") {
+    status = getBd(131, "7")
+    caseStatus = getBd(178, "4")
+    callProcesses = true
+} else if(judgment.typeRj.getCode() == "2" && judgment.typeOfControl.getCode() == "2") {
+    status = getBd(140, "6")
+    caseStatus = getBd(179, "4")
+} else if(judgment.typeRj.getCode() == "1" && judgment.typeOfControl.getCode() == "2") {
+    status = getBd(140, "7")
+    caseStatus = getBd(179, "4")
+}
+
+judgment.caseReasonedJudgmentsList.each{caseRj ->
+    if(caseRj.caseId != null) {
+        if(status != null && caseStatus != null) {
+
+            def caseData = caseRj.caseId
+            caseData.status = status
+            caseData.caseStatus = caseStatus
+
+            def caseUser = new CaseUser()
+            caseUser.caseId = caseData
+            caseUser.decisionDate = LocalDateTime.now()
+            caseUser.status = status
+
+            if(judgment.confirmingDate != null && judgment.approvalDate == null) {
+                caseUser.responsible = judgment.assignedTo
+            } else if(judgment.confirmingDate != null) {
+                caseUser.responsible = judgment.responsibleUser
+            }
+
+            caseUsers.add(caseUser)
+            cases.add(caseData)
+        }
+    }
+}
+
+execution.setVariable("cases", cases)
+execution.setVariable("caseUsers", caseUsers)
+execution.setVariable("callProcesses", callProcesses)
