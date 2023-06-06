@@ -88,24 +88,12 @@ spring:
           destination: ${TOPIC_MESSAGE_INPUT}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
-        csmMessageInput-in-0:
-          destination: ${TOPIC_CSM_INPUT}
-          group: ${KAFKA_GROUP:case-rnkb}
-          binder: kafka
         pipelineMessageInput-in-0:
           destination: ${TOPIC_PIPELINE_INPUT}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         saveRiskResponseMessageInput-in-0:
           destination: ${TOPIC_RISK_RESPONSE_SAVE_INPUT:rnkb-risk-scoring-resp}
-          group: ${KAFKA_GROUP:case-rnkb}
-          binder: kafka
-        kycCaseCreationInput-in-0:
-          destination: ${TOPIC_KYC_CASE_CREATION:rnkb-kyc-casecreation}
-          group: ${KAFKA_GROUP:case-rnkb}
-          binder: kafka
-        kycOperationCreationInput-in-0:
-          destination: ${TOPIC_KYC_OPERATION_CREATION:rnkb-kyc-operationCreation}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         rjCreationInput-in-0:
@@ -133,7 +121,7 @@ spring:
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
       function:
-        definition: commonMessageInput;csmMessageInput;pipelineMessageInput;saveRiskResponseMessageInput;kycCaseCreationInput;kycOperationCreationInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput
+        definition: commonMessageInput;pipelineMessageInput;saveRiskResponseMessageInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput
 
 server:
   port: ${SERVER_PORT:8193}
