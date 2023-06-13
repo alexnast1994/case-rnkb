@@ -88,8 +88,8 @@ List&lt;ClientCheckResult&gt; getCheckResult(Long clientId, Long moduleType, Lon
     checkResultRepo.existCheckResult(clientId, moduleType, modelRule)
 }
 
-void updateCheckResult(Boolean isMatch, LocalDateTime checkDate, LocalDateTime decisionDate, Long id) {
-     checkResultRepo.updateCheckResult(isMatch, checkDate, decisionDate, id);
+void updateCheckResult(LocalDateTime checkDate, LocalDateTime decisionDate, Long id) {
+     checkResultRepo.updateCheckResult(checkDate, decisionDate, id);
 }
 
 BaseDictionary mt = getBd(298, module)
@@ -106,6 +106,7 @@ if (resultList.isEmpty() &amp;&amp; !isMatch) {
     clientCheckResult.setModuleType(mt)
     clientCheckResult.setCheckDate(checkResult.hasProp("checkDate") &amp;&amp; checkResult.prop("checkDate") != null ? LocalDateTime.parse(checkResult.prop("checkDate").stringValue()) : null)
     clientCheckResult.setStartDate(checkResult.hasProp("decisionDate") &amp;&amp; checkResult.prop("decisionDate") != null ? LocalDateTime.parse(checkResult.prop("decisionDate").stringValue()) : null)
+    clientCheckResult.setEndDate(checkResult.hasProp("decisionDate") &amp;&amp; checkResult.prop("decisionDate") != null ? LocalDateTime.parse(checkResult.prop("decisionDate").stringValue()) : null)
     execution.setVariable("clientCheckResult", clientCheckResult)
     execution.setVariable("isInsert", true)
 
@@ -124,7 +125,7 @@ else if (resultList.isEmpty() &amp;&amp; isMatch) {
 }
 else if (!resultList.isEmpty() &amp;&amp; !isMatch) {
     resultList.each {r -&gt;
-        updateCheckResult(isMatch, checkResult.hasProp("checkDate") &amp;&amp; checkResult.prop("checkDate") != null ? LocalDateTime.parse(checkResult.prop("checkDate").stringValue()) : null, checkResult.hasProp("decisionDate") &amp;&amp; checkResult.prop("decisionDate") != null ? LocalDateTime.parse(checkResult.prop("decisionDate").stringValue()) : null, r.id)
+        updateCheckResult(checkResult.hasProp("checkDate") &amp;&amp; checkResult.prop("checkDate") != null ? LocalDateTime.parse(checkResult.prop("checkDate").stringValue()) : null, checkResult.hasProp("decisionDate") &amp;&amp; checkResult.prop("decisionDate") != null ? LocalDateTime.parse(checkResult.prop("decisionDate").stringValue()) : null, r.id)
     }
     execution.setVariable("isInsert", false)
 }

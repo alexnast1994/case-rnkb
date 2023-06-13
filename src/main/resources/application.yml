@@ -112,6 +112,10 @@ spring:
           destination: ${TOPIC_ZK_STATUS:rnkb-transport-req-statusClient}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
+        biMessageInput-in-0:
+          destination: ${TOPIC_BENEFICIARY_IDENTIFIED:rnkb-beneficiary-camunda-in}
+          group: ${KAFKA_GROUP:case-rnkb}
+          binder: kafka
         outMessage-out-0:
           destination: ${TOPIC_MESSAGE_OUT}
           group: ${KAFKA_GROUP:case-rnkb}
@@ -121,7 +125,7 @@ spring:
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
       function:
-        definition: commonMessageInput;pipelineMessageInput;saveRiskResponseMessageInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput
+        definition: commonMessageInput;pipelineMessageInput;saveRiskResponseMessageInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput;biMessageInput
 
 server:
   port: ${SERVER_PORT:8193}
@@ -147,6 +151,8 @@ server:
       process-name: ${KYC_OPERATION_PROCESS_NAME:amlKycOperationProcess}
     rj:
       process-name: amlAutoReasonedJudgment
+    bi:
+      process-name: ${BI_PROCESS_NAME:amlPaymentCaseBeneficiaryIdentification}
     error-topic: ${TOPIC_ERROR_OUT:}
     zk-aml-request-output-topic: ${TOPIC_ZK_REQUEST_OUT:rnkb-requestClient-resp}
     zk-aml-response-output-topic: ${TOPIC_ZK_RESPONSE_OUT:rnkb-responseClient-resp}
