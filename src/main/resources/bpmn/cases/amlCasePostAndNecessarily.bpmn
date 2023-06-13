@@ -22,26 +22,26 @@
         <bpmn:incoming>Flow_0uq8ogu</bpmn:incoming>
         <bpmn:outgoing>Flow_0bjfll2</bpmn:outgoing>
         <bpmn:script>import static org.camunda.spin.Spin.*
-                    import static org.camunda.spin.DataFormats.*
-                    import com.cognive.projects.casernkb.model.PaymentDto
+            import static org.camunda.spin.DataFormats.*
+            import com.cognive.projects.casernkb.model.PaymentDto
 
-// payload
-def jsonStr = execution.getVariable("payload")
-def jsonData = JSON(jsonStr)
+            // payload
+            def jsonStr = execution.getVariable("payload")
+            def jsonData = JSON(jsonStr)
 
-def payloadObject = jsonData.prop("payload").prop("amlCasePostAndNecessarily")
+            def payloadObject = jsonData.prop("payload").prop("amlCasePostAndNecessarily")
 
-def paymentId = payloadObject.prop("paymentId").numberValue().longValue()
-def caseType = payloadObject.prop("caseType").stringValue()
+            def paymentId = payloadObject.prop("paymentId").prop("id").numberValue().longValue()
+            def caseType = payloadObject.prop("caseType").stringValue()
 
-def rulesProp = null
+            def rulesProp = null
 
-if(payloadObject.hasProp("rules")) {
-    rulesProp = payloadObject.prop("rules").elements()
-}
-def comment = null
+            if(payloadObject.hasProp("rules")) {
+            rulesProp = payloadObject.prop("rules").elements()
+            }
+            def comment = null
 
-if(payloadObject.hasProp("comment")) {
+            if(payloadObject.hasProp("comment")) {
     comment = payloadObject.prop("comment").stringValue()
 }
 

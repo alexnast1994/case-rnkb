@@ -15,6 +15,7 @@ public class KafkaServerProperties {
     private ServiceTopicProperties kyc;
     private ServiceTopicProperties kycOperation;
     private ServiceTopicProperties rj;
+    private ServiceTopicProperties bi;
     private String errorTopic;
     private String zkAmlRequestOutputTopic;
     private String zkAmlResponseOutputTopic;

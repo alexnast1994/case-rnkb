@@ -25,7 +25,7 @@
         def elements = jsonData.mapTo(Map.class)
         execution.setVariable("isOffline", "Offline".equalsIgnoreCase(elements.get("PaymentCheckType") as
         String))
-        execution.setVariable("paymentExId", elements.get("PaymentSourceId") as String)
+        execution.setVariable("paymentExId", elements.get("PaymentReference") as String)
         execution.setVariable("payload", jsonData)
       </bpmn:script>
     </bpmn:scriptTask>
@@ -57,7 +57,7 @@
       <bpmn:serviceTask id="Activity_0pogohz" name="Получаем Payments" camunda:delegateExpression="${selectDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="selectQuery">SELECT p FROM Payment p WHERE p.exId = '${paymentExId}'
+            <camunda:inputParameter name="selectQuery">SELECT p FROM Payment p WHERE p.paymentReference = '${paymentExId}'
             </camunda:inputParameter>
             <camunda:inputParameter name="outputVarName">payments</camunda:inputParameter>
           </camunda:inputOutput>
@@ -506,6 +506,10 @@
       <bpmndi:BPMNShape id="Activity_1ax5jfs_di" bpmnElement="Activity_1ax5jfs" isExpanded="true">
         <dc:Bounds x="1270" y="80" width="4010" height="1090" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0udljpz_di" bpmnElement="Flow_0udljpz">
+        <di:waypoint x="1570" y="590" />
+        <di:waypoint x="1570" y="662" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0gp13lj_di" bpmnElement="Flow_0gp13lj">
         <di:waypoint x="3540" y="180" />
         <di:waypoint x="3592" y="180" />
@@ -578,10 +582,6 @@
         <di:waypoint x="1346" y="414" />
         <di:waypoint x="1390" y="414" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0udljpz_di" bpmnElement="Flow_0udljpz">
-        <di:waypoint x="1570" y="590" />
-        <di:waypoint x="1570" y="662" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_09gh81j_di" bpmnElement="Event_09gh81j">
         <dc:Bounds x="1310" y="396" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -595,21 +595,14 @@
         <dc:Bounds x="1650" y="374" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0i1b2fj_di" bpmnElement="Event_0i1b2fj">
+        <dc:Bounds x="1552" y="662" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1ik6fij_di" bpmnElement="Activity_1ik6fij">
         <dc:Bounds x="1800" y="374" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0sbdk1p_di" bpmnElement="Activity_0sbdk1p">
         <dc:Bounds x="1950" y="374" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0i1b2fj_di" bpmnElement="Event_0i1b2fj">
-        <dc:Bounds x="1552" y="662" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0nh9rj8" bpmnElement="Activity_1cxizrl">
-        <dc:Bounds x="1520" y="510" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0n49gcy_di" bpmnElement="Event_0n49gcy">
-        <dc:Bounds x="4292" y="692" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0y6jre5_di" bpmnElement="Activity_0y6jre5" isExpanded="true">
         <dc:Bounds x="2130" y="310" width="1250" height="208" />
@@ -801,6 +794,9 @@
       <bpmndi:BPMNShape id="Event_1nr78u6_di" bpmnElement="Event_1nr78u6">
         <dc:Bounds x="3872" y="692" width="36" height="36" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0n49gcy_di" bpmnElement="Event_0n49gcy">
+        <dc:Bounds x="4292" y="692" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1ue267h" bpmnElement="Activity_1cpt2gg">
         <dc:Bounds x="4970" y="374" width="100" height="80" />
       </bpmndi:BPMNShape>
@@ -817,6 +813,10 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1jji15u_di" bpmnElement="Event_1jji15u">
         <dc:Bounds x="3592" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0nh9rj8" bpmnElement="Activity_1cxizrl">
+        <dc:Bounds x="1520" y="510" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1javps5_di" bpmnElement="Event_1javps5">
         <dc:Bounds x="5372" y="392" width="36" height="36" />

@@ -36,7 +36,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -96,6 +98,21 @@ public class KafkaServiceImpl implements KafkaService {
                         variables);
             });
 
+        };
+    }
+
+    @Bean
+    public Consumer<Message<String>> biMessageInput() {
+        return x -> {
+            runProcess(x, () -> {
+                Map<String, Object> variables = new HashMap<>();
+                ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
+                variables.put("payload", jsonData);
+
+                return new Process(properties.getBi().getProcessName(),
+                        false,
+                        variables);
+            });
         };
     }
 
@@ -163,7 +180,6 @@ public class KafkaServiceImpl implements KafkaService {
                 Map<String, Object> variables = new HashMap<>();
                 ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
                 variables.put("payload", jsonData);
-
                 return new Process(properties.getKyc() != null ? properties.getKyc().getProcessName() : properties.getKycOperation().getProcessName(),
                         false,
                         variables);

@@ -4,6 +4,7 @@ import com.cognive.projects.casernkb.model.projection.CaseProjection;
 import com.cognive.projects.casernkb.model.projection.KycCaseProjection;
 import com.prime.db.rnkb.model.Case;
 import com.prime.db.rnkb.model.QCase;
+import com.prime.db.rnkb.model.SysUser;
 import com.prime.db.rnkb.repository.IBaseDslRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -86,5 +87,11 @@ public interface CaseRepo extends IBaseDslRepository<Case, QCase> {
             "where k1.clientId.id = :clientId and c.caseType.code = '5' and c.creationdate >= :dateStart and c.creationdate <= :dateEnd and k2.checkStatus in (1,2)")
     List<CaseProjection> getCaseKyc(Long clientId, LocalDateTime dateStart, LocalDateTime dateEnd);
 
+    @Query(value = "SELECT RESPONSIBLEUSER FROM CASE " +
+            "WHERE CASETYPE IN (SELECT ID FROM BASEDICTIONARY b WHERE b.CODE = 6 AND b.TYPE = " +
+            "(SELECT ID FROM BASEDICTIONARYTYPE bt WHERE bt.CODE = 18)) " +
+            "GROUP BY RESPONSIBLEUSER ORDER BY COUNT(id) ASC, RESPONSIBLEUSER ASC " +
+            "OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY", nativeQuery = true)
+    Long findFreeResponsibleUser();
 
 }
