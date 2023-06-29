@@ -18,8 +18,15 @@ public class OpenSessionRnkbDelegate implements JavaDelegate {
     public void execute(DelegateExecution ex) {
         var outputVarName = "session";
 
-        Session session = this.executeSqlService.openSession();
-        sessionCacheService.putSession(ex.getBusinessKey(), session);
-        ex.setVariable(outputVarName, session);
+
+        if (!ex.hasVariable("session")) {
+            if (ex.getVariable("session") == null) {
+                Session session = this.executeSqlService.openSession();
+                sessionCacheService.putSession(ex.getBusinessKey(), session);
+                ex.setVariable(outputVarName, session);
+            }
+
+        }
+
     }
 }

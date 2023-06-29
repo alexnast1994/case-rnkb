@@ -4,16 +4,15 @@ import com.cognive.projects.casernkb.model.projection.CaseProjection;
 import com.cognive.projects.casernkb.model.projection.KycCaseProjection;
 import com.prime.db.rnkb.model.Case;
 import com.prime.db.rnkb.model.QCase;
-import com.prime.db.rnkb.model.SysUser;
 import com.prime.db.rnkb.repository.IBaseDslRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Yegor Kuzmin (keelfy)
@@ -93,5 +92,15 @@ public interface CaseRepo extends IBaseDslRepository<Case, QCase> {
             "GROUP BY RESPONSIBLEUSER ORDER BY COUNT(id) ASC, RESPONSIBLEUSER ASC " +
             "OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY", nativeQuery = true)
     Long findFreeResponsibleUser();
+
+    @Query(value = "SELECT * FROM CASE c " +
+            "JOIN CASEOPERATION ON CASEOPERATION.CASEID = c.ID " +
+            "JOIN PAYMENT ON CASEOPERATION.PAYMENTID = PAYMENT.ID " +
+            "WHERE c.CASETYPE IN " +
+            "(SELECT ID FROM BASEDICTIONARY b WHERE b.CODE = 6 AND b.TYPE = " +
+            "(SELECT ID FROM BASEDICTIONARYTYPE bt WHERE bt.CODE = 18)) AND PAYMENT.ID = " +
+            "(SELECT ID FROM PAYMENT WHERE PAYMENTREFERENCE = :paymentReference " +
+            "OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY) OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY", nativeQuery = true)
+    Optional<Case> findCaseByPaymentreference(String paymentReference);
 
 }

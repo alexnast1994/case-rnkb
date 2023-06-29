@@ -43,29 +43,20 @@ minio:
   reestFolder: ${MINIO_REEST_FOLDER:reest}
 
 spring:
-  liquibase:
-    enabled: false
-  profiles:
-    active: ${SPRING_ACTIVE_PROFILES:default}
-  jpa:
-    show-sql: ${DATABASE_SHOWSQL:true}
-    hibernate:
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      ddl-auto: none
-    generate-ddl: false
-    database-platform: ${DATABASE_PLATFORM:org.hibernate.dialect.Oracle12cDialect}
-  datasource:
-    hikari:
-      jdbc-url: ${DATABASE_URL:jdbc:oracle:thin:@176.9.124.111:1521:orcl}
-      username: ${DATABASE_USERNAME:OSADMIN}
-      password: ${DATABASE_PASSWORD:Qawsed123}
-      driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.OracleDriver}
-      schema: ${DATABASE_USERNAME:OSADMIN}
-
-  application:
-    name: ${SPRING_APPLICATION_NAME:casernkb}
+  config:
+    # noinspection SpringBootApplicationYaml
+    import: ${VAULT_IMPORT:vault:///rnkb/case}
   cloud:
+    vault:
+      host: ${VAULT_HOST:localhost}
+      port: ${VAULT_PORT:8200}
+      scheme: ${VAULT_SCHEME:http}
+      uri: ${VAULT_URI:http://localhost:8200}
+      connection-timeout: 5000
+      read-timeout: 15000
+      authentication: TOKEN
+      token: ${VAULT_TOKEN:hvs.6j2FrTdxxeCzbxsRIpuTitim}
+      enabled: ${VAULT_ENABLED:true}
     stream:
       kafka:
         binder:
@@ -126,8 +117,26 @@ spring:
           binder: kafka
       function:
         definition: commonMessageInput;pipelineMessageInput;saveRiskResponseMessageInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput;biMessageInput
-    vault:
-      enabled: false
+  liquibase:
+    enabled: false
+  jpa:
+    show-sql: ${DATABASE_SHOWSQL:true}
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: none
+    generate-ddl: false
+    database-platform: ${DATABASE_PLATFORM:org.hibernate.dialect.Oracle12cDialect}
+
+  datasource:
+    hikari:
+      jdbc-url: ${DB_URL}
+      username: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
+      driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.OracleDriver}
+      schema: ${DB_USERNAME}
+  application:
+    name: ${SPRING_APPLICATION_NAME:casernkb}
 
 server:
   port: ${SERVER_PORT:8193}
