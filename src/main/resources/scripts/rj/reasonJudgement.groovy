@@ -26,7 +26,9 @@ BaseDictionary getClientType(String code) {
 }
 
 ReasonedJudgment reasonedJudgment = new ReasonedJudgment()
-if (!execution.getVariable("nonCase") as Boolean) {
+Boolean nonCase = execution.getVariable("nonCase") as Boolean
+println("Имеется кейс: " + nonCase)
+if (!nonCase) {
 
     def case1 = execution.getVariable("caseBase") as Case
     def caseDic = case1.caseType as BaseDictionary
@@ -41,9 +43,7 @@ if (!execution.getVariable("nonCase") as Boolean) {
 
 }
 else {
-
     reasonedJudgment.typeOfControl = getTypeOfControl("3")
-
 }
 
 

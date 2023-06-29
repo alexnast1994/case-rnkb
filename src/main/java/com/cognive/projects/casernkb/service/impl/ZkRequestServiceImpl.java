@@ -22,10 +22,8 @@ import com.prime.db.rnkb.repository.communication.midl.TaskClientRepository;
 import com.prime.db.rnkb.repository.communication.midl.TaskRepository;
 import com.prime.db.rnkb.repository.communication.request.*;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,8 +48,8 @@ public class ZkRequestServiceImpl implements ZkRequestService {
     private final AttachmentRepository attachmentRepository;
     private final PersonsInRequestRepository personsInRequestRepository;
     private final AnswerRepository answerRepository;
-    @Setter(onMethod_ = {@Autowired})
-    private KafkaService kafkaService;
+
+    private final KafkaService kafkaService;
 
     @Override
     public void createObjectsAndSend(AMLRequest request) {

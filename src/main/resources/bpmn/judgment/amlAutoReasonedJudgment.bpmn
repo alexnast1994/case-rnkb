@@ -135,7 +135,7 @@ else {
         <bpmn:incoming>Flow_08kjk6f</bpmn:incoming>
         <bpmn:outgoing>Flow_1jjw6br</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:serviceTask id="Activity_0tj94ac" name="Select case from base" camunda:delegateExpression="${selectOneDelegate}">
+      <bpmn:serviceTask id="Activity_0tj94ac" name="Select case from base" camunda:delegateExpression="${selectDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="outputVarName">verificationDocumentsBase</camunda:inputParameter>
@@ -152,39 +152,40 @@ else {
         <bpmn:incoming>Flow_19tumy1</bpmn:incoming>
         <bpmn:outgoing>Flow_0d951ar</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:scriptTask id="Activity_18jvan9" name="RJ_VERIFICATIONDOC" scriptFormat="groovy" camunda:resultVariable="rjVerificationdoc">
+      <bpmn:scriptTask id="Activity_18jvan9" name="RJ_VERIFICATIONDOC" scriptFormat="groovy" camunda:resultVariable="rjVerificationdocList">
         <bpmn:incoming>Flow_0d951ar</bpmn:incoming>
         <bpmn:outgoing>Flow_0wtnroh</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
-                    import com.prime.db.rnkb.model.VerificationDocument
-                    import com.prime.db.rnkb.model.commucation.judgment.RjClient
-                    import com.prime.db.rnkb.model.commucation.judgment.RjVerificationdoc
-                    import org.slf4j.LoggerFactory
-
-                    import java.time.LocalDateTime
-
-                    def log = LoggerFactory.getLogger(this.class)
+import com.prime.db.rnkb.model.VerificationDocument
+import com.prime.db.rnkb.model.commucation.judgment.RjClient
+import com.prime.db.rnkb.model.commucation.judgment.RjVerificationdoc
+import java.time.LocalDateTime
 
 
 def rjclient = execution.getVariable("rjClient") as RjClient
-def verificationDocument = execution.getVariable("verificationDocumentsBase") as VerificationDocument
+def verificationDocument = execution.getVariable("verificationDocumentsBase") as List&lt;VerificationDocument&gt;
+List&lt;RjVerificationdoc&gt; rjVerificationdocList = new ArrayList&lt;&gt;()
+
+verificationDocument.each { v -&gt;
+    def rjVerificationdoc = new RjVerificationdoc()
+    rjVerificationdoc.rjclient = rjclient
+
+    if (v != null) {
+        rjVerificationdoc.number = v.docNumber
+        rjVerificationdoc.issuebyorganization = v.issueByOrganization
+        rjVerificationdoc.issuebydepartamentcode = v.issueByDepartmentCode
+        def baseDic = v.type as BaseDictionary
+        rjVerificationdoc.type = baseDic
+        def localDateTime = v.issueDate != null ?  v.issueDate.atTime(0,0,0) as LocalDateTime : null
+        rjVerificationdoc.issuedate = localDateTime
+        rjVerificationdocList.add(rjVerificationdoc)
+    }
+}
 
 
-def rjVerificationdoc = new RjVerificationdoc()
-rjVerificationdoc.rjclient = rjClient
 
-if (verificationDocument != null) {
-    rjVerificationdoc.number = verificationDocument.docNumber
-                    rjVerificationdoc.issuebyorganization = verificationDocument.issueByOrganization
-                    rjVerificationdoc.issuebydepartamentcode = verificationDocument.issueByDepartmentCode
-                    def baseDic = verificationDocument.type as BaseDictionary
-                    rjVerificationdoc.type = baseDic
-                    def localDateTime = verificationDocument.issueDate.atTime(0,0,0) as LocalDateTime
-                    rjVerificationdoc.issuedate = localDateTime
-                    }
-
-                    return rjVerificationdoc
-                </bpmn:script>
+return rjVerificationdocList
+</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:scriptTask id="Activity_0z1d6b4" name="RJ_CLient" scriptFormat="groovy" camunda:resultVariable=" ">
         <bpmn:incoming>Flow_1s5kx7k</bpmn:incoming>
@@ -382,7 +383,9 @@ BaseDictionary getClientType(String code) {
 }
 
 ReasonedJudgment reasonedJudgment = new ReasonedJudgment()
-if (!execution.getVariable("nonCase") as Boolean) {
+Boolean nonCase = execution.getVariable("nonCase") as Boolean
+println("Имеется кейс: " + nonCase)
+if (!nonCase) {
 
     def case1 = execution.getVariable("caseBase") as Case
     def caseDic = case1.caseType as BaseDictionary
@@ -397,9 +400,7 @@ if (!execution.getVariable("nonCase") as Boolean) {
 
 }
 else {
-
     reasonedJudgment.typeOfControl = getTypeOfControl("3")
-
 }
 
 
@@ -488,10 +489,10 @@ return reasonedJudgment
         <bpmn:incoming>Flow_0mziupy</bpmn:incoming>
         <bpmn:outgoing>Flow_06xgzlv</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:serviceTask id="Activity_08upt1g" name="SaveDelegate" camunda:delegateExpression="${saveObjectDelegate}">
+      <bpmn:serviceTask id="Activity_08upt1g" name="SaveDelegate" camunda:delegateExpression="${saveObjectListDelegate}">
         <bpmn:extensionElements>
           <camunda:inputOutput>
-            <camunda:inputParameter name="saveObject">${rjVerificationdoc}</camunda:inputParameter>
+            <camunda:inputParameter name="saveObjectList">${rjVerificationdocList}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_0wtnroh</bpmn:incoming>
@@ -2223,6 +2224,24 @@ else {
       <bpmndi:BPMNShape id="Activity_1508q2q_di" bpmnElement="Activity_1508q2q" isExpanded="true">
         <dc:Bounds x="810" y="80" width="13720" height="580" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0mrbsl7_di" bpmnElement="Flow_0mrbsl7">
+        <di:waypoint x="2900" y="205" />
+        <di:waypoint x="2900" y="140" />
+        <di:waypoint x="3150" y="140" />
+        <di:waypoint x="3150" y="205" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08kjk6f_di" bpmnElement="Flow_08kjk6f">
+        <di:waypoint x="3150" y="255" />
+        <di:waypoint x="3150" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07fgvad_di" bpmnElement="Flow_07fgvad">
+        <di:waypoint x="2925" y="230" />
+        <di:waypoint x="2970" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1s8nleq_di" bpmnElement="Flow_1s8nleq">
+        <di:waypoint x="7700" y="440" />
+        <di:waypoint x="7760" y="440" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_087fy4p_di" bpmnElement="Flow_087fy4p">
         <di:waypoint x="13930" y="415" />
         <di:waypoint x="13930" y="340" />
@@ -2749,24 +2768,6 @@ else {
         <di:waypoint x="2710" y="440" />
         <di:waypoint x="2730" y="440" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1s8nleq_di" bpmnElement="Flow_1s8nleq">
-        <di:waypoint x="7700" y="440" />
-        <di:waypoint x="7760" y="440" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_07fgvad_di" bpmnElement="Flow_07fgvad">
-        <di:waypoint x="2925" y="230" />
-        <di:waypoint x="2970" y="230" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_08kjk6f_di" bpmnElement="Flow_08kjk6f">
-        <di:waypoint x="3150" y="255" />
-        <di:waypoint x="3150" y="400" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0mrbsl7_di" bpmnElement="Flow_0mrbsl7">
-        <di:waypoint x="2900" y="205" />
-        <di:waypoint x="2900" y="140" />
-        <di:waypoint x="3150" y="140" />
-        <di:waypoint x="3150" y="205" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_1652rxe_di" bpmnElement="Event_1652rxe">
         <dc:Bounds x="842" y="422" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -2809,6 +2810,9 @@ else {
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1w3b96l" bpmnElement="Activity_05xstuy">
         <dc:Bounds x="2610" y="400" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0eyv5tz" bpmnElement="Activity_1n2yjps">
+        <dc:Bounds x="2970" y="190" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1ppuyn5" bpmnElement="Activity_0xtklh3">
         <dc:Bounds x="3410" y="400" width="100" height="80" />
@@ -3079,15 +3083,6 @@ else {
       <bpmndi:BPMNShape id="Gateway_1ff43wz_di" bpmnElement="Gateway_1ff43wz" isMarkerVisible="true">
         <dc:Bounds x="14305" y="415" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0eyv5tz" bpmnElement="Activity_1n2yjps">
-        <dc:Bounds x="2970" y="190" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_02uhmq1_di" bpmnElement="Gateway_02uhmq1" isMarkerVisible="true">
-        <dc:Bounds x="2875" y="205" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1lb9wv2_di" bpmnElement="Gateway_1lb9wv2" isMarkerVisible="true">
-        <dc:Bounds x="3125" y="205" width="50" height="50" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1irr86a_di" bpmnElement="Activity_1irr86a" isExpanded="true">
         <dc:Bounds x="12490" y="340" width="1130" height="200" />
       </bpmndi:BPMNShape>
@@ -3149,6 +3144,12 @@ else {
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1es9iv7_di" bpmnElement="Activity_0b3msiu">
         <dc:Bounds x="14010" y="400" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_02uhmq1_di" bpmnElement="Gateway_02uhmq1" isMarkerVisible="true">
+        <dc:Bounds x="2875" y="205" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1lb9wv2_di" bpmnElement="Gateway_1lb9wv2" isMarkerVisible="true">
+        <dc:Bounds x="3125" y="205" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1judvsr_di" bpmnElement="Activity_0xhr3ji">
         <dc:Bounds x="670" y="330" width="100" height="80" />

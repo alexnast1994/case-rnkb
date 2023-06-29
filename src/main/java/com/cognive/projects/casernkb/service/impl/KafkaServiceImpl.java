@@ -26,6 +26,7 @@ import org.camunda.bpm.engine.variable.value.ObjectValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
@@ -61,7 +62,7 @@ public class KafkaServiceImpl implements KafkaService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final KafkaTemplate<String, String> kafkaTemplate;
-    @Setter(onMethod_ = {@Autowired})
+    @Setter(onMethod_ = {@Autowired, @Lazy})
     private ZkRequestService zkRequestService;
 
     @Bean
@@ -330,8 +331,7 @@ public class KafkaServiceImpl implements KafkaService {
     public void sendError(String processName, String key, Exception ex) {
         try {
             sessionCacheService.closeAndRemove(key);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.warn("Нет открытых сессий");
         }
         if (!(properties.getErrorTopic() != null && !properties.getErrorTopic().isEmpty())) {

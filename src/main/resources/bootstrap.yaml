@@ -1,0 +1,7 @@
+server:
+  port: ${SERVER_PORT:8193}
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:casernkb}
+  profiles:
+    active: ${SPRING_PROFILE:default}

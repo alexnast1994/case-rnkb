@@ -15,7 +15,10 @@ public class CloseSessionRnkbDelegate implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
-        sessionCacheService.closeAndRemove(execution.getBusinessKey());
-        log.info("Session closed");
+        if (execution.hasVariable("session") && execution.getVariable("session") != null ) {
+            sessionCacheService.closeAndRemove(execution.getBusinessKey());
+            log.info("Session closed");
+        }
+
     }
 }

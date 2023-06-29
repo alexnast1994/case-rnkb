@@ -9,11 +9,13 @@ if(paymentEvents.size() > 0) {
     def paymentEvent = paymentEvents.get(0);
     def beneficiaryIsIdentified = paymentEvent.prop("BeneficiaryIsIdentified").boolValue()
     def paymentReference = paymentEvent.prop("PaymentReference").stringValue()
-    def isCase = paymentEvent.prop("CheckFlagBeneficiary").isNull()
+    def checkFlagBeneficiary = paymentEvent.prop("CheckFlagBeneficiary").isNull()
+    Boolean checkCaseIsPresent = caseRepo.findCaseByPaymentreference(paymentReference).isPresent()
     execution.setVariable("beneficiaryIsIdentified", beneficiaryIsIdentified)
     execution.setVariable("paymentEvent", paymentEvent)
     execution.setVariable("paymentReference", paymentReference)
-    execution.setVariable("checkFlagBeneficiary", isCase)
+    execution.setVariable("checkFlagBeneficiary", checkFlagBeneficiary)
+    execution.setVariable("checkCaseIsPresent", checkCaseIsPresent)
     execution.setVariable("caseType", "6")
 } else {
     throw new RuntimeException("Invalid PaymentEvents");
