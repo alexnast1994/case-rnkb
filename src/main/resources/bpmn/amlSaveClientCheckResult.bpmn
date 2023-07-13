@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_14uzsih" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.11.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_14uzsih" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.12.1" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
   <bpmn:process id="amlSaveClientCheckResult" name="21. Сохранение результата проверки клиента" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_0u2h7pb</bpmn:outgoing>
@@ -88,27 +88,20 @@ BaseDictionary mt = getBd(298, module)
 List&lt;ClientCheckResult&gt; resultList = new ArrayList&lt;&gt;()
 Boolean isMatch = checkResult.prop("isMatch").boolValue()
 
-
-checkResult.elements().each { r -&gt;
-
-    BaseDictionary mr = getBd(214, r.prop("rule").stringValue())
-    ClientCheckResult clientCheckResult = new ClientCheckResult()
-    clientCheckResult.setClient(client)
-    clientCheckResult.setIsMatch(isMatch)
-    clientCheckResult.setModuleRule(mr)
-    clientCheckResult.setModuleType(mt)
-    clientCheckResult.setDecisionDate(checkResult.hasProp("decisionDate") &amp;&amp; checkResult.prop("decisionDate") != null ? LocalDateTime.parse(checkResult.prop("decisionDate").stringValue()) : null)
-    resultList.add(clientCheckResult)
-}
+BaseDictionary mr = getBd(214, checkResult.prop("rule").stringValue())
+ClientCheckResult clientCheckResult = new ClientCheckResult()
+clientCheckResult.setClient(client)
+clientCheckResult.setIsMatch(isMatch)
+clientCheckResult.setModuleRule(mr)
+clientCheckResult.setModuleType(mt)
+clientCheckResult.setDecisionDate(checkResult.hasProp("decisionDate") &amp;&amp; checkResult.prop("decisionDate") != null ? LocalDateTime.parse(checkResult.prop("decisionDate").stringValue()) : null)
+resultList.add(clientCheckResult)
 if (resultList != null &amp;&amp; resultList.size() &gt; 0) {
     execution.setVariable("clientCheckResult", resultList)
     execution.setVariable("isInsert", true)
-}
-else {
+} else {
     execution.setVariable("isInsert", false)
-}
-
-</bpmn:script>
+}</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:exclusiveGateway id="Gateway_163djau" default="Flow_11phjp0">
         <bpmn:incoming>Flow_13pv204</bpmn:incoming>

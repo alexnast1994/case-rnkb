@@ -1,4 +1,3 @@
-package temp.rj
 
 import com.cognive.projects.casernkb.model.projection.BranchGroup
 import com.cognive.projects.casernkb.model.projection.Egrip
@@ -55,6 +54,10 @@ BranchGroup getBranchGroup(Long clientId, String dateStart, String dateEnd) {
     filedAggGeneralRepo.findBranch(clientId, dateStart, dateEnd)
 }
 
+Long getCountOkved(Long branchGroupId, String codeOkved) {
+    lstRosstatOkvedRepo.getCountOkved(branchGroupId, codeOkved)
+}
+
 //OKVED_NAME
 if (egrul != null && egrul.name != null) {
     println "ЕГРЮЛ"
@@ -97,7 +100,7 @@ if (branch != null) {
     Long branchGroupIds = branchGroup as Long
 
 
-    rjOkved.isokved = getBranchGroupOkveds(branchGroupIds, rjOkved.okvedcode) != null && getBranchGroupOkveds(branchGroupIds, rjOkved.okvedcode).size() > 0
+    rjOkved.isokved = getCountOkved(branchGroupIds, rjOkved.okvedcode) != null && getCountOkved(branchGroupIds, rjOkved.okvedcode) > 0
 
     rjOkved.branchGroupName = branch.getBranch_group_name() as String
 }

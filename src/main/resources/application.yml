@@ -1,5 +1,13 @@
 camunda:
   bpm:
+    generic-properties:
+      properties:
+        historyCleanupBatchWindowStartTime: "00:00"
+        historyCleanupBatchWindowEndTime: "23:59"
+        historyCleanupStrategy: removalTimeBased
+        historyCleanupDegreeOfParallelism: 4
+        historyTimeToLive: P0D
+        batchOperationHistoryTimeToLive: P0D
     default-number-of-retries: 0
     admin-user:
       id: ${CAMUNDA_ID:demo}
@@ -181,3 +189,16 @@ logging:
   file:
     name: ${LOG_PATH:app.log}
     clean-history-on-start: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true

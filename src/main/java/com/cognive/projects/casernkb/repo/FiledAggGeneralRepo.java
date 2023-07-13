@@ -113,4 +113,6 @@ public interface FiledAggGeneralRepo extends IBaseDslRepository<FieldAggGeneral,
     List<FieldAggGeneral> getClientAggIds(Long clientId, String dateStart, String dateEnd, List<String> inns);
 
 
+
+
 }
