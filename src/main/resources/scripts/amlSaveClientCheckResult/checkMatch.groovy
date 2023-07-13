@@ -20,23 +20,18 @@ BaseDictionary mt = getBd(298, module)
 List<ClientCheckResult> resultList = new ArrayList<>()
 Boolean isMatch = checkResult.prop("isMatch").boolValue()
 
-
-checkResult.elements().each { r ->
-
-    BaseDictionary mr = getBd(214, r.prop("rule").stringValue())
-    ClientCheckResult clientCheckResult = new ClientCheckResult()
-    clientCheckResult.setClient(client)
-    clientCheckResult.setIsMatch(isMatch)
-    clientCheckResult.setModuleRule(mr)
-    clientCheckResult.setModuleType(mt)
-    clientCheckResult.setDecisionDate(checkResult.hasProp("decisionDate") && checkResult.prop("decisionDate") != null ? LocalDateTime.parse(checkResult.prop("decisionDate").stringValue()) : null)
-    resultList.add(clientCheckResult)
-}
+BaseDictionary mr = getBd(214, checkResult.prop("rule").stringValue())
+ClientCheckResult clientCheckResult = new ClientCheckResult()
+clientCheckResult.setClient(client)
+clientCheckResult.setIsMatch(isMatch)
+clientCheckResult.setModuleRule(mr)
+clientCheckResult.setModuleType(mt)
+clientCheckResult.setDecisionDate(checkResult.hasProp("decisionDate") && checkResult.prop("decisionDate") != null ? LocalDateTime.parse(checkResult.prop("decisionDate").stringValue()) : null)
+resultList.add(clientCheckResult)
 if (resultList != null && resultList.size() > 0) {
     execution.setVariable("clientCheckResult", resultList)
     execution.setVariable("isInsert", true)
-}
-else {
+} else {
     execution.setVariable("isInsert", false)
 }
 

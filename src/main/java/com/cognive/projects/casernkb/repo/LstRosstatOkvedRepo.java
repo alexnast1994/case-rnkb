@@ -40,4 +40,16 @@ public interface LstRosstatOkvedRepo extends IBaseDslRepository<LstRosstatOkved,
             " CODE_OKVED = :codeOvked ", nativeQuery = true)
     List<RosstatOkveds> findRosstatOkveds(Long branchGroupId, String codeOvked);
 
+    @Query(value = "SELECT " +
+            "    COUNT(*) " +
+            "FROM " +
+            "    LST_ROSSTAT_OKVED o " +
+            "JOIN ANTG_SUBGROUP_OKVED s ON o.id = s.okved_id " +
+            "JOIN ANTG_BRANCH_GROUP_SUBGROUP b ON s.subgroup_id = b.subgroup_id " +
+            "WHERE " +
+            "    b.branch_group_id =  :branchGroupId  " +
+            "    AND " +
+            "    o.code = :codeOkved", nativeQuery = true)
+    Long getCountOkved(Long branchGroupId, String codeOkved);
+
 }
