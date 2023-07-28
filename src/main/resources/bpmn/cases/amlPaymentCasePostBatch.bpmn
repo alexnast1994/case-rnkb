@@ -152,7 +152,7 @@ execution.setVariable("rulesString", rulesString)
             <camunda:inputOutput>
               <camunda:inputParameter name="outputVarName">baseDictionaries</camunda:inputParameter>
               <camunda:inputParameter name="selectQuery">select bd from BaseDictionary bd where bd.type = (select
-                bdt.id from BaseDictionaryType bdt where bdt.code = '272') AND bd.charCode in (${rulesString})
+                bdt.id from BaseDictionaryType bdt where bdt.code = '272') AND bd.code in (${rulesString})
               </camunda:inputParameter>
             </camunda:inputOutput>
           </bpmn:extensionElements>

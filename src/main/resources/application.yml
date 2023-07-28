@@ -188,17 +188,16 @@ logging:
     file: "%d %p %c{1.} [%t] %m%n"
   file:
     name: ${LOG_PATH:app.log}
-    clean-history-on-start: false
+  logback:
+    rollingpolicy:
+      clean-history-on-start: false
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,prometheus
+        include: health,info,prometheus
   metrics:
-    export:
-      prometheus:
-        enabled: true
     distribution:
       percentiles-histogram:
         "[http.server.requests]": true
