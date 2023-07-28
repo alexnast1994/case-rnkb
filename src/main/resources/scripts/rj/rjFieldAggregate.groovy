@@ -1,7 +1,6 @@
 import com.cognive.projects.casernkb.model.projection.FieldAgg
 import com.cognive.projects.casernkb.repo.FiledAggGeneralRepo
 import com.prime.db.rnkb.model.BaseDictionary
-import com.prime.db.rnkb.model.Rule
 import com.prime.db.rnkb.model.commucation.judgment.RjClient
 import com.prime.db.rnkb.model.commucation.judgment.RjFieldAggregate
 
@@ -15,10 +14,6 @@ println dateStart.substring(0, 10)
 println dateEnd.substring(0, 10)
 List<FieldAgg> getFieldAggs(Long clientId, String dateStart, String dateEnd) {
     filedAggGeneralRepo.getFieldAgg(clientId, dateStart.substring(0, 10), dateEnd.substring(0, 10))
-}
-
-Rule getRuleById(Long aggrId) {
-    ruleRepo.getRule(aggrId)
 }
 
 BaseDictionary getBd(Long id) {
@@ -38,7 +33,7 @@ fieldAggList.each {f ->
     rjFieldAggregate.string = f.getString() as String
     rjFieldAggregate.sum = f.lsum as BigDecimal
     rjFieldAggregate.count = f.lcount as Long
-    rjFieldAggregate.aggdirid = getRuleById(f.getAggId())
+    rjFieldAggregate.agrt = getBd(f.getAggId())
 
     println rjFieldAggregate.toString()
     rjFieldAggregateList.add(rjFieldAggregate)

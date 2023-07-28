@@ -22,13 +22,11 @@ List<KycCaseProjection> getCases(String exId) {
     caseRepo.getLatestCaseByClientIdAndExIdAndNumAndTypeList1(exId);
 }
 
-void updateStatusCase(Long id, Long status) {
-    caseRepo.updateStatusCase(id, status)
-}
-
 List<Case> getCasesObj(List<Long> id) {
     caseRepo.findCasesByIds(id);
 }
+
+
 
 println("Шаг 2")
 
@@ -70,7 +68,6 @@ if (toChange.isEmpty()) {
     toChangeCases.each { c ->
         if (c.getStatus().getId() == getBd(286, "1").getId() || c.getStatus().getId() == getBd(286, "2").getId()) {
             println("Шаг 6")
-            c.getStatus().getId() == getBd(286, "1").getId() ? execution.setVariable("recreate", true) : execution.setVariable("recreate", false)
             execution.setVariable("createCase", true)
             println("Шаг 7")
             updateStatusCase(c.getId(), getBd(286, "7").getId())
@@ -81,14 +78,10 @@ if (toChange.isEmpty()) {
             println("Шаг 9")
         }
     }
-    if (execution.getVariable("createCase") == true) {
-        execution.setVariable("lastType", toChangeCases.get(0).getKycCaseByLists().get(0).getMatchType())
-    }
 }
 
 if (execution.getVariable("createCase") == null) {
     println("Шаг 12")
     execution.setVariable("createCase", false)
 }
-
 println("Шаг 10")

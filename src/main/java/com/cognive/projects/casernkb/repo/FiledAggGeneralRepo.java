@@ -9,9 +9,6 @@ import com.prime.db.rnkb.repository.IBaseDslRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -28,17 +25,17 @@ public interface FiledAggGeneralRepo extends IBaseDslRepository<FieldAggGeneral,
             " FROM (" +
             " SELECT " +
             "   fag.CLIENTID, " +
-            "   fag.AGGDIRID AS agg_id, " +
+            "   fag.AGRT AS agg_id, " +
             "   fag.\"TYPE\", " +
             "   fag.STRING AS branch_group, " +
             "   fag.SUM, " +
             "   fag.CALCULATION_DATE, " +
-            "   SUM(fag.SUM) OVER( PARTITION BY fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) sum_order " +
+            "   SUM(fag.SUM) OVER( PARTITION BY fag.STRING, fag.AGRT ORDER BY CALCULATION_DATE) sum_order " +
             " FROM FIELD_AGG_GENERAL fag " +
-            " JOIN RULE r ON fag.AGGDIRID = r.ID " +
+            " JOIN BASEDICTIONARY b0 ON fag.AGRT = b0.ID " +
             " JOIN BASEDICTIONARY b ON fag.\"TYPE\" = b.ID " +
             " WHERE " +
-            " r.CODE IN ('AGRT098', 'AGRT099') " +
+            " b0.CODE IN ('AGRT98', 'AGRT99') " +
             " AND " +
             " b.CODE = '4' " +
             " AND " +
@@ -62,15 +59,15 @@ public interface FiledAggGeneralRepo extends IBaseDslRepository<FieldAggGeneral,
             " FROM ( " +
             " SELECT " +
             " fag.CLIENTID, " +
-            " fag.AGGDIRID AS aggId, " +
+            " fag.AGRT AS aggId, " +
             " fag.\"TYPE\" AS ltype, " +
             " fag.STRING AS string, " +
             " fag.SUM, " +
             " fag.CALCULATION_DATE, " +
-            " SUM(fag.SUM) OVER(PARTITION BY fag.\"TYPE\", fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lsum," +
-            " SUM(fag.COUNT) OVER(PARTITION BY fag.\"TYPE\", fag.STRING, fag.AGGDIRID ORDER BY CALCULATION_DATE) lcount " +
+            " SUM(fag.SUM) OVER(PARTITION BY fag.\"TYPE\", fag.STRING, fag.AGRT ORDER BY CALCULATION_DATE) lsum," +
+            " SUM(fag.COUNT) OVER(PARTITION BY fag.\"TYPE\", fag.STRING, fag.AGRT ORDER BY CALCULATION_DATE) lcount " +
             " FROM FIELD_AGG_GENERAL fag " +
-            " JOIN RULE r ON fag.AGGDIRID = r.ID " +
+            " JOIN BASEDICTIONARY b0 ON fag.AGRT = b0.ID " +
             " JOIN BASEDICTIONARY b ON fag.\"TYPE\" = b.ID " +
             " WHERE " +
             " fag.CLIENTID = :clientId " +
@@ -83,11 +80,11 @@ public interface FiledAggGeneralRepo extends IBaseDslRepository<FieldAggGeneral,
     List<FieldAgg> getFieldAgg(Long clientId, String dateStart, String dateEnd);
 
     @Query(value = "SELECT distinct fag.STRING as inn, " +
-            "       SUM(case when fag.AGGDIRID = (SELECT ID FROM RULE WHERE CODE = 'AGRT096') THEN fag.SUM ELSE 0 END) OVER ( PARTITION BY fag.TYPE, fag.STRING ORDER BY fag.STRING) as sumDt, " +
-            "       SUM(case when fag.AGGDIRID = (SELECT ID FROM RULE WHERE CODE = 'AGRT097') THEN fag.SUM ELSE 0 END) OVER ( PARTITION BY fag.TYPE, fag.STRING ORDER BY fag.STRING) as sumKt " +
+            "       SUM(case when fag.AGRT = (SELECT ID FROM BASEDICTIONARY WHERE CODE = 'AGRT96' AND TYPE = (SELECT ID FROM BASEDICTIONARYTYPE WHERE CODE = 308)) THEN fag.SUM ELSE 0 END) OVER ( PARTITION BY fag.TYPE, fag.STRING ORDER BY fag.STRING) as sumDt, " +
+            "       SUM(case when fag.AGRT = (SELECT ID FROM BASEDICTIONARY WHERE CODE = 'AGRT97' AND TYPE = (SELECT ID FROM BASEDICTIONARYTYPE WHERE CODE = 308)) THEN fag.SUM ELSE 0 END) OVER ( PARTITION BY fag.TYPE, fag.STRING ORDER BY fag.STRING) as sumKt " +
             "FROM FIELD_AGG_GENERAL fag " +
             "WHERE fag.CLIENTID = :clientId " +
-            "  AND fag.AGGDIRID in (SELECT ID FROM RULE WHERE CODE IN ('AGRT096', 'AGRT097')) " +
+            "  AND fag.AGRT in (SELECT ID FROM BASEDICTIONARY WHERE CODE IN ('AGRT96', 'AGRT97') AND TYPE = (SELECT ID FROM BASEDICTIONARYTYPE WHERE CODE = 308)) " +
             "  AND fag.TYPE = (SELECT b.ID " +
             "                  FROM BASEDICTIONARY b " +
             "                  WHERE b.CODE = '1' " +
@@ -103,7 +100,7 @@ public interface FiledAggGeneralRepo extends IBaseDslRepository<FieldAggGeneral,
             "FROM FIELD_AGG_GENERAL fag " +
             "WHERE fag.CLIENTID = :clientId " +
             "AND fag.STRING in :inns  " +
-            "AND fag.AGGDIRID in (SELECT ID FROM RULE WHERE CODE IN ('AGRT096', 'AGRT097')) " +
+            "AND fag.AGRT in (SELECT b0.ID FROM BASEDICTIONARY b0 WHERE b0.CODE IN ('AGRT96', 'AGRT97') AND b0.TYPE = (SELECT ID FROM BASEDICTIONARYTYPE WHERE CODE = 308)) " +
             "  AND fag.TYPE = (SELECT b.ID " +
             "                  FROM BASEDICTIONARY b " +
             "                  WHERE b.CODE = '1' AND b.TYPE = (SELECT ID FROM BASEDICTIONARYTYPE WHERE CODE = 1004)) " +
