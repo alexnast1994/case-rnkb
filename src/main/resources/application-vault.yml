@@ -1,5 +1,13 @@
 camunda:
   bpm:
+    generic-properties:
+      properties:
+        historyCleanupBatchWindowStartTime: "00:00"
+        historyCleanupBatchWindowEndTime: "23:59"
+        historyCleanupStrategy: removalTimeBased
+        historyCleanupDegreeOfParallelism: 4
+        historyTimeToLive: P0D
+        batchOperationHistoryTimeToLive: P0D
     default-number-of-retries: 0
     admin-user:
       id: ${CAMUNDA_ID:demo}
@@ -43,20 +51,29 @@ minio:
   reestFolder: ${MINIO_REEST_FOLDER:reest}
 
 spring:
-  config:
-    # noinspection SpringBootApplicationYaml
-    import: ${VAULT_IMPORT:vault:///rnkb/case}
+  liquibase:
+    enabled: false
+  profiles:
+    active: ${SPRING_ACTIVE_PROFILES:default}
+  jpa:
+    show-sql: ${DATABASE_SHOWSQL:true}
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: none
+    generate-ddl: false
+    database-platform: ${DATABASE_PLATFORM:org.hibernate.dialect.Oracle12cDialect}
+  datasource:
+    hikari:
+      jdbc-url: ${DATABASE_URL:jdbc:oracle:thin:@176.9.124.111:1521:orcl}
+      username: ${DATABASE_USERNAME:OSADMIN}
+      password: ${DATABASE_PASSWORD:Qawsed123}
+      driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.OracleDriver}
+      schema: ${DATABASE_USERNAME:OSADMIN}
+
+  application:
+    name: ${SPRING_APPLICATION_NAME:casernkb}
   cloud:
-    vault:
-      host: ${VAULT_HOST:localhost}
-      port: ${VAULT_PORT:8200}
-      scheme: ${VAULT_SCHEME:http}
-      uri: ${VAULT_URI:http://localhost:8200}
-      connection-timeout: 5000
-      read-timeout: 15000
-      authentication: TOKEN
-      token: ${VAULT_TOKEN:hvs.6j2FrTdxxeCzbxsRIpuTitim}
-      enabled: ${VAULT_ENABLED:true}
     stream:
       kafka:
         binder:
@@ -117,26 +134,20 @@ spring:
           binder: kafka
       function:
         definition: commonMessageInput;pipelineMessageInput;saveRiskResponseMessageInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput;biMessageInput
-  liquibase:
-    enabled: false
-  jpa:
-    show-sql: ${DATABASE_SHOWSQL:true}
-    hibernate:
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      ddl-auto: none
-    generate-ddl: false
-    database-platform: ${DATABASE_PLATFORM:org.hibernate.dialect.Oracle12cDialect}
-
-  datasource:
-    hikari:
-      jdbc-url: ${DB_URL}
-      username: ${DB_USERNAME}
-      password: ${DB_PASSWORD}
-      driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.OracleDriver}
-      schema: ${DB_USERNAME}
-  application:
-    name: ${SPRING_APPLICATION_NAME:casernkb}
+    config:
+      # noinspection SpringBootApplicationYaml
+      import: ${VAULT_IMPORT:vault:///rnkb/case}
+    cloud:
+      vault:
+        host: ${VAULT_HOST:localhost}
+        port: ${VAULT_PORT:8200}
+        scheme: ${VAULT_SCHEME:http}
+        uri: ${VAULT_URI:http://localhost:8200}
+        connection-timeout: 5000
+        read-timeout: 15000
+        authentication: TOKEN
+        token: ${VAULT_TOKEN:hvs.6j2FrTdxxeCzbxsRIpuTitim}
+        enabled: ${VAULT_ENABLED:true}
 
 server:
   port: ${SERVER_PORT:8193}
@@ -189,7 +200,9 @@ logging:
     file: "%d %p %c{1.} [%t] %m%n"
   file:
     name: ${LOG_PATH:app.log}
-    clean-history-on-start: false
+  logback:
+    rollingpolicy:
+      clean-history-on-start: false
 
 management:
   endpoints:

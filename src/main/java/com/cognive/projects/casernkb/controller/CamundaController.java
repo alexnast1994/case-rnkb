@@ -36,7 +36,7 @@ public class CamundaController {
             return ResponseEntity.ok(result);
         } catch (Exception ex) {
             kafkaService.sendError(processName, key, ex);
-            throw ex;
+            return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
 }
