@@ -592,7 +592,7 @@ return rjRbs1</bpmn:script>
             <camunda:inputParameter name="outputVarName">existsCRJ</camunda:inputParameter>
             <camunda:inputParameter name="selectQuery">SELECT cr from CaseReasonedJudgment cr join
                             ReasonedJudgment r on r.id = cr.idrj.id where cr.caseId.id in (${caseIdsString}) and
-                            r.clientId.id = ${clientId}
+                            r.clientId.id = ${clientId} and r.deleteDate is not null
                         </camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>

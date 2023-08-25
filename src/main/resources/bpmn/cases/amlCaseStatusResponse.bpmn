@@ -46,7 +46,7 @@
             <camunda:inputParameter name="outputVarName">caseData</camunda:inputParameter>
             <camunda:inputParameter name="parameters">
               <camunda:map>
-                <camunda:entry key="paymentId">${caseId}</camunda:entry>
+                <camunda:entry key="caseId">${caseId}</camunda:entry>
               </camunda:map>
             </camunda:inputParameter>
             <camunda:inputParameter name="selectQuery">SELECT c FROM Case c WHERE c.id = :caseId</camunda:inputParameter>

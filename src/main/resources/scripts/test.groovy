@@ -1,7 +1,6 @@
 import com.prime.db.rnkb.model.Case
 import com.prime.db.rnkb.model.CaseUser
 import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
-import com.prime.db.rnkb.model.commucation.judgment.ClientReasonedJudgment
 import com.prime.db.rnkb.model.BaseDictionary
 
 import java.time.LocalDateTime
