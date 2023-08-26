@@ -592,7 +592,7 @@ return rjRbs1</bpmn:script>
             <camunda:inputParameter name="outputVarName">existsCRJ</camunda:inputParameter>
             <camunda:inputParameter name="selectQuery">SELECT cr from CaseReasonedJudgment cr join
                             ReasonedJudgment r on r.id = cr.idrj.id where cr.caseId.id in (${caseIdsString}) and
-                            r.clientId.id = ${clientId} and r.deleteDate is not null
+                            r.clientId.id = ${clientId} and r.deleteDate is null
                         </camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
@@ -743,6 +743,10 @@ BranchGroup getBranchGroup(Long clientId, String dateStart, String dateEnd) {
     filedAggGeneralRepo.findBranch(clientId, dateStart, dateEnd)
 }
 
+Long getCountOkved(Long branchGroupId, String codeOkved) {
+    lstRosstatOkvedRepo.getCountOkved(branchGroupId, codeOkved)
+}
+
 //OKVED_NAME
 if (egrul != null &amp;&amp; egrul.name != null) {
     println "ЕГРЮЛ"
@@ -785,7 +789,7 @@ if (branch != null) {
     Long branchGroupIds = branchGroup as Long
 
 
-    rjOkved.isokved = getBranchGroupOkveds(branchGroupIds, rjOkved.okvedcode) != null &amp;&amp; getBranchGroupOkveds(branchGroupIds, rjOkved.okvedcode).size() &gt; 0
+    rjOkved.isokved = getCountOkved(branchGroupIds, rjOkved.okvedcode) != null &amp;&amp; getCountOkved(branchGroupIds, rjOkved.okvedcode) &gt; 0
 
     rjOkved.branchGroupName = branch.getBranch_group_name() as String
 }
@@ -1697,17 +1701,19 @@ import com.prime.db.rnkb.model.commucation.midl.ActionsMIDL
 import com.prime.db.rnkb.model.commucation.request.Request
 import com.prime.db.rnkb.model.commucation.request.RequestedInformation
 
-List&lt;ActionsMIDL&gt; getActionMidl(List&lt;Request&gt; requests) {
-    zkRequestRepo.getActionMidl(requests)
+List&lt;ActionsMIDL&gt; getActionMidl(List&lt;Long&gt; requests) {
+    zkMiddlRepo.getActionMidl(requests)
 }
 
-List&lt;ActionsMIDL&gt; actionsMIDLList = getActionMidl(execution.getVariable("requestList") as List&lt;Request&gt;)
+List&lt;Request&gt; req = execution.getVariable("requestList") as List&lt;Request&gt;
+List&lt;ActionsMIDL&gt; actionsMIDLList = getActionMidl(req.collect {r -&gt; r.id})
+println(actionsMIDLList)
 List&lt;Rjzkrequest&gt; rjzkrequests = execution.getVariable("rjzkrequestListOut") as List&lt;Rjzkrequest&gt;
 if (!actionsMIDLList.isEmpty() &amp;&amp; actionsMIDLList != null) {
     List&lt;RjZkActionMidl&gt; rjZkActionMidlList = new ArrayList&lt;&gt;()
     actionsMIDLList.each {a -&gt;
         RjZkActionMidl rjZkActionMidl = new RjZkActionMidl()
-        rjZkActionMidl.rjZkRequestId = rjzkrequests.find { a.issueId == it.zkRequestId.zkTaskId}
+        rjZkActionMidl.rjZkRequestId = rjzkrequests.find { a.getIssueId().getId() == it.getZkRequestId().getZkTaskId().getId()}
         rjZkActionMidl.date = a.date
         rjZkActionMidl.time = a.time
         rjZkActionMidl.quantity = a.quantity
