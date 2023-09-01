@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0c2gva4" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.9.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.18.0">
+  <bpmn:process id="fesContractsCancellation" name="23. Формирование кейса ФЭС 5861-У" isExecutable="false">
+    <bpmn:startEvent id="Start_fesContractsCancellation">
+      <bpmn:outgoing>Flow_17oa7u7</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Activity_17lb3wk" name="Логирование процесса" camunda:delegateExpression="${loggerDelegate}">
+      <bpmn:incoming>Flow_17oa7u7</bpmn:incoming>
+      <bpmn:outgoing>Flow_0dizpqm</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_17oa7u7" sourceRef="Start_fesContractsCancellation" targetRef="Activity_17lb3wk" />
+    <bpmn:serviceTask id="Activity_1t2idad" name="Открыть сессию" camunda:delegateExpression="${openSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_0dizpqm</bpmn:incoming>
+      <bpmn:outgoing>Flow_1cvcprp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0dizpqm" sourceRef="Activity_17lb3wk" targetRef="Activity_1t2idad" />
+    <bpmn:exclusiveGateway id="Gateway_01serm0" default="Flow_0xk902f">
+      <bpmn:incoming>Flow_1vnh9lc</bpmn:incoming>
+      <bpmn:outgoing>Flow_1j3vatd</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0xk902f</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Activity_1lbxjr7" name="Сохранение нового кейса" camunda:delegateExpression="${saveCaseToDbDelegate}">
+      <bpmn:incoming>Flow_1j3vatd</bpmn:incoming>
+      <bpmn:outgoing>Flow_1tiqe9i</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1j3vatd" sourceRef="Gateway_01serm0" targetRef="Activity_1lbxjr7">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${isCaseNew}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="Activity_1d6bs01" name="Проверка существования ФЭС кейса" camunda:delegateExpression="${fesCaseDataValidationDelegate}">
+      <bpmn:incoming>Flow_1cvcprp</bpmn:incoming>
+      <bpmn:outgoing>Flow_1vnh9lc</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1cvcprp" sourceRef="Activity_1t2idad" targetRef="Activity_1d6bs01" />
+    <bpmn:sequenceFlow id="Flow_1vnh9lc" sourceRef="Activity_1d6bs01" targetRef="Gateway_01serm0" />
+    <bpmn:serviceTask id="Activity_02zuwim" name="Изменение кейса" camunda:delegateExpression="${fesChangeCaseDelegate}">
+      <bpmn:incoming>Flow_0xk902f</bpmn:incoming>
+      <bpmn:incoming>Flow_1tiqe9i</bpmn:incoming>
+      <bpmn:outgoing>Flow_1wg5pzc</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0xk902f" sourceRef="Gateway_01serm0" targetRef="Activity_02zuwim" />
+    <bpmn:serviceTask id="Activity_0frl55b" name="Закрыть сессию" camunda:delegateExpression="${closeSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_1wg5pzc</bpmn:incoming>
+      <bpmn:outgoing>Flow_0i9kmpj</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1wg5pzc" sourceRef="Activity_02zuwim" targetRef="Activity_0frl55b" />
+    <bpmn:endEvent id="Event_0ppyrfu">
+      <bpmn:incoming>Flow_0i9kmpj</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0i9kmpj" sourceRef="Activity_0frl55b" targetRef="Event_0ppyrfu" />
+    <bpmn:sequenceFlow id="Flow_1tiqe9i" sourceRef="Activity_1lbxjr7" targetRef="Activity_02zuwim" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="fesContractsCancellation">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="Start_fesContractsCancellation">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_17lb3wk_di" bpmnElement="Activity_17lb3wk">
+        <dc:Bounds x="270" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1t2idad_di" bpmnElement="Activity_1t2idad">
+        <dc:Bounds x="430" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_01serm0_di" bpmnElement="Gateway_01serm0" isMarkerVisible="true">
+        <dc:Bounds x="815" y="92" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1lbxjr7_di" bpmnElement="Activity_1lbxjr7">
+        <dc:Bounds x="930" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1d6bs01_di" bpmnElement="Activity_1d6bs01">
+        <dc:Bounds x="590" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_02zuwim_di" bpmnElement="Activity_02zuwim">
+        <dc:Bounds x="930" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0frl55b_di" bpmnElement="Activity_0frl55b">
+        <dc:Bounds x="1100" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ppyrfu_di" bpmnElement="Event_0ppyrfu">
+        <dc:Bounds x="1272" y="212" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_17oa7u7_di" bpmnElement="Flow_17oa7u7">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0dizpqm_di" bpmnElement="Flow_0dizpqm">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="430" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1j3vatd_di" bpmnElement="Flow_1j3vatd">
+        <di:waypoint x="865" y="117" />
+        <di:waypoint x="930" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1cvcprp_di" bpmnElement="Flow_1cvcprp">
+        <di:waypoint x="530" y="117" />
+        <di:waypoint x="590" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vnh9lc_di" bpmnElement="Flow_1vnh9lc">
+        <di:waypoint x="690" y="117" />
+        <di:waypoint x="815" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xk902f_di" bpmnElement="Flow_0xk902f">
+        <di:waypoint x="840" y="142" />
+        <di:waypoint x="840" y="230" />
+        <di:waypoint x="930" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wg5pzc_di" bpmnElement="Flow_1wg5pzc">
+        <di:waypoint x="1030" y="230" />
+        <di:waypoint x="1100" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0i9kmpj_di" bpmnElement="Flow_0i9kmpj">
+        <di:waypoint x="1200" y="230" />
+        <di:waypoint x="1272" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1tiqe9i_di" bpmnElement="Flow_1tiqe9i">
+        <di:waypoint x="980" y="157" />
+        <di:waypoint x="980" y="190" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
