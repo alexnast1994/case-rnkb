@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_14vbi72" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_14vbi72" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.9.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
   <bpmn:process id="caseResponse" name="caseResponse" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1" name="caseCreateResponse">
-      <bpmn:outgoing>Flow_0ft4dh9</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1ekhb3v</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:endEvent id="Event_15as0y6">
       <bpmn:incoming>Flow_1l3elhr</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0ft4dh9" sourceRef="StartEvent_1" targetRef="Activity_saveJson" />
     <bpmn:scriptTask id="Activity_saveJson" name="Формирование ответа" scriptFormat="groovy" camunda:resultVariable="caseJson">
-      <bpmn:incoming>Flow_0ft4dh9</bpmn:incoming>
-      <bpmn:outgoing>Flow_1c87z3d</bpmn:outgoing>
+      <bpmn:incoming>Flow_06g6eez</bpmn:incoming>
+      <bpmn:outgoing>Flow_1rll87m</bpmn:outgoing>
       <bpmn:script>import com.prime.db.rnkb.model.Case
 import com.cognive.projects.casernkb.model.CaseStatusOutDto
 import java.time.LocalDateTime
@@ -31,7 +30,6 @@ out.setTimeStampFromLocalDateTime(LocalDateTime.now())
 
 
 ObjectMapper mapper = new ObjectMapper()
-
 return mapper.writeValueAsString(out)
 </bpmn:script>
     </bpmn:scriptTask>
@@ -42,11 +40,17 @@ return mapper.writeValueAsString(out)
           <camunda:inputParameter name="messageId">${messageId}</camunda:inputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_1c87z3d</bpmn:incoming>
+      <bpmn:incoming>Flow_1rll87m</bpmn:incoming>
       <bpmn:outgoing>Flow_1l3elhr</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_1c87z3d" sourceRef="Activity_saveJson" targetRef="Activity_sendKafka" />
     <bpmn:sequenceFlow id="Flow_1l3elhr" sourceRef="Activity_sendKafka" targetRef="Event_15as0y6" />
+    <bpmn:serviceTask id="Activity_0cn5cv1" name="Логирование процесса" camunda:delegateExpression="${loggerDelegate}">
+      <bpmn:incoming>Flow_1ekhb3v</bpmn:incoming>
+      <bpmn:outgoing>Flow_06g6eez</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1ekhb3v" sourceRef="StartEvent_1" targetRef="Activity_0cn5cv1" />
+    <bpmn:sequenceFlow id="Flow_06g6eez" sourceRef="Activity_0cn5cv1" targetRef="Activity_saveJson" />
+    <bpmn:sequenceFlow id="Flow_1rll87m" sourceRef="Activity_saveJson" targetRef="Activity_sendKafka" />
     <bpmn:textAnnotation id="TextAnnotation_0rheqm6">
       <bpmn:text>messageId
 key
@@ -57,39 +61,47 @@ payment</bpmn:text>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="caseResponse">
-      <bpmndi:BPMNEdge id="Flow_1l3elhr_di" bpmnElement="Flow_1l3elhr">
-        <di:waypoint x="510" y="177" />
-        <di:waypoint x="552" y="177" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1c87z3d_di" bpmnElement="Flow_1c87z3d">
-        <di:waypoint x="360" y="177" />
-        <di:waypoint x="410" y="177" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0ft4dh9_di" bpmnElement="Flow_0ft4dh9">
-        <di:waypoint x="215" y="177" />
-        <di:waypoint x="260" y="177" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="179" y="159" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="159" y="202" width="83" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_15as0y6_di" bpmnElement="Event_15as0y6">
-        <dc:Bounds x="552" y="159" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1ml27qt_di" bpmnElement="Activity_saveJson">
-        <dc:Bounds x="260" y="137" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1qptw1m_di" bpmnElement="Activity_sendKafka">
-        <dc:Bounds x="410" y="137" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_0rheqm6_di" bpmnElement="TextAnnotation_0rheqm6">
         <dc:Bounds x="147" y="70" width="100" height="68" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_15as0y6_di" bpmnElement="Event_15as0y6">
+        <dc:Bounds x="672" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ml27qt_di" bpmnElement="Activity_saveJson">
+        <dc:Bounds x="380" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1qptw1m_di" bpmnElement="Activity_sendKafka">
+        <dc:Bounds x="530" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0cn5cv1_di" bpmnElement="Activity_0cn5cv1">
+        <dc:Bounds x="250" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_1vm388c_di" bpmnElement="Association_1vm388c">
         <di:waypoint x="197" y="159" />
         <di:waypoint x="197" y="138" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1l3elhr_di" bpmnElement="Flow_1l3elhr">
+        <di:waypoint x="630" y="177" />
+        <di:waypoint x="672" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ekhb3v_di" bpmnElement="Flow_1ekhb3v">
+        <di:waypoint x="215" y="177" />
+        <di:waypoint x="250" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06g6eez_di" bpmnElement="Flow_06g6eez">
+        <di:waypoint x="350" y="177" />
+        <di:waypoint x="380" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1rll87m_di" bpmnElement="Flow_1rll87m">
+        <di:waypoint x="480" y="177" />
+        <di:waypoint x="530" y="177" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
