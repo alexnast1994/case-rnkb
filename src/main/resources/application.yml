@@ -164,6 +164,11 @@ server:
       process-name: amlAutoReasonedJudgment
     bi:
       process-name: ${BI_PROCESS_NAME:amlPaymentCaseBeneficiaryIdentification}
+    case-send-decision:
+      process-name: ${CASE_SEND_DECISION_PROCESS_NAME:amlCaseSendDecision}
+      response-topic-mapping:
+        paymentRespTopic: ${CASE_SEND_DECISION_PAYMENT_TOPIC:rnkb-payment-resp}
+        clientRespTopic: ${CASE_SEND_DECISION_CLIENT_TOPIC:rnkb-client-resp}
     error-topic: ${TOPIC_ERROR_OUT:}
     zk-aml-request-output-topic: ${TOPIC_ZK_REQUEST_OUT:rnkb-requestClient-resp}
     zk-aml-response-output-topic: ${TOPIC_ZK_RESPONSE_OUT:rnkb-responseClient-resp}

@@ -16,7 +16,6 @@ public class KafkaSendDelegate implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
-
         String message = (String)delegateExecution.getVariable("message");
         String topic = (String)delegateExecution.getVariable("topic");
         log.info("topic " + topic);

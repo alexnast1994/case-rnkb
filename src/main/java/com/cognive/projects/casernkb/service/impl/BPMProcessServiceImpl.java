@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.service.impl;
 
+import com.cognive.projects.casernkb.config.property.KafkaServerProperties;
 import com.cognive.projects.casernkb.service.BPMProcessService;
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RepositoryService;
@@ -25,37 +26,57 @@ public class BPMProcessServiceImpl implements BPMProcessService {
     TaskService taskService;
     HistoryService historyService;
 
+    private final KafkaServerProperties kafkaServerProperties;
+
     @Autowired
     public BPMProcessServiceImpl(RuntimeService runtimeService,
                                  RepositoryService repositoryService,
                                  TaskService taskService,
-                                 HistoryService historyService) {
+                                 HistoryService historyService,
+                                 KafkaServerProperties kafkaServerProperties) {
         this.runtimeService = runtimeService;
         this.repositoryService = repositoryService;
         this.taskService = taskService;
         this.historyService = historyService;
+        this.kafkaServerProperties = kafkaServerProperties;
     }
-
-
-//    @Override
-//    public String getProcessInstanceId(String processKey, String orderCheckoutId) throws IOException {
-//        String processInstanceId = historyService.createHistoricVariableInstanceQuery()
-//                .processDefinitionKey(processKey)
-//                .variableValueEquals("orderCheckoutId", orderCheckoutId)
-//                .singleResult()
-//                .getProcessInstanceId();
-//        return processInstanceId;
-//    }
-//
 
     @Override
     public String startProcess(String processId, Map<String, Object> variables) {
+        fillTopicMapping(processId, variables);
         return runtimeService.startProcessInstanceByKey(processId, variables).getProcessDefinitionId();
     }
 
     @Override
     public String startProcess(String processId, String businessKey, Map<String, Object> variables) {
+        fillTopicMapping(processId, variables);
         return runtimeService.startProcessInstanceByKey(processId, businessKey, variables).getProcessInstanceId();
+    }
+
+    @Override
+    public String startProcessReturnVariable(String processId, String businessKey, Map<String, Object> variables, String returnVariable) {
+        fillTopicMapping(processId, variables);
+        return runtimeService.createProcessInstanceByKey(processId)
+                .businessKey(businessKey)
+                .setVariables(variables)
+                .executeWithVariablesInReturn().getVariables().getValue(returnVariable, Object.class).toString();
+    }
+
+    @Override
+    public String startProcessReturnVariable(String processId, String businessKey, Map<String, Object> variables) {
+        fillTopicMapping(processId, variables);
+        return runtimeService.createProcessInstanceByKey(processId)
+                .businessKey(businessKey)
+                .setVariables(variables)
+                .executeWithVariablesInReturn().getVariables().toString();
+    }
+
+    private void fillTopicMapping(String processId, Map<String, Object> variables) {
+        kafkaServerProperties.getPropertiesList().forEach(p -> {
+            if (processId.equalsIgnoreCase(p.getProcessName())) {
+                variables.put("topics", p.getResponseTopicMapping());
+            }
+        });
     }
 
     @Override
