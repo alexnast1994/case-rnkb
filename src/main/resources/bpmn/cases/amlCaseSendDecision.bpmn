@@ -259,7 +259,7 @@ execution.setVariable("clientCheckResultDtos", clientCheckResultDtos)</bpmn:scri
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="message">${messageToKafka}</camunda:inputParameter>
-            <camunda:inputParameter name="topic">rnkb-client-resp</camunda:inputParameter>
+            <camunda:inputParameter name="topic">${topics.get("clientRespTopic")}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_0vbqwuj</bpmn:incoming>
@@ -364,7 +364,7 @@ execution.setVariable("messageToKafka", mapper.writeValueAsString(out))</bpmn:sc
         <bpmn:extensionElements>
           <camunda:inputOutput>
             <camunda:inputParameter name="message">${messageToKafka}</camunda:inputParameter>
-            <camunda:inputParameter name="topic">rnkb-payment-resp</camunda:inputParameter>
+              <camunda:inputParameter name="topic">${topics.get("paymentRespTopic")}</camunda:inputParameter>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_0gifpy1</bpmn:incoming>
@@ -390,26 +390,30 @@ execution.setVariable("messageToKafka", mapper.writeValueAsString(out))</bpmn:sc
     <bpmn:association id="Association_0feuze1" sourceRef="StartEvent_1" targetRef="TextAnnotation_1ekfrnh" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlCaseSendDecision">
-      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
-        <dc:Bounds x="179" y="199" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0mke6fc_di" bpmnElement="Activity_0mke6fc">
-        <dc:Bounds x="244" y="177" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0aelqbw_di" bpmnElement="Activity_0aelqbw">
-        <dc:Bounds x="390" y="177" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_064pee2_di" bpmnElement="Activity_064pee2" isExpanded="true">
-        <dc:Bounds x="540" y="80" width="1730" height="298" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1ap1lpp_di" bpmnElement="Event_1ap1lpp">
-        <dc:Bounds x="570" y="199" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1mgp5aq_di" bpmnElement="Activity_1mgp5aq">
-        <dc:Bounds x="660" y="177" width="100" height="80" />
+      <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlCaseSendDecision">
+          <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+              <dc:Bounds x="179" y="199" width="36" height="36"/>
+          </bpmndi:BPMNShape>
+          <bpmndi:BPMNShape id="Activity_0mke6fc_di" bpmnElement="Activity_0mke6fc">
+              <dc:Bounds x="244" y="177" width="100" height="80"/>
+              <bpmndi:BPMNLabel/>
+          </bpmndi:BPMNShape>
+          <bpmndi:BPMNShape id="Activity_0aelqbw_di" bpmnElement="Activity_0aelqbw">
+              <dc:Bounds x="390" y="177" width="100" height="80"/>
+              <bpmndi:BPMNLabel/>
+          </bpmndi:BPMNShape>
+          <bpmndi:BPMNShape id="Activity_0jnm47i_di" bpmnElement="Activity_0jnm47i">
+              <dc:Bounds x="2300" y="177" width="100" height="80"/>
+              <bpmndi:BPMNLabel/>
+          </bpmndi:BPMNShape>
+          <bpmndi:BPMNShape id="Activity_064pee2_di" bpmnElement="Activity_064pee2" isExpanded="true">
+              <dc:Bounds x="540" y="80" width="1730" height="298"/>
+          </bpmndi:BPMNShape>
+          <bpmndi:BPMNShape id="Event_1ap1lpp_di" bpmnElement="Event_1ap1lpp">
+              <dc:Bounds x="570" y="199" width="36" height="36"/>
+          </bpmndi:BPMNShape>
+          <bpmndi:BPMNShape id="Activity_1mgp5aq_di" bpmnElement="Activity_1mgp5aq">
+              <dc:Bounds x="660" y="177" width="100" height="80"/>
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1riqnwb_di" bpmnElement="Activity_1riqnwb" isExpanded="true">
@@ -527,10 +531,6 @@ execution.setVariable("messageToKafka", mapper.writeValueAsString(out))</bpmn:sc
         <di:waypoint x="1990" y="330" />
         <di:waypoint x="2032" y="330" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Activity_0jnm47i_di" bpmnElement="Activity_0jnm47i">
-        <dc:Bounds x="2280" y="177" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_06nkhe8_di" bpmnElement="Event_06nkhe8">
         <dc:Bounds x="2432" y="199" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -552,10 +552,10 @@ execution.setVariable("messageToKafka", mapper.writeValueAsString(out))</bpmn:sc
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0n999bk_di" bpmnElement="Flow_0n999bk">
         <di:waypoint x="2270" y="217" />
-        <di:waypoint x="2280" y="217" />
+          <di:waypoint x="2300" y="217"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1icnrr9_di" bpmnElement="Flow_1icnrr9">
-        <di:waypoint x="2380" y="217" />
+          <di:waypoint x="2400" y="217"/>
         <di:waypoint x="2432" y="217" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Association_0feuze1_di" bpmnElement="Association_0feuze1">
