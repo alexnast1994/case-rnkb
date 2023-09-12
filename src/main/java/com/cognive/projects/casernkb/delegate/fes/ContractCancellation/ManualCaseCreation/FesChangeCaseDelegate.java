@@ -1,4 +1,4 @@
-package com.cognive.projects.casernkb.delegate.fes.ContractCancellation;
+package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.ManualCaseCreation;
 
 import com.cognive.projects.casernkb.model.fes.FesCaseSaveDto;
 import com.cognive.projects.casernkb.model.fes.FesCategoryDto;
@@ -37,6 +37,13 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                 .setSkipNullEnabled(true);
 
         FesCategoryDto fesCategoryDto = fesCaseSaveDto.getFesCategory();
+        fesCategoryDto.getFesParticipants().forEach(o -> {
+            o.setFesEios(null);
+            o.setFesParticipantIndividuals(null);
+            o.setFesBeneficiaryList(null);
+            o.setFesParticipantLegals(null);
+            o.setFesParticipantForeigns(null);
+        });
         Provider<FesCategory> fesCategoryProvider = p -> fesCategoryRepository.findById(categoryId).get();
         TypeMap<FesCategoryDto, FesCategory> propertyMapper = modelMapper.createTypeMap(FesCategoryDto.class, FesCategory.class);
         propertyMapper.setProvider(fesCategoryProvider);
