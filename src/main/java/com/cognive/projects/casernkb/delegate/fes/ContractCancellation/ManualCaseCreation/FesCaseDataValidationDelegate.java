@@ -1,4 +1,4 @@
-package com.cognive.projects.casernkb.delegate.fes.ContractCancellation;
+package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.ManualCaseCreation;
 
 import com.cognive.projects.casernkb.model.fes.FesCaseSaveDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +20,7 @@ public class FesCaseDataValidationDelegate implements JavaDelegate {
 
         FesCaseSaveDto fesCaseSaveDto = objectMapper.convertValue(jsonData, FesCaseSaveDto.class);
         boolean isCaseNew = fesCaseSaveDto.getFesCategory().getId() == null;
-        if(!isCaseNew) {
+        if (!isCaseNew) {
             delegateExecution.setVariable("categoryId", fesCaseSaveDto.getFesCategory().getId());
         }
 

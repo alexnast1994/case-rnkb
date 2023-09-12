@@ -1,4 +1,4 @@
-package com.cognive.projects.casernkb.delegate.fes.ContractCancellation;
+package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.ManualCaseCreation;
 
 import com.cognive.projects.casernkb.model.fes.FesCaseSaveDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,7 +68,7 @@ public class SaveCaseToDbDelegate implements JavaDelegate {
         FesCategory fesCategory = createFesCategory(aCase, caseCategory);
         createFesRefusalCaseDetails(fesCategory, rejectType);
         FesCasesStatus fesCasesStatus = createFesCasesStatus(fesCategory, caseStatus, caseCondition);
-        createFesMainPageNew(fesCasesStatus);
+        createFesMainPageNew(fesCasesStatus, aCase);
         createFesMainPageOtherSections(responsibleUser, fesCasesStatus, fesCaseSaveDto);
         createFesMainPageUserDecision(responsibleUser, fesCategory, caseStatus, caseCondition, fesCaseSaveDto);
 
@@ -101,9 +101,10 @@ public class SaveCaseToDbDelegate implements JavaDelegate {
         return fesCasesStatus;
     }
 
-    private void createFesMainPageNew(FesCasesStatus fesCasesStatus) {
+    private void createFesMainPageNew(FesCasesStatus fesCasesStatus, Case aCase) {
         FesMainPageNew fesMainPageNew = new FesMainPageNew();
         fesMainPageNew.setCasesStatusId(fesCasesStatus);
+        fesMainPageNew.setCaseDate(aCase.getCreationdate());
         fesMainPageNewRepository.save(fesMainPageNew);
     }
 
