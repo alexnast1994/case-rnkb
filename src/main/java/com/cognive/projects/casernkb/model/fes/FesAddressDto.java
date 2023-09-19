@@ -13,9 +13,9 @@ import java.io.Serializable;
 public class FesAddressDto implements Serializable {
     Long id;
     Long categoryId;
-    long participantId;
-    long eioId;
-    long beneficiaryId;
+    Long participantId;
+    Long eioId;
+    Long beneficiaryId;
     Long addressTypeId;
     String postal;
     Long countryCodeId;

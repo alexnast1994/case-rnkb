@@ -20,9 +20,9 @@ public class FesServiceInformationDto implements Serializable {
     String correspondentUuid;
     LocalDateTime date;
     String officerPosition;
-    String officerLastname;
-    String officerFirstname;
-    String officerMiddlename;
+    String officerLastName;
+    String officerFirstName;
+    String officerMiddleName;
     String officerFullName;
     String officerPhone;
     String officerMail;
