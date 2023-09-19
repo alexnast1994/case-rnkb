@@ -25,5 +25,6 @@ public class FesCaseDataValidationDelegate implements JavaDelegate {
         }
 
         delegateExecution.setVariable("isCaseNew", isCaseNew);
+        delegateExecution.setVariable("fesCaseSaveDto", fesCaseSaveDto);
     }
 }
