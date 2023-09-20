@@ -14,6 +14,7 @@ import com.prime.db.rnkb.model.fes.FesBeneficiary;
 import com.prime.db.rnkb.model.fes.FesCasesStatus;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesEio;
+import com.prime.db.rnkb.model.fes.FesGeneralInformation;
 import com.prime.db.rnkb.model.fes.FesIdentityDocument;
 import com.prime.db.rnkb.model.fes.FesIdentityDocumentGeneral;
 import com.prime.db.rnkb.model.fes.FesMainPageNew;
@@ -33,6 +34,7 @@ import com.prime.db.rnkb.repository.fes.FesBeneficiaryRepository;
 import com.prime.db.rnkb.repository.fes.FesCasesStatusRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
 import com.prime.db.rnkb.repository.fes.FesEioRepository;
+import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentGeneralRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageNewRepository;
@@ -50,7 +52,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -59,6 +63,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class FesService {
+    private final FesGeneralInformationRepository fesGeneralInformationRepository;
     private final CaseRepository caseRepository;
     private final FesMainPageUserDecisionRepository fesMainPageUserDecisionRepository;
     private final FesMainPageOtherSectionsRepository fesMainPageOtherSectionsRepository;
@@ -77,6 +82,7 @@ public class FesService {
     private static final String WRONG_CLIENT_TYPE = "0";
     private static final String NAME = "ФЭС";
     private static final String SUBNAME = "Отказ от заключения договора (расторжение)";
+    private static final String BRANCHNUM = "0000";
 
     private final AddressRepository addressRepository;
     private final FesParticipantRepository fesParticipantRepository;
@@ -313,7 +319,7 @@ public class FesService {
         fesParticipantIndividual.setBeneficiaryId(fesBeneficiary);
         fesParticipantIndividual.setEioId(fesEio);
         fesParticipantIndividual.setPhysicalIdentificationFeature(physicalIdentificationFeature);
-        if(extractPartOfName(client.getFullName(), 0) != null) {
+        if (extractPartOfName(client.getFullName(), 0) != null) {
             fesParticipantIndividual.setLastName(extractPartOfName(client.getFullName(), 0));
             fesParticipantIndividual.setFirstName(extractPartOfName(client.getFullName(), 1));
             fesParticipantIndividual.setMiddleName(extractPartOfName(client.getFullName(), 2));
@@ -521,6 +527,38 @@ public class FesService {
         aCase.setCaseObjectSubType(caseCategory);
         aCase = caseRepository.save(aCase);
         return aCase;
+    }
+
+    public String generateNum(String regNum) {
+
+        Calendar calendar = Calendar.getInstance();
+        int currentYear = calendar.get(Calendar.YEAR);
+        String currentYearPrefix = String.valueOf(currentYear);
+
+        Optional<FesGeneralInformation> result = fesGeneralInformationRepository.findAll().stream()
+                .filter(obj -> {
+                    String num = Objects.requireNonNullElse(obj.getNum(), "");
+                    return num.startsWith(currentYearPrefix);
+                })
+                .max((obj1, obj2) -> Long.compare(getLastTenDigitsAsLong(obj1.getNum()), getLastTenDigitsAsLong(obj2.getNum())));
+
+        long num = 0;
+        if (result.isPresent()) {
+            num = getLastTenDigitsAsLong(result.get().getNum());
+        }
+        String delim = "_";
+        String ii = "11";
+        String count = String.format("%010d", num + 1);
+        return Year.now() + delim + regNum + delim + BRANCHNUM + delim + ii + delim + count;
+    }
+
+    private long getLastTenDigitsAsLong(String num) {
+        String lastTenChars = num.substring(num.length() - 10);
+        try {
+            return Long.parseLong(lastTenChars);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
 }
