@@ -35,6 +35,7 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,7 +76,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesServiceInformation.setFormatVersion(fesCaseSaveDto.getFesDataPrefill().getFormatVersion());
             fesServiceInformation.setSoftVersion(fesCaseSaveDto.getFesDataPrefill().getSoftVersion());
             fesServiceInformation.setCorrespondentUuid(fesServiceInformationDto.getCorrespondentUuid());
-            fesServiceInformation.setDate(fesServiceInformationDto.getDate());
+            fesServiceInformation.setDate(LocalDateTime.now());
             fesServiceInformation.setOfficerPosition(fesServiceInformationDto.getOfficerPosition());
             fesServiceInformation.setOfficerLastname(fesServiceInformationDto.getOfficerLastName());
             fesServiceInformation.setOfficerFirstname(fesServiceInformationDto.getOfficerFirstName());

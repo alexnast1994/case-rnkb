@@ -17,6 +17,7 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.Calendar;
 import java.util.Objects;
@@ -60,6 +61,7 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
         fesServiceInformation.setCategoryId(fesCategory);
         fesServiceInformation.setFormatVersion(fesDataPrefill.getFormatVersion());
         fesServiceInformation.setSoftVersion(fesDataPrefill.getSoftVersion());
+        fesServiceInformation.setDate(LocalDateTime.now());
         fesServiceInformationRepository.save(fesServiceInformation);
 
         FesGeneralInformation fesGeneralInformation = new FesGeneralInformation();
