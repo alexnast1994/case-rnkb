@@ -9,9 +9,11 @@ import com.cognive.projects.casernkb.model.fes.FesParticipantLegalDto;
 import com.cognive.projects.casernkb.model.fes.FesRefusalCaseDetailsDto;
 import com.cognive.projects.casernkb.model.fes.FesRefusalReasonDto;
 import com.cognive.projects.casernkb.model.fes.FesServiceInformationDto;
+import com.cognive.projects.casernkb.service.FesService;
 import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.fes.FesAddress;
 import com.prime.db.rnkb.model.fes.FesBankInformation;
+import com.prime.db.rnkb.model.fes.FesGeneralInformation;
 import com.prime.db.rnkb.model.fes.FesParticipant;
 import com.prime.db.rnkb.model.fes.FesParticipantIndividual;
 import com.prime.db.rnkb.model.fes.FesParticipantLegal;
@@ -24,6 +26,7 @@ import com.prime.db.rnkb.repository.fes.FesBankInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesBeneficiaryRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
 import com.prime.db.rnkb.repository.fes.FesEioRepository;
+import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantIndividualRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantLegalRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantRepository;
@@ -55,6 +58,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     private final FesAddressRepository fesAddressRepository;
     private final FesEioRepository fesEioRepository;
     private final FesBeneficiaryRepository fesBeneficiaryRepository;
+    private final FesGeneralInformationRepository fesGeneralInformationRepository;
+    private final FesService fesService;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
@@ -62,6 +67,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
 
         var fesCategory = fesCategoryRepository.findById(categoryId).get();
         var fesCaseSaveDto = (FesCaseSaveDto) delegateExecution.getVariable("fesCaseSaveDto");
+        var recordType = baseDictionaryRepository.getBaseDictionary("1", 86);
 
         if (!fesCaseSaveDto.getFesCategory().getFesServiceInformations().isEmpty()) {
             FesServiceInformationDto fesServiceInformationDto = fesCaseSaveDto.getFesCategory().getFesServiceInformations().get(0);
@@ -86,6 +92,18 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesServiceInformation.setOfficerFullName(fesServiceInformationDto.getOfficerFullName());
             fesServiceInformationRepository.save(fesServiceInformation);
         }
+
+        FesGeneralInformation fesGeneralInformation;
+        if (fesCategory.getFesGeneralInformations() == null || fesCategory.getFesGeneralInformations().isEmpty()) {
+            fesGeneralInformation = new FesGeneralInformation();
+            fesGeneralInformation.setCategoryId(fesCategory);
+        } else {
+            fesGeneralInformation = fesCategory.getFesGeneralInformations().get(0);
+        }
+        fesGeneralInformation.setCategoryId(fesCategory);
+        fesGeneralInformation.setNum(fesService.generateNum(fesCaseSaveDto.getFesDataPrefill().getBankRegNum()));
+        fesGeneralInformation.setRecordType(recordType);
+        fesGeneralInformationRepository.save(fesGeneralInformation);
 
         if (!fesCaseSaveDto.getFesCategory().getFesBankInformations().isEmpty()) {
             FesBankInformationDto fesBankInformationDto = fesCaseSaveDto.getFesCategory().getFesBankInformations().get(0);
