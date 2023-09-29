@@ -12,8 +12,8 @@ import java.util.List;
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FesParticipantForeignDto implements Serializable {
-    long id;
-    long participantId;
+    Long id;
+    Long participantId;
     String participantForeignName;
     Long orgFormFeatureId;
     String founderLastname;

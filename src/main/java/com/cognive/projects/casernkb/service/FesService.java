@@ -14,7 +14,6 @@ import com.prime.db.rnkb.model.fes.FesBeneficiary;
 import com.prime.db.rnkb.model.fes.FesCasesStatus;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesEio;
-import com.prime.db.rnkb.model.fes.FesGeneralInformation;
 import com.prime.db.rnkb.model.fes.FesIdentityDocument;
 import com.prime.db.rnkb.model.fes.FesIdentityDocumentGeneral;
 import com.prime.db.rnkb.model.fes.FesMainPageNew;
@@ -48,6 +47,7 @@ import com.prime.db.rnkb.repository.fes.FesRightOfResidenceDocumentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,9 +55,14 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -333,7 +338,7 @@ public class FesService {
             fesParticipantIndividual.setBirthDate(clientIndividual.getBirthdate());
         }
         fesParticipantIndividual.setPhoneNumber(client.getPhoneNumber());
-        fesParticipantIndividual.setOrgnip(client.getOgrn());
+        fesParticipantIndividual.setOgrnip(client.getOgrn());
         if (clientAddress != null) {
             fesParticipantIndividual.setCitizenshipCountryCode(clientAddress.getCountryCode());
         }
@@ -347,12 +352,13 @@ public class FesService {
         fesIdentityDocumentGeneral.setParticipantIndividualId(fesParticipantIndividual);
         if (verificationDocument != null) {
             fesIdentityDocumentGeneral.setDocumentTypeCode(verificationDocument.getType());
-            fesIdentityDocumentGeneral.setDocumentSeries(extractDocParts(verificationDocument.getDocNumber(), 0));
             fesIdentityDocumentGeneral.setDocumentNum(extractDocParts(verificationDocument.getDocNumber(), 1));
+            if (!verificationDocument.getDocNumber().equals(extractDocParts(verificationDocument.getDocNumber(), 0))) {
+                fesIdentityDocumentGeneral.setDocumentSeries(extractDocParts(verificationDocument.getDocNumber(), 0));
+            }
             fesIdentityDocumentGeneral.setIdentityDocumentType(getIdentityDocType(verificationDocument.getType()));
         }
-        fesIdentityDocumentGeneral = fesIdentityDocumentGeneralRepository.save(fesIdentityDocumentGeneral);
-        return fesIdentityDocumentGeneral;
+        return fesIdentityDocumentGeneralRepository.save(fesIdentityDocumentGeneral);
     }
 
     private void getFesIdentityDocument(FesIdentityDocumentGeneral fesIdentityDocumentGeneral, VerificationDocument verificationDocument) {
@@ -473,6 +479,7 @@ public class FesService {
     private FesRefusalCaseDetails createFesRefusalCaseDetails(FesCategory fesCategory, Optional<BaseDictionary> rejectType) {
         FesRefusalCaseDetails fesRefusalCaseDetails = new FesRefusalCaseDetails();
         fesRefusalCaseDetails.setCategoryId(fesCategory);
+        fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
         fesRefusalCaseDetails.setRejectType(rejectType.orElseThrow());
         return fesRefusalCaseDetailsRepository.save(fesRefusalCaseDetails);
     }
@@ -535,17 +542,11 @@ public class FesService {
         int currentYear = calendar.get(Calendar.YEAR);
         String currentYearPrefix = String.valueOf(currentYear);
 
-        Optional<FesGeneralInformation> result = fesGeneralInformationRepository.findAll().stream()
-                .filter(obj -> {
-                    String num = Objects.requireNonNullElse(obj.getNum(), "");
-                    return num.startsWith(currentYearPrefix);
-                })
-                .max((obj1, obj2) -> Long.compare(getLastTenDigitsAsLong(obj1.getNum()), getLastTenDigitsAsLong(obj2.getNum())));
+        var result = fesGeneralInformationRepository.findAllNumsFromFesGeneralInformation().stream()
+                .filter(num -> num.startsWith(currentYearPrefix))
+                .max(Comparator.comparingLong(this::getLastTenDigitsAsLong));
 
-        long num = 0;
-        if (result.isPresent()) {
-            num = getLastTenDigitsAsLong(result.get().getNum());
-        }
+        long num = result.map(this::getLastTenDigitsAsLong).orElse(0L);
         String delim = "_";
         String ii = "11";
         String count = String.format("%010d", num + 1);
@@ -559,6 +560,31 @@ public class FesService {
         } catch (NumberFormatException e) {
             return 0;
         }
+    }
+
+    public <T, D> void deleteMissingItems(List<D> dtoList, List<T> existingList, JpaRepository<T, Long> repository, Function<D, Long> idExtractorDto, Function<T, Long> idExtractor) {
+        Set<Long> dtoIds = dtoList.stream()
+                .map(idExtractorDto)
+                .collect(Collectors.toSet());
+
+        Iterator<T> iterator = existingList.iterator();
+        while (iterator.hasNext()) {
+            T existingItem = iterator.next();
+            if (!dtoIds.contains(idExtractor.apply(existingItem))) {
+                repository.delete(existingItem);
+                iterator.remove();
+            }
+        }
+    }
+
+    public  <D, T> List<T> createAndSaveAllItems(List<D> dtoList, Function<D, T> createFunction, JpaRepository<T, Long> repository, Object parentEntity) {
+        List<T> resultList = new ArrayList<>();
+        for (D dto : dtoList) {
+            T entity = createFunction.apply(dto);
+            resultList.add(entity);
+        }
+        repository.saveAll(resultList);
+        return resultList;
     }
 
 }

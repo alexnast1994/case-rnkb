@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FesIdentityDocumentDto implements Serializable {
-    long id;
-    long identityDocumentGeneralId;
+    Long id;
+    Long identityDocumentGeneralId;
     LocalDateTime issueDate;
     String departmentCode;
     String issuingAgency;

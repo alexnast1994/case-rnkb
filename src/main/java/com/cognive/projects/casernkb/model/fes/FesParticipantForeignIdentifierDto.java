@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FesParticipantForeignIdentifierDto implements Serializable {
-    long id;
+    Long id;
     String foreignNum;
     String foreignCode;
 }

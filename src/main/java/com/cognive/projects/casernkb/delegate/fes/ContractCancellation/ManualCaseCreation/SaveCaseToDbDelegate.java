@@ -37,6 +37,6 @@ public class SaveCaseToDbDelegate implements JavaDelegate {
 
         FesCategory fesCategory = fesService.getFesCategory(caseType, caseCategory, caseObjectType, caseStatus, responsibleUser, caseCondition, rejectType, fesCaseSaveDto);
 
-        delegateExecution.setVariable("categoryId", fesCategory.getId());
+        delegateExecution.setVariable("fesCategoryId", fesCategory.getId());
     }
 }

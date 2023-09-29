@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FesParticipantLegalDto implements Serializable {
-    long id;
-    long eioId;
+    Long id;
+    Long eioId;
     String participantLegalName;
     Long branchFeatureId;
     String inn;

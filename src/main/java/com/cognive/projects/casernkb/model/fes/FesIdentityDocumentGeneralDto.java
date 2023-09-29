@@ -12,8 +12,8 @@ import java.util.List;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FesIdentityDocumentGeneralDto implements Serializable {
-    long id;
-    long participantIndividualId;
+    Long id;
+    Long participantIndividualId;
     Long documentTypeCodeId;
     String otherDocumentName;
     String documentSeries;

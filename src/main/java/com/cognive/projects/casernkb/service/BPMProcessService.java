@@ -2,6 +2,7 @@ package com.cognive.projects.casernkb.service;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public interface BPMProcessService {
@@ -16,7 +17,7 @@ public interface BPMProcessService {
 
     String startProcess(String processId, String businessKey, Map<String, Object> variables);
 
-    String startProcessReturnVariable(String processId, String businessKey, Map<String, Object> variables, String returnVariable);
+    Map<String, Object> startProcessReturnVariables(String processId, String businessKey, Map<String, Object> variables, List<String> returnVariables);
 
     String startProcessReturnVariable(String processId, String businessKey, Map<String, Object> variables);
 

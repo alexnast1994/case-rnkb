@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.AutoCaseCreation;
 
+import com.cognive.projects.casernkb.service.FesService;
 import com.prime.db.rnkb.model.fes.FesBankInformation;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesDataPrefill;
@@ -18,15 +19,10 @@ import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.time.Year;
-import java.util.Calendar;
-import java.util.Objects;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
-    private static final String BRANCHNUM = "0000";
 
     private final FesDataPrefillRepository fesDataPrefillRepository;
     private final FesBankInformationRepository fesBankInformationRepository;
@@ -34,6 +30,7 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
     private final BaseDictionaryRepository baseDictionaryRepository;
     private final FesGeneralInformationRepository fesGeneralInformationRepository;
     private final FesRefusalCaseDetailsRepository fesRefusalCaseDetailsRepository;
+    private final FesService fesService;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
@@ -66,46 +63,15 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
 
         FesGeneralInformation fesGeneralInformation = new FesGeneralInformation();
         fesGeneralInformation.setCategoryId(fesCategory);
-        fesGeneralInformation.setNum(generateNum(fesDataPrefill.getBankRegNum()));
+        fesGeneralInformation.setNum(fesService.generateNum(fesDataPrefill.getBankRegNum()));
         fesGeneralInformation.setRecordType(recordType);
         fesGeneralInformationRepository.save(fesGeneralInformation);
 
         FesRefusalCaseDetails fesRefusalCaseDetails = new FesRefusalCaseDetails();
         fesRefusalCaseDetails.setCategoryId(fesCategory);
+        fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
         fesRefusalCaseDetails.setGroundOfRefusal(groundOfRefusal);
         fesRefusalCaseDetails.setRejectType(rejectType);
         fesRefusalCaseDetailsRepository.save(fesRefusalCaseDetails);
-    }
-
-    private String generateNum(String regNum) {
-
-        Calendar calendar = Calendar.getInstance();
-        int currentYear = calendar.get(Calendar.YEAR);
-        String currentYearPrefix = String.valueOf(currentYear);
-
-        Optional<FesGeneralInformation> result = fesGeneralInformationRepository.findAll().stream()
-                .filter(obj -> {
-                    String num = Objects.requireNonNullElse(obj.getNum(), "");
-                    return num.startsWith(currentYearPrefix);
-                })
-                .max((obj1, obj2) -> Long.compare(getLastTenDigitsAsLong(obj1.getNum()), getLastTenDigitsAsLong(obj2.getNum())));
-
-        long num = 0;
-        if (result.isPresent()) {
-            num = getLastTenDigitsAsLong(result.get().getNum());
-        }
-        String delim = "_";
-        String ii = "11";
-        String count = String.format("%010d", num + 1);
-        return Year.now() + delim + regNum + delim + BRANCHNUM + delim + ii + delim + count;
-    }
-
-    public long getLastTenDigitsAsLong(String num) {
-        String lastTenChars = num.substring(num.length() - 10);
-        try {
-            return Long.parseLong(lastTenChars);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
     }
 }
