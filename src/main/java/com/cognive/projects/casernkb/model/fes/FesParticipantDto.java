@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FesParticipantDto implements Serializable {
-    long id;
+    Long id;
     Long categoryId;
     Long participantCodeId;
     Long participantStatusId;
@@ -25,5 +25,5 @@ public class FesParticipantDto implements Serializable {
     List<FesParticipantForeignDto> fesParticipantForeigns;
     List<FesBeneficiaryDto> fesBeneficiaryList;
     List<FesEioDto> fesEios;
-
+    List<FesAddressDto> fesAddresses;
 }

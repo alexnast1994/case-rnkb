@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * DTO for {@link com.prime.db.rnkb.model.fes.FesBeneficiary}
@@ -11,8 +12,10 @@ import java.io.Serializable;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FesBeneficiaryDto implements Serializable {
-    long id;
-    long participantId;
+    Long id;
+    Long participantId;
     Long beneficiaryTypeId;
     Long beneficiaryResidentFeatureId;
+    List<FesAddressDto> fesAddresses;
+    List<FesParticipantIndividualDto> fesParticipantIndividuals;
 }

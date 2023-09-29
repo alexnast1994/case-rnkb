@@ -7,8 +7,10 @@ import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.runtime.MessageCorrelationBuilder;
+import org.camunda.bpm.engine.runtime.ProcessInstanceWithVariables;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.engine.task.TaskQuery;
+import org.camunda.bpm.engine.variable.VariableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -54,21 +57,33 @@ public class BPMProcessServiceImpl implements BPMProcessService {
     }
 
     @Override
-    public String startProcessReturnVariable(String processId, String businessKey, Map<String, Object> variables, String returnVariable) {
-        fillTopicMapping(processId, variables);
-        return runtimeService.createProcessInstanceByKey(processId)
-                .businessKey(businessKey)
-                .setVariables(variables)
-                .executeWithVariablesInReturn().getVariables().getValue(returnVariable, Object.class).toString();
-    }
-
-    @Override
     public String startProcessReturnVariable(String processId, String businessKey, Map<String, Object> variables) {
         fillTopicMapping(processId, variables);
         return runtimeService.createProcessInstanceByKey(processId)
                 .businessKey(businessKey)
                 .setVariables(variables)
                 .executeWithVariablesInReturn().getVariables().toString();
+    }
+
+    @Override
+    public Map<String, Object> startProcessReturnVariables(String processId, String businessKey, Map<String, Object> variables, List<String> returnVariables) {
+        fillTopicMapping(processId, variables);
+        Map<String, Object> resultVariables = new HashMap<>();
+
+        ProcessInstanceWithVariables processInstanceWithVariables = runtimeService.createProcessInstanceByKey(processId)
+                .businessKey(businessKey)
+                .setVariables(variables)
+                .executeWithVariablesInReturn();
+
+        VariableMap variablesMap = processInstanceWithVariables.getVariables();
+
+        for (String returnVariable : returnVariables) {
+            if (variablesMap.containsKey(returnVariable)) {
+                resultVariables.put(returnVariable, variablesMap.getValueTyped(returnVariable).getValue());
+            }
+        }
+
+        return resultVariables;
     }
 
     private void fillTopicMapping(String processId, Map<String, Object> variables) {

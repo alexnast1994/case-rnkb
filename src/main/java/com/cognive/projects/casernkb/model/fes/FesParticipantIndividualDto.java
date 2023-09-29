@@ -13,11 +13,11 @@ import java.util.List;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FesParticipantIndividualDto implements Serializable {
-    long id;
-    long participantId;
+    Long id;
+    Long participantId;
     Long physicalIdentificationFeatureId;
-    long eioIdId;
-    long beneficiaryId;
+    Long eioIdId;
+    Long beneficiaryId;
     String lastName;
     String firstName;
     String middleName;

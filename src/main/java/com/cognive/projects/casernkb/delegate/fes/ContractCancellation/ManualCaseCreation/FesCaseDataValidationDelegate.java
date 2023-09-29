@@ -21,7 +21,7 @@ public class FesCaseDataValidationDelegate implements JavaDelegate {
         FesCaseSaveDto fesCaseSaveDto = objectMapper.convertValue(jsonData, FesCaseSaveDto.class);
         boolean isCaseNew = fesCaseSaveDto.getFesCategory().getId() == null;
         if (!isCaseNew) {
-            delegateExecution.setVariable("categoryId", fesCaseSaveDto.getFesCategory().getId());
+            delegateExecution.setVariable("fesCategoryId", fesCaseSaveDto.getFesCategory().getId());
         }
 
         delegateExecution.setVariable("isCaseNew", isCaseNew);

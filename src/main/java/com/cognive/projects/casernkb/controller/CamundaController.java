@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -24,7 +25,7 @@ import java.util.Map;
 @Slf4j
 public class CamundaController {
     private static final String START = "/start/{processName}";
-    private static final String START_AND_RETURN_VARIABLE = "/start/{processName}/return/{variable}";
+    private static final String START_AND_RETURN_VARIABLES = "/start/{processName}/return/{returnVariables}";
     private static final String START_AND_RETURN_ALL_VARIABLES = "/start/{processName}/return";
     private final BPMProcessService bpmService;
     private final KafkaService kafkaService;
@@ -42,16 +43,18 @@ public class CamundaController {
         }
     }
 
-    @PostMapping(value = START_AND_RETURN_VARIABLE)
-    public ResponseEntity<String> camundaProcessStartReturnVariable(@PathVariable String processName, @PathVariable String variable, @RequestBody Map<String, Object> body) {
+    @PostMapping(value = START_AND_RETURN_VARIABLES)
+    public ResponseEntity<Map<String,Object>> camundaProcessStartReturnVariables(@PathVariable String processName, @PathVariable List<String> returnVariables, @RequestBody Map<String, Object> body) {
         Map<String, Object> variables = getVariables(body);
         var key = getKey(processName);
         try {
-            var result = bpmService.startProcessReturnVariable(processName, key, variables, variable);
+            var result = bpmService.startProcessReturnVariables(processName, key, variables, returnVariables);
             return ResponseEntity.ok(result);
         } catch (Exception ex) {
             kafkaService.sendError(processName, key, ex);
-            return ResponseEntity.badRequest().body(ex.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", ex.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 
