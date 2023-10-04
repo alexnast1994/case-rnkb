@@ -1,6 +1,5 @@
 package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.AutoCaseCreation;
 
-import com.cognive.projects.casernkb.service.FesService;
 import com.prime.db.rnkb.model.fes.FesBankInformation;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesDataPrefill;
@@ -30,7 +29,6 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
     private final BaseDictionaryRepository baseDictionaryRepository;
     private final FesGeneralInformationRepository fesGeneralInformationRepository;
     private final FesRefusalCaseDetailsRepository fesRefusalCaseDetailsRepository;
-    private final FesService fesService;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
@@ -63,7 +61,6 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
 
         FesGeneralInformation fesGeneralInformation = new FesGeneralInformation();
         fesGeneralInformation.setCategoryId(fesCategory);
-        fesGeneralInformation.setNum(fesService.generateNum(fesDataPrefill.getBankRegNum()));
         fesGeneralInformation.setRecordType(recordType);
         fesGeneralInformationRepository.save(fesGeneralInformation);
 
