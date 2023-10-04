@@ -33,7 +33,6 @@ import com.prime.db.rnkb.repository.fes.FesBeneficiaryRepository;
 import com.prime.db.rnkb.repository.fes.FesCasesStatusRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
 import com.prime.db.rnkb.repository.fes.FesEioRepository;
-import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentGeneralRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageNewRepository;
@@ -52,10 +51,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.Year;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -68,7 +64,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class FesService {
-    private final FesGeneralInformationRepository fesGeneralInformationRepository;
     private final CaseRepository caseRepository;
     private final FesMainPageUserDecisionRepository fesMainPageUserDecisionRepository;
     private final FesMainPageOtherSectionsRepository fesMainPageOtherSectionsRepository;
@@ -87,7 +82,6 @@ public class FesService {
     private static final String WRONG_CLIENT_TYPE = "0";
     private static final String NAME = "ФЭС";
     private static final String SUBNAME = "Отказ от заключения договора (расторжение)";
-    private static final String BRANCHNUM = "0000";
 
     private final AddressRepository addressRepository;
     private final FesParticipantRepository fesParticipantRepository;
@@ -125,7 +119,7 @@ public class FesService {
                 && fesIdentityDocumentGeneral.getIdentityDocumentType().equals(getBd("2", 337))) {
             getFesRightOfResidenceDocument(fesIdentityDocumentGeneral, verificationDocument);
         }
-        addAddress(fesCategory, null, null, addressType, clientAddress);
+        addAddress(null, fesParticipant, null, null, addressType, clientAddress);
 
     }
 
@@ -152,7 +146,7 @@ public class FesService {
                 && fesIdentityDocumentGeneral.getIdentityDocumentType().equals(getBd("2", 337))) {
             getFesRightOfResidenceDocument(fesIdentityDocumentGeneral, verificationDocument);
         }
-        addAddress(null, fesBeneficiary, null, addressType, clientAddress);
+        addAddress(null, null, fesBeneficiary, null, addressType, clientAddress);
 
     }
 
@@ -179,7 +173,7 @@ public class FesService {
                 && fesIdentityDocumentGeneral.getIdentityDocumentType().equals(getBd("2", 337))) {
             getFesRightOfResidenceDocument(fesIdentityDocumentGeneral, verificationDocument);
         }
-        addAddress(null, null, fesEio, addressType, clientAddress);
+        addAddress(null, null, null, fesEio, addressType, clientAddress);
 
     }
 
@@ -222,9 +216,10 @@ public class FesService {
         return fesBeneficiary;
     }
 
-    public void addAddress(FesCategory fesCategory, FesBeneficiary fesBeneficiary, FesEio fesEio, BaseDictionary addressType, Address clientAddress) {
+    public void addAddress(FesCategory fesCategory, FesParticipant fesParticipant, FesBeneficiary fesBeneficiary, FesEio fesEio, BaseDictionary addressType, Address clientAddress) {
         FesAddress fesAddress = new FesAddress();
         fesAddress.setCategoryId(fesCategory);
+        fesAddress.setParticipantId(fesParticipant);
         fesAddress.setBeneficiaryId(fesBeneficiary);
         fesAddress.setEioId(fesEio);
         fesAddress.setAddressType(addressType);
@@ -236,7 +231,15 @@ public class FesService {
             fesAddress.setHouse(clientAddress.getHouseN1());
             fesAddress.setCorpus(clientAddress.getHouseN2());
             fesAddress.setRoom(clientAddress.getRoomN());
-            fesAddress.setAddressText(clientAddress.getAddressLine());
+            if (clientAddress.getCountryCode() == null &&
+                    clientAddress.getAreaName() == null &&
+                    clientAddress.getCityName() == null &&
+                    clientAddress.getStreetName() == null &&
+                    clientAddress.getHouseN1() == null &&
+                    clientAddress.getHouseN2() == null &&
+                    clientAddress.getRoomN() == null) {
+                fesAddress.setAddressText(clientAddress.getAddressLine());
+            }
         }
         fesAddressRepository.save(fesAddress);
     }
@@ -246,7 +249,7 @@ public class FesService {
 
         var addressOfRegType = getBd(fesAddressTypeCode, 331);
 
-        addAddress(null, null, fesEio, addressOfRegType, clientAddress);
+        addAddress(null, null, null, fesEio, addressOfRegType, clientAddress);
     }
 
     public void findForeignAddressAndAdd(FesCategory fesCategory, Client client, String addressTypeCode, String fesAddressTypeCode) {
@@ -254,7 +257,7 @@ public class FesService {
 
         var addressOfRegType = getBd(fesAddressTypeCode, 331);
 
-        addAddress(fesCategory, null, null, addressOfRegType, clientAddress);
+        addAddress(fesCategory, null, null, null, addressOfRegType, clientAddress);
     }
 
     public Address findMainLegalAddress(List<Address> clientAddresses, String addressType) {
@@ -534,32 +537,6 @@ public class FesService {
         aCase.setCaseObjectSubType(caseCategory);
         aCase = caseRepository.save(aCase);
         return aCase;
-    }
-
-    public String generateNum(String regNum) {
-
-        Calendar calendar = Calendar.getInstance();
-        int currentYear = calendar.get(Calendar.YEAR);
-        String currentYearPrefix = String.valueOf(currentYear);
-
-        var result = fesGeneralInformationRepository.findAllNumsFromFesGeneralInformation().stream()
-                .filter(num -> num.startsWith(currentYearPrefix))
-                .max(Comparator.comparingLong(this::getLastTenDigitsAsLong));
-
-        long num = result.map(this::getLastTenDigitsAsLong).orElse(0L);
-        String delim = "_";
-        String ii = "11";
-        String count = String.format("%010d", num + 1);
-        return Year.now() + delim + regNum + delim + BRANCHNUM + delim + ii + delim + count;
-    }
-
-    private long getLastTenDigitsAsLong(String num) {
-        String lastTenChars = num.substring(num.length() - 10);
-        try {
-            return Long.parseLong(lastTenChars);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
     }
 
     public <T, D> void deleteMissingItems(List<D> dtoList, List<T> existingList, JpaRepository<T, Long> repository, Function<D, Long> idExtractorDto, Function<T, Long> idExtractor) {

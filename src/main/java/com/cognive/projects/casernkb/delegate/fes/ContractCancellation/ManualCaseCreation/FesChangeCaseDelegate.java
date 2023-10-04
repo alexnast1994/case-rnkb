@@ -120,7 +120,6 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         if (fesCategory.getFesGeneralInformations() == null || fesCategory.getFesGeneralInformations().isEmpty()) {
             fesGeneralInformation = new FesGeneralInformation();
             fesGeneralInformation.setCategoryId(fesCategory);
-            fesGeneralInformation.setNum(fesService.generateNum(fesCaseSaveDto.getFesDataPrefill().getBankRegNum()));
         } else {
             fesGeneralInformation = fesCategory.getFesGeneralInformations().get(0);
         }
@@ -658,6 +657,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         fesParticipantIndividual.setCitizenshipCountryCode(getBdById(fesParticipantIndividualDto.getCitizenshipCountryCodeId()));
         fesParticipantIndividual.setPublicFigureFeature(getBdById(fesParticipantIndividualDto.getPublicFigureFeatureId()));
         fesParticipantIndividual.setIdentityDocumentFeature(getBdById(fesParticipantIndividualDto.getIdentityDocumentFeatureId()));
+        fesParticipantIndividual.setOgrnip(fesParticipantIndividualDto.getOrgnip());
 
         return fesParticipantIndividual;
     }
@@ -744,29 +744,12 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         fesAddress.setHouse(fesAddressDto.getHouse());
         fesAddress.setCorpus(fesAddressDto.getCorpus());
         fesAddress.setRoom(fesAddressDto.getRoom());
-        fesAddress.setAddressText(fillAddressText(fesAddressDto));
+        fesAddress.setAddressText(fesAddressDto.getAddressText());
         fesAddress.setParticipantId(fesParticipant);
         fesAddress.setEioId(fesEio);
         fesAddress.setBeneficiaryId(fesBeneficiary);
 
         return fesAddress;
-    }
-
-    private String fillAddressText(FesAddressDto fesAddress) {
-        if (fesAddress.getAddressText() == null || fesAddress.getAddressText().isEmpty()) {
-            String postal = (fesAddress.getPostal() != null) ? fesAddress.getPostal() : "";
-            String countryCode = (fesAddress.getCountryCodeId() != null) ? String.valueOf(fesAddress.getCountryCodeId()) : "";
-            String okato = (fesAddress.getOkatoId() != null) ? String.valueOf(fesAddress.getOkatoId()) : "";
-            String district = (fesAddress.getDistrict() != null) ? fesAddress.getDistrict() : "";
-            String township = (fesAddress.getTownship() != null) ? fesAddress.getTownship() : "";
-            String street = (fesAddress.getStreet() != null) ? fesAddress.getStreet() : "";
-            String house = (fesAddress.getHouse() != null) ? fesAddress.getHouse() : "";
-            String corpus = (fesAddress.getCorpus() != null) ? fesAddress.getCorpus() : "";
-            String room = (fesAddress.getRoom() != null) ? fesAddress.getRoom() : "";
-            return String.join(",", postal, countryCode, okato, district, township, street, house, corpus, room);
-        } else {
-            return fesAddress.getAddressText();
-        }
     }
 
     private FesBankInformation createOrUpdateFesBankInformation(FesBankInformationDto fesBankInformationDto, FesCategory fesCategory) {
@@ -777,7 +760,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         }
 
         fesBankInformation.setCategoryId(fesCategory);
-        fesBankInformation.setReportingAttribute(fesBankInformationDto.getReportingAttribute());
+        fesBankInformation.setReportingAttribute(fesBankInformationDto.getReportingAttribute() != null && fesBankInformationDto.getReportingAttribute());
         fesBankInformation.setBankRegNum(fesBankInformationDto.getBankRegNum());
         fesBankInformation.setBankBic(fesBankInformationDto.getBankBic());
         fesBankInformation.setBankOcato(fesBankInformationDto.getBankOcato());
