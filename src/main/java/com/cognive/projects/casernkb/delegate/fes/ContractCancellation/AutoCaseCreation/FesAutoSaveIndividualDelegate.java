@@ -26,7 +26,7 @@ public class FesAutoSaveIndividualDelegate implements JavaDelegate {
                 fesService.getBd("3", 322) :
                 fesService.getBd("2", 322);
 
-        FesParticipant fesParticipant = fesService.addParticipant(fesCategory, participantType);
+        FesParticipant fesParticipant = fesService.addParticipant(fesCategory, participantType, client.getIsResidentRus());
         fesService.addParticipantIndividual(fesCategory, fesParticipant, client);
 
         execution.setVariable("fesParticipant", fesParticipant);

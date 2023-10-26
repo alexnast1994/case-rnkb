@@ -2,6 +2,7 @@ package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.ManualCa
 
 import com.cognive.projects.casernkb.model.fes.FesCaseSaveDto;
 import com.cognive.projects.casernkb.service.FesService;
+import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.repository.BaseDictionaryRepository;
 import com.prime.db.rnkb.repository.SysUserRepository;
@@ -38,5 +39,6 @@ public class SaveCaseToDbDelegate implements JavaDelegate {
         FesCategory fesCategory = fesService.getFesCategory(caseType, caseCategory, caseObjectType, caseStatus, responsibleUser, caseCondition, rejectType, fesCaseSaveDto);
 
         delegateExecution.setVariable("fesCategoryId", fesCategory.getId());
+        delegateExecution.setVariable("rejectTypeCode", rejectType.map(BaseDictionary::getCode).orElse(null));
     }
 }

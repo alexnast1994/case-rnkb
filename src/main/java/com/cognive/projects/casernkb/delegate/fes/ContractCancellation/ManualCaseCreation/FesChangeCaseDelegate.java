@@ -21,11 +21,13 @@ import com.prime.db.rnkb.model.fes.FesAddress;
 import com.prime.db.rnkb.model.fes.FesBankInformation;
 import com.prime.db.rnkb.model.fes.FesBeneficiary;
 import com.prime.db.rnkb.model.fes.FesBranchInformation;
+import com.prime.db.rnkb.model.fes.FesCasesStatus;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesEio;
 import com.prime.db.rnkb.model.fes.FesGeneralInformation;
 import com.prime.db.rnkb.model.fes.FesIdentityDocument;
 import com.prime.db.rnkb.model.fes.FesIdentityDocumentGeneral;
+import com.prime.db.rnkb.model.fes.FesMainPageOtherSections;
 import com.prime.db.rnkb.model.fes.FesParticipant;
 import com.prime.db.rnkb.model.fes.FesParticipantIndividual;
 import com.prime.db.rnkb.model.fes.FesParticipantLegal;
@@ -43,6 +45,7 @@ import com.prime.db.rnkb.repository.fes.FesEioRepository;
 import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentGeneralRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentRepository;
+import com.prime.db.rnkb.repository.fes.FesMainPageOtherSectionsRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantIndividualRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantLegalRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantRepository;
@@ -83,10 +86,12 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     private final FesEioRepository fesEioRepository;
     private final FesBeneficiaryRepository fesBeneficiaryRepository;
     private final FesService fesService;
+    private final FesMainPageOtherSectionsRepository fesMainPageOtherSectionsRepository;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         var categoryId = (Long) delegateExecution.getVariable("fesCategoryId");
+        var rejectTypeCode = (String) delegateExecution.getVariable("rejectTypeCode");
 
         var fesCategory = fesCategoryRepository.findById(categoryId).get();
         var fesCaseSaveDto = (FesCaseSaveDto) delegateExecution.getVariable("fesCaseSaveDto");
@@ -98,10 +103,15 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             if (fesCategory.getFesServiceInformations() == null || fesCategory.getFesServiceInformations().isEmpty()) {
                 fesServiceInformation = new FesServiceInformation();
                 fesServiceInformation.setCategoryId(fesCategory);
+                if (rejectTypeCode.equals("2") || rejectTypeCode.equals("3")) {
+                    fesServiceInformation.setInformationType(baseDictionaryRepository.getBaseDictionary("01", 312));
+                }
             } else {
                 fesServiceInformation = fesCategory.getFesServiceInformations().get(0);
             }
-            fesServiceInformation.setInformationType(getBdById(fesServiceInformationDto.getInformationTypeId()));
+            if (fesServiceInformationDto.getInformationTypeId() != null) {
+                fesServiceInformation.setInformationType(getBdById(fesServiceInformationDto.getInformationTypeId()));
+            }
             fesServiceInformation.setFormatVersion(fesCaseSaveDto.getFesDataPrefill().getFormatVersion());
             fesServiceInformation.setSoftVersion(fesCaseSaveDto.getFesDataPrefill().getSoftVersion());
             fesServiceInformation.setCorrespondentUuid(fesServiceInformationDto.getCorrespondentUuid());
@@ -160,17 +170,25 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesRefusalReasonRepository.deleteAll(existingFesRefusalReasons);
         }
 
-        if (!fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().isEmpty()) {
-            FesRefusalCaseDetailsDto fesRefusalCaseDetailsDto = fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().get(0);
-            FesRefusalCaseDetails fesRefusalCaseDetails = fesCategory.getFesRefusalCaseDetails().get(0);
-            fesRefusalCaseDetails.setBankInfFeature(getBdById(fesRefusalCaseDetailsDto.getBankInfFeatureId()));
-            fesRefusalCaseDetails.setGroundOfRefusal(getBdById(fesRefusalCaseDetailsDto.getGroundOfRefusalId()));
-            fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
-            fesRefusalCaseDetails.setComment(fesRefusalCaseDetailsDto.getComment());
-            fesRefusalCaseDetails.setRejectType(getBdById(fesRefusalCaseDetailsDto.getRejectTypeId()));
-            fesRefusalCaseDetails.setRemovalReason(fesRefusalCaseDetailsDto.getRemovalReason());
-            fesRefusalCaseDetailsRepository.save(fesRefusalCaseDetails);
+        List<FesRefusalCaseDetailsDto> fesRefusalCaseDetailsDtoList = fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails();
+        List<FesRefusalCaseDetails> existingFesRefusalCaseDetails = fesRefusalCaseDetailsRepository.findByCategoryId(fesCategory);
+        if (fesRefusalCaseDetailsDtoList != null && !fesRefusalCaseDetailsDtoList.isEmpty()) {
+            fesService.deleteMissingItems(fesRefusalCaseDetailsDtoList, existingFesRefusalCaseDetails, fesRefusalCaseDetailsRepository, FesRefusalCaseDetailsDto::getId, FesRefusalCaseDetails::getId);
+            fesService.createAndSaveAllItems(fesRefusalCaseDetailsDtoList, dto -> createOrUpdateFesRefusalCaseDetails(dto, fesCategory), fesRefusalCaseDetailsRepository, fesCategory);
+        } else {
+            fesRefusalCaseDetailsRepository.deleteAll(existingFesRefusalCaseDetails);
         }
+
+        FesCasesStatus fesCasesStatuses = fesCategory.getFesCasesStatuses().get(0);
+        List<FesMainPageOtherSections> otherSectionsList = fesCasesStatuses.getFesMainPageOtherSections();
+        FesMainPageOtherSections fesMainPageOtherSections = (otherSectionsList == null || otherSectionsList.isEmpty())
+                ? new FesMainPageOtherSections()
+                : otherSectionsList.get(0);
+        if (otherSectionsList == null || otherSectionsList.isEmpty()) {
+            fesMainPageOtherSections.setCasesStatusId(fesCasesStatuses);
+        }
+        fesMainPageOtherSections.setComment(fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().get(0).getComment());
+        fesMainPageOtherSectionsRepository.save(fesMainPageOtherSections);
 
         List<FesParticipantDto> fesParticipantDtoList = fesCaseSaveDto.getFesCategory().getFesParticipants();
         List<FesParticipant> existingFesParticipants = fesParticipantRepository.findFesParticipantsByCategoryId(fesCategory);
@@ -599,6 +617,24 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         fesRefusalReason.setRefusalReasonOthername(fesRefusalReasonDto.getRefusalReasonOthername());
 
         return fesRefusalReason;
+    }
+
+    private FesRefusalCaseDetails createOrUpdateFesRefusalCaseDetails(FesRefusalCaseDetailsDto fesRefusalCaseDetailsDto, FesCategory fesCategory) {
+        FesRefusalCaseDetails fesRefusalCaseDetails = new FesRefusalCaseDetails();
+
+        if (fesRefusalCaseDetailsDto.getId() != null) {
+            fesRefusalCaseDetails = fesRefusalCaseDetailsRepository.findById(fesRefusalCaseDetailsDto.getId()).orElse(fesRefusalCaseDetails);
+        }
+
+        fesRefusalCaseDetails.setCategoryId(fesCategory);
+        fesRefusalCaseDetails.setBankInfFeature(getBdById(fesRefusalCaseDetailsDto.getBankInfFeatureId()));
+        fesRefusalCaseDetails.setGroundOfRefusal(getBdById(fesRefusalCaseDetailsDto.getGroundOfRefusalId()));
+        fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
+        fesRefusalCaseDetails.setComment(fesRefusalCaseDetailsDto.getComment());
+        fesRefusalCaseDetails.setRejectType(getBdById(fesRefusalCaseDetailsDto.getRejectTypeId()));
+        fesRefusalCaseDetails.setRemovalReason(fesRefusalCaseDetailsDto.getRemovalReason());
+
+        return fesRefusalCaseDetails;
     }
 
     private FesParticipant createOrUpdateFesParticipant(FesParticipantDto fesParticipantDto, FesCategory fesCategory) {

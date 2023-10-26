@@ -37,7 +37,7 @@ public class FesAutoSaveLegalDelegate implements JavaDelegate {
         var addressOfRegType = baseDictionaryRepository.getBaseDictionary(FES_ADDRESS_OF_REG, 331);
         var addressLocationType = baseDictionaryRepository.getBaseDictionary(FES_ADDRESS_LOCATION, 331);
 
-        FesParticipant fesParticipant = fesService.addParticipant(fesCategory, participantType);
+        FesParticipant fesParticipant = fesService.addParticipant(fesCategory, participantType, client.getIsResidentRus());
 
         fesService.addParticipantLegal(fesParticipant, null, client);
 
