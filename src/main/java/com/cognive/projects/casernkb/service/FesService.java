@@ -83,6 +83,11 @@ public class FesService {
     private static final String NAME = "ФЭС";
     private static final String SUBNAME = "Отказ от заключения договора (расторжение)";
 
+    private static final String UNKNOWN_RESIDENCE_STATUS = "9";
+    private static final String RESIDENT = "1";
+    private static final String NON_RESIDENT = "0";
+    private static final int FES_SIGN_OF_RESIDENT = 323;
+
     private final AddressRepository addressRepository;
     private final FesParticipantRepository fesParticipantRepository;
     private final VerificationDocumentRepository verificationDocumentRepository;
@@ -177,12 +182,20 @@ public class FesService {
 
     }
 
-    public FesParticipant addParticipant(FesCategory fesCategory, BaseDictionary participantType) {
+    public FesParticipant addParticipant(FesCategory fesCategory, BaseDictionary participantType, Boolean isResidentRus) {
         FesParticipant fesParticipant = new FesParticipant();
         fesParticipant.setCategoryId(fesCategory);
         fesParticipant.setParticipantType(participantType);
-        fesParticipant = fesParticipantRepository.save(fesParticipant);
-        return fesParticipant;
+        String residenceStatus;
+        if (isResidentRus == null) {
+            residenceStatus = UNKNOWN_RESIDENCE_STATUS;
+        } else if (Boolean.TRUE.equals(isResidentRus)) {
+            residenceStatus = RESIDENT;
+        } else {
+            residenceStatus = NON_RESIDENT;
+        }
+        fesParticipant.setParticipantResidentFeature(getBd(residenceStatus, FES_SIGN_OF_RESIDENT));
+        return fesParticipantRepository.save(fesParticipant);
     }
 
     public void addParticipantLegal(FesParticipant fesParticipant, FesEio fesEio, Client client) {

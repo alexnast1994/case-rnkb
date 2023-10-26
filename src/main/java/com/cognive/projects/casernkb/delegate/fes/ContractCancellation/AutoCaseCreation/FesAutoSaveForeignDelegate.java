@@ -31,7 +31,7 @@ public class FesAutoSaveForeignDelegate implements JavaDelegate {
         var participantType = fesService.getBd("5", 322);
         var clientLegal = client.getClientLegal();
 
-        FesParticipant fesParticipant = fesService.addParticipant(fesCategory, participantType);
+        FesParticipant fesParticipant = fesService.addParticipant(fesCategory, participantType, client.getIsResidentRus());
 
         FesParticipantForeign fesParticipantForeign = new FesParticipantForeign();
         fesParticipantForeign.setParticipantId(fesParticipant);

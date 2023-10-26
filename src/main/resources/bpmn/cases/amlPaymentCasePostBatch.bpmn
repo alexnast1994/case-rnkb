@@ -496,32 +496,40 @@ execution.setVariable("rulesString", rulesString)
           <bpmn:incoming>Flow_0ylrugl</bpmn:incoming>
           <bpmn:outgoing>Flow_1mc1fcl</bpmn:outgoing>
           <bpmn:script>import com.prime.db.rnkb.model.Case
-                import com.prime.db.rnkb.model.BaseDictionary
-                import java.time.LocalDateTime
+import com.prime.db.rnkb.model.BaseDictionary
+import com.prime.db.rnkb.model.SysUser
 
-                BaseDictionary getBd(int type, String code) {
-                baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
-                }
+import java.time.LocalDateTime
 
-                def caseType = execution.getVariable("caseType");
-                def user = execution.getVariable("user");
+BaseDictionary getBd(int type, String code) {
+    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
+}
 
-                def status = null
-                def caseStatus = null
+def caseType = execution.getVariable("caseType");
+def user = execution.getVariable("user");
 
-                Case caseData = new Case()
-                status = getBd(131, "1")
-                caseStatus = getBd(178, "1")
-                caseData.name = "Online monitoring"
-                caseData.caseObjectType = getBd(14, "2")
+SysUser getResponsibleUser(String roleCharCode) {
+    List&lt;SysUser&gt; sysUserList = sysUserRoleRepository.findSysUsersByRoleCharCode(roleCharCode)
+    return !sysUserList.isEmpty() ? sysUserList.first() : null
+}
 
-                caseData.setCreationdate(LocalDateTime.now())
-                caseData.setCaseType(getBd(18, caseType))
-                caseData.author = user
-                caseData.status = status
-                caseData.caseStatus = caseStatus
+def status = null
+def caseStatus = null
 
-                execution.setVariable("caseData", caseData);</bpmn:script>
+Case caseData = new Case()
+status = getBd(131, "1")
+caseStatus = getBd(178, "1")
+caseData.name = "Online monitoring"
+caseData.caseObjectType = getBd(14, "2")
+
+caseData.setCreationdate(LocalDateTime.now())
+caseData.setCaseType(getBd(18, caseType))
+caseData.author = user
+caseData.status = status
+caseData.caseStatus = caseStatus
+caseData.responsibleUser = getResponsibleUser("aml_supervisor_so")
+
+execution.setVariable("caseData", caseData)</bpmn:script>
         </bpmn:scriptTask>
         <bpmn:sequenceFlow id="Flow_0ylrugl" sourceRef="Activity_0x6px15" targetRef="Activity_1ond2rr" />
         <bpmn:serviceTask id="Activity_saveCase" name="Сохранить&#10;Case" camunda:delegateExpression="${saveObjectDelegate}">
@@ -679,28 +687,34 @@ if(comment != null) {
                 import java.time.LocalDateTime
 
                 BaseDictionary getBd(int type, String code) {
-                baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
-                }
+    baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
+}
 
-                def caseType = execution.getVariable("caseType");
-                def user = execution.getVariable("user");
+SysUser getResponsibleUser(String roleCharCode) {
+    List&lt;SysUser&gt; sysUserList = sysUserRoleRepository.findSysUsersByRoleCharCode(roleCharCode)
+    return !sysUserList.isEmpty() ? sysUserList.first() : null
+}
 
-                def status = null
-                def caseStatus = null
+def caseType = execution.getVariable("caseType");
+def user = execution.getVariable("user");
 
-                Case caseData = new Case()
-                status = getBd(130, "1")
-                caseStatus = getBd(177, "1")
-                caseData.name = "Mandatory control"
-                caseData.caseObjectType = getBd(14, "2")
+def status = null
+def caseStatus = null
 
-                caseData.setCreationdate(LocalDateTime.now())
-                caseData.setCaseType(getBd(18, caseType))
-                caseData.author = user
-                caseData.status = status
-                caseData.caseStatus = caseStatus
+Case caseData = new Case()
+status = getBd(130, "1")
+caseStatus = getBd(177, "1")
+caseData.name = "Mandatory control"
+caseData.caseObjectType = getBd(14, "2")
 
-                execution.setVariable("caseData", caseData);</bpmn:script>
+caseData.setCreationdate(LocalDateTime.now())
+caseData.setCaseType(getBd(18, caseType))
+caseData.author = user
+caseData.status = status
+caseData.caseStatus = caseStatus
+caseData.responsibleUser = getResponsibleUser("aml_supervisor_ok")
+
+execution.setVariable("caseData", caseData);</bpmn:script>
         </bpmn:scriptTask>
         <bpmn:serviceTask id="Activity_0sk21b5" name="Сохранить&#10;Case" camunda:delegateExpression="${saveObjectDelegate}">
           <bpmn:extensionElements>
@@ -1194,12 +1208,6 @@ if(comment != null) {
       <bpmndi:BPMNShape id="BPMNShape_1ue267h" bpmnElement="Activity_1cpt2gg">
         <dc:Bounds x="5190" y="374" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1lyf2j0_di" bpmnElement="Gateway_1lyf2j0" isMarkerVisible="true">
-        <dc:Bounds x="3685" y="405" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1jji15u_di" bpmnElement="Event_1jji15u">
-        <dc:Bounds x="3812" y="162" width="36" height="36" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_0nh9rj8" bpmnElement="Activity_1cxizrl">
         <dc:Bounds x="1520" y="510" width="100" height="80" />
         <bpmndi:BPMNLabel />
@@ -1346,6 +1354,12 @@ if(comment != null) {
         <dc:Bounds x="4160" y="1100" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1jji15u_di" bpmnElement="Event_1jji15u">
+        <dc:Bounds x="3812" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1lyf2j0_di" bpmnElement="Gateway_1lyf2j0" isMarkerVisible="true">
+        <dc:Bounds x="3685" y="405" width="50" height="50" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1sbvndj_di" bpmnElement="Flow_1sbvndj">
         <di:waypoint x="1346" y="414" />
         <di:waypoint x="1390" y="414" />
@@ -1389,19 +1403,6 @@ if(comment != null) {
       <bpmndi:BPMNEdge id="Flow_1x1l9mb_di" bpmnElement="Flow_1x1l9mb">
         <di:waypoint x="5290" y="414" />
         <di:waypoint x="5342" y="414" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_18wv7q1_di" bpmnElement="Flow_18wv7q1">
-        <di:waypoint x="3600" y="430" />
-        <di:waypoint x="3685" y="430" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0ij3i33_di" bpmnElement="Flow_0ij3i33">
-        <di:waypoint x="3735" y="430" />
-        <di:waypoint x="3785" y="430" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0t32iji_di" bpmnElement="Flow_0t32iji">
-        <di:waypoint x="3710" y="405" />
-        <di:waypoint x="3710" y="180" />
-        <di:waypoint x="3812" y="180" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0udljpz_di" bpmnElement="Flow_0udljpz">
         <di:waypoint x="1570" y="590" />
@@ -1454,6 +1455,19 @@ if(comment != null) {
         <di:waypoint x="5160" y="1140" />
         <di:waypoint x="5260" y="1140" />
         <di:waypoint x="5260" y="1242" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0t32iji_di" bpmnElement="Flow_0t32iji">
+        <di:waypoint x="3710" y="405" />
+        <di:waypoint x="3710" y="180" />
+        <di:waypoint x="3812" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ij3i33_di" bpmnElement="Flow_0ij3i33">
+        <di:waypoint x="3735" y="430" />
+        <di:waypoint x="3785" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18wv7q1_di" bpmnElement="Flow_18wv7q1">
+        <di:waypoint x="3600" y="430" />
+        <di:waypoint x="3685" y="430" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_1javps5_di" bpmnElement="Event_1javps5">
         <dc:Bounds x="5852" y="722" width="36" height="36" />

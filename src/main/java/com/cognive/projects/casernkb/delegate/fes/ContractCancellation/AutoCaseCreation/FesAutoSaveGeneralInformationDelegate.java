@@ -53,6 +53,9 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
         fesBankInformationRepository.save(fesBankInformation);
 
         FesServiceInformation fesServiceInformation = new FesServiceInformation();
+        if (rejectTypeCode.equals("2") || rejectTypeCode.equals("3")) {
+            fesServiceInformation.setInformationType(baseDictionaryRepository.getBaseDictionary("01", 312));
+        }
         fesServiceInformation.setCategoryId(fesCategory);
         fesServiceInformation.setFormatVersion(fesDataPrefill.getFormatVersion());
         fesServiceInformation.setSoftVersion(fesDataPrefill.getSoftVersion());
