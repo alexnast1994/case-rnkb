@@ -476,6 +476,7 @@ public class FesService {
         FesRefusalCaseDetails fesRefusalCaseDetails = createFesRefusalCaseDetails(fesCategory, rejectType);
         fesCategory.setFesRefusalCaseDetails(new ArrayList<>(List.of(fesRefusalCaseDetails)));
         FesCasesStatus fesCasesStatus = createFesCasesStatus(fesCategory, caseStatus, caseCondition);
+        fesCategory.setFesCasesStatuses(new ArrayList<>(List.of(fesCasesStatus)));
         createFesMainPageNew(fesCasesStatus, aCase);
         createFesMainPageOtherSections(responsibleUser, fesCasesStatus, fesCaseSaveDto);
         createFesMainPageUserDecision(responsibleUser, fesCategory, caseStatus, caseCondition, fesCaseSaveDto);
