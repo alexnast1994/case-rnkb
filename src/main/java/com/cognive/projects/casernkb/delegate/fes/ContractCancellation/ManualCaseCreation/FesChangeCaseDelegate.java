@@ -153,7 +153,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesServiceInformationRepository.save(fesServiceInformation);
         }
 
-        FesGeneralInformation fesGeneralInformation = getFesGeneralInformation(fesCategory, recordType);
+        FesGeneralInformation fesGeneralInformation = getFesGeneralInformation(fesCategory, recordType, fesCaseSaveDto);
         fesGeneralInformationRepository.save(fesGeneralInformation);
 
         List<FesBankInformationDto> fesBankInformationDtoList = fesCaseSaveDto.getFesCategory().getFesBankInformations();
@@ -472,7 +472,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     }
 
     @NotNull
-    private static FesGeneralInformation getFesGeneralInformation(FesCategory fesCategory, BaseDictionary recordType) {
+    private static FesGeneralInformation getFesGeneralInformation(FesCategory fesCategory, BaseDictionary recordType, FesCaseSaveDto fesCaseSaveDto) {
         FesGeneralInformation fesGeneralInformation;
         if (fesCategory.getFesGeneralInformations() == null || fesCategory.getFesGeneralInformations().isEmpty()) {
             fesGeneralInformation = new FesGeneralInformation();
@@ -481,6 +481,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesGeneralInformation = fesCategory.getFesGeneralInformations().get(0);
         }
         fesGeneralInformation.setCategoryId(fesCategory);
+        fesGeneralInformation.setComment(fesCaseSaveDto.getFesCategory().getFesGeneralInformations().get(0).getComment());
         fesGeneralInformation.setRecordType(recordType);
         return fesGeneralInformation;
     }

@@ -16,4 +16,5 @@ public class FesGeneralInformationDto implements Serializable {
     Long categoryId;
     BaseDictionary recordType;
     String num;
+    String comment;
 }
