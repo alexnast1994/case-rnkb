@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0ct0hn9" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.9.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.18.0">
+  <bpmn:process id="amlCreateCaseByClient" name="24. Формирование кейса по клиенту" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_18woyco</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Activity_0b95pqd" name="Логгирование процесса" camunda:delegateExpression="${loggerDelegate}">
+      <bpmn:incoming>Flow_006qa2n</bpmn:incoming>
+      <bpmn:outgoing>Flow_1a2cgrr</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:scriptTask id="Activity_0v120zp" name="Формирование case" scriptFormat="groovy">
+      <bpmn:incoming>Flow_02hxrte</bpmn:incoming>
+      <bpmn:outgoing>Flow_0mk5mg1</bpmn:outgoing>
+      <bpmn:script>import com.prime.db.rnkb.model.Case
+import com.prime.db.rnkb.model.BaseDictionary
+import java.time.LocalDateTime
+
+BaseDictionary getBd(int type, String code) {
+    return baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code)
+}
+
+def user = execution.getVariable("requestUser")
+def isOfm = execution.getVariable("isOfm")
+
+Case caseData = new Case(
+          name: getBd(18, isOfm ? "2" : "4").name,
+        creationdate: LocalDateTime.now(),
+        caseType: getBd(18, isOfm ? "2" : "4"),
+        author: user,
+        status: getBd(isOfm ? 104 : 140, "1"),
+        caseStatus: getBd(isOfm ? 177 : 179, "1")
+)
+
+execution.setVariable("caseData", caseData)</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:scriptTask id="Activity_04q78qg" name="Получаем переменные" scriptFormat="groovy">
+      <bpmn:incoming>Flow_1a2cgrr</bpmn:incoming>
+      <bpmn:outgoing>Flow_1hmb74y</bpmn:outgoing>
+      <bpmn:script>import static org.camunda.spin.Spin.*
+
+def jsonStr = execution.getVariable("payload")
+def jsonData = JSON(jsonStr)
+
+def payloadObject = jsonData.prop("amlCreateCaseByClient")
+
+def clientId = payloadObject.prop("clientId").numberValue().longValue()
+def userId = payloadObject.prop("userId").numberValue().longValue()
+def rule = payloadObject.prop("rule").stringValue()
+def isOfm = payloadObject.prop("isOfm").boolValue()
+
+execution.setVariable("clientId", clientId)
+execution.setVariable("userId", userId)
+execution.setVariable("rule", rule)
+execution.setVariable("isOfm", isOfm)</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_1a2cgrr" sourceRef="Activity_0b95pqd" targetRef="Activity_04q78qg" />
+    <bpmn:serviceTask id="Activity_1syxxoa" name="Получаем User" camunda:delegateExpression="${selectOneDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="outputVarName">requestUser</camunda:inputParameter>
+          <camunda:inputParameter name="parameters">
+            <camunda:map>
+              <camunda:entry key="userId">${userId}</camunda:entry>
+            </camunda:map>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="selectQuery">FROM SysUser u WHERE u.id = :userId</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1hmb74y</bpmn:incoming>
+      <bpmn:outgoing>Flow_050ye9p</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1hmb74y" sourceRef="Activity_04q78qg" targetRef="Activity_1syxxoa" />
+    <bpmn:serviceTask id="Activity_1m8ed73" name="startTransactionDelegate" camunda:delegateExpression="${startTransactionDelegate}">
+      <bpmn:incoming>Flow_0mk5mg1</bpmn:incoming>
+      <bpmn:outgoing>Flow_0qmbbaz</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0mk5mg1" sourceRef="Activity_0v120zp" targetRef="Activity_1m8ed73" />
+    <bpmn:serviceTask id="Activity_0x58wrn" name="Сохранить Case" camunda:delegateExpression="${saveObjectDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="outputVarName">caseDataOut</camunda:inputParameter>
+          <camunda:inputParameter name="saveObject">${caseData}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0qmbbaz</bpmn:incoming>
+      <bpmn:outgoing>Flow_0gvsd93</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0qmbbaz" sourceRef="Activity_1m8ed73" targetRef="Activity_0x58wrn" />
+    <bpmn:scriptTask id="Activity_1rs7kjx" name="Формирование case, связанные данные" scriptFormat="groovy">
+      <bpmn:incoming>Flow_0gvsd93</bpmn:incoming>
+      <bpmn:outgoing>Flow_0brap0r</bpmn:outgoing>
+      <bpmn:script>import com.prime.db.rnkb.model.CaseClientNew
+import com.prime.db.rnkb.model.CaseRules
+import com.prime.db.rnkb.model.BaseDictionary
+import com.prime.db.rnkb.model.Client
+
+BaseDictionary getBd(int type, String code) {
+    return baseDictRepo.getByBaseDictionaryTypeCodeAndCode(type, code);
+}
+
+def caseData = execution.getVariable("caseDataOut")
+String rule = execution.getVariable("rule");
+Client client = execution.getVariable("requestClient")
+
+def caseRelationList = []
+
+client.okvedList.each { okved -&gt;
+    CaseClientNew caseClient = new CaseClientNew().with {
+        it.caseId = caseData
+        it.clientId = client
+        it.inn = client?.inn
+        it.kpp = client?.clientLegal?.kpp
+        it.clientType = client?.clientType
+        it.registrationDate = client?.formCreationDate
+        it.openingDate = client?.clientOfBankFromDate
+        it.addressOfService = client?.branch?.branchname
+        it.contactKm = client?.manager
+        it.clientName = client?.fullName
+        it.clientStatus = client?.clientMark
+        it.okvedName = okved?.name
+        it.okvedCode = okved?.code
+        return it
+    }
+    caseRelationList &lt;&lt; caseClient
+}
+
+CaseRules cr = new CaseRules()
+cr.ruleId = getBd(272, rule)
+cr.caseId = caseData
+
+caseRelationList &lt;&lt; cr
+
+execution.setVariable("caseRelationList", caseRelationList)
+</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_0gvsd93" sourceRef="Activity_0x58wrn" targetRef="Activity_1rs7kjx" />
+    <bpmn:serviceTask id="Activity_0k7dod8" name="Получаем Client" camunda:delegateExpression="${selectOneDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="outputVarName">requestClient</camunda:inputParameter>
+          <camunda:inputParameter name="parameters">
+            <camunda:map>
+              <camunda:entry key="clientId">${clientId}</camunda:entry>
+            </camunda:map>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="selectQuery">SELECT c FROM Client c WHERE c.id = :clientId</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_050ye9p</bpmn:incoming>
+      <bpmn:outgoing>Flow_02hxrte</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_050ye9p" sourceRef="Activity_1syxxoa" targetRef="Activity_0k7dod8" />
+    <bpmn:sequenceFlow id="Flow_02hxrte" sourceRef="Activity_0k7dod8" targetRef="Activity_0v120zp" />
+    <bpmn:serviceTask id="Activity_0vgwn5n" name="Сохранить&#10;связанные с case объекты" camunda:delegateExpression="${saveObjectListDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="saveObjectList">${caseRelationList}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_17tq4tt</bpmn:incoming>
+      <bpmn:outgoing>Flow_1qx2evq</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_15ydoxe" name="endTransactionDelegate" camunda:delegateExpression="${endTransactionDelegate}">
+      <bpmn:incoming>Flow_1qx2evq</bpmn:incoming>
+      <bpmn:outgoing>Flow_0omccdo</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1qx2evq" sourceRef="Activity_0vgwn5n" targetRef="Activity_15ydoxe" />
+    <bpmn:serviceTask id="Activity_06wmp8e" name="openSessionRnkb" camunda:delegateExpression="${openSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_18woyco</bpmn:incoming>
+      <bpmn:outgoing>Flow_006qa2n</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_18woyco" sourceRef="StartEvent_1" targetRef="Activity_06wmp8e" />
+    <bpmn:sequenceFlow id="Flow_006qa2n" sourceRef="Activity_06wmp8e" targetRef="Activity_0b95pqd" />
+    <bpmn:serviceTask id="Activity_1fdlf1n" name="closeSessionRnkb" camunda:delegateExpression="${closeSessionRnkbDelegate}">
+      <bpmn:incoming>Flow_0omccdo</bpmn:incoming>
+      <bpmn:outgoing>Flow_0prdjbn</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0omccdo" sourceRef="Activity_15ydoxe" targetRef="Activity_1fdlf1n" />
+    <bpmn:endEvent id="Event_109tz69">
+      <bpmn:incoming>Flow_0prdjbn</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0prdjbn" sourceRef="Activity_1fdlf1n" targetRef="Event_109tz69" />
+    <bpmn:serviceTask id="Activity_107y7pf" name="Логгирование процесса" camunda:delegateExpression="${loggerDelegate}">
+      <bpmn:incoming>Flow_0brap0r</bpmn:incoming>
+      <bpmn:outgoing>Flow_17tq4tt</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0brap0r" sourceRef="Activity_1rs7kjx" targetRef="Activity_107y7pf" />
+    <bpmn:sequenceFlow id="Flow_17tq4tt" sourceRef="Activity_107y7pf" targetRef="Activity_0vgwn5n" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="amlCreateCaseByClient">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="239" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0b95pqd_di" bpmnElement="Activity_0b95pqd">
+        <dc:Bounds x="407" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0v120zp_di" bpmnElement="Activity_0v120zp">
+        <dc:Bounds x="1055" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_04q78qg_di" bpmnElement="Activity_04q78qg">
+        <dc:Bounds x="569" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1syxxoa_di" bpmnElement="Activity_1syxxoa">
+        <dc:Bounds x="731" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1m8ed73_di" bpmnElement="Activity_1m8ed73">
+        <dc:Bounds x="1217" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0x58wrn_di" bpmnElement="Activity_0x58wrn">
+        <dc:Bounds x="1379" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1rs7kjx_di" bpmnElement="Activity_1rs7kjx">
+        <dc:Bounds x="1541" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0k7dod8_di" bpmnElement="Activity_0k7dod8">
+        <dc:Bounds x="893" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0vgwn5n_di" bpmnElement="Activity_0vgwn5n">
+        <dc:Bounds x="1703" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15ydoxe_di" bpmnElement="Activity_15ydoxe">
+        <dc:Bounds x="1865" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_06wmp8e_di" bpmnElement="Activity_06wmp8e">
+        <dc:Bounds x="245" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1fdlf1n_di" bpmnElement="Activity_1fdlf1n">
+        <dc:Bounds x="2027" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_109tz69_di" bpmnElement="Event_109tz69">
+        <dc:Bounds x="2182" y="239" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_107y7pf_di" bpmnElement="Activity_107y7pf">
+        <dc:Bounds x="1620" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_18woyco_di" bpmnElement="Flow_18woyco">
+        <di:waypoint x="188" y="257" />
+        <di:waypoint x="245" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_006qa2n_di" bpmnElement="Flow_006qa2n">
+        <di:waypoint x="345" y="257" />
+        <di:waypoint x="407" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1a2cgrr_di" bpmnElement="Flow_1a2cgrr">
+        <di:waypoint x="507" y="257" />
+        <di:waypoint x="569" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02hxrte_di" bpmnElement="Flow_02hxrte">
+        <di:waypoint x="993" y="257" />
+        <di:waypoint x="1055" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mk5mg1_di" bpmnElement="Flow_0mk5mg1">
+        <di:waypoint x="1155" y="257" />
+        <di:waypoint x="1217" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hmb74y_di" bpmnElement="Flow_1hmb74y">
+        <di:waypoint x="669" y="257" />
+        <di:waypoint x="731" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_050ye9p_di" bpmnElement="Flow_050ye9p">
+        <di:waypoint x="831" y="257" />
+        <di:waypoint x="893" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qmbbaz_di" bpmnElement="Flow_0qmbbaz">
+        <di:waypoint x="1317" y="257" />
+        <di:waypoint x="1379" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0gvsd93_di" bpmnElement="Flow_0gvsd93">
+        <di:waypoint x="1479" y="257" />
+        <di:waypoint x="1541" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0brap0r_di" bpmnElement="Flow_0brap0r">
+        <di:waypoint x="1591" y="217" />
+        <di:waypoint x="1591" y="189" />
+        <di:waypoint x="1670" y="189" />
+        <di:waypoint x="1670" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17tq4tt_di" bpmnElement="Flow_17tq4tt">
+        <di:waypoint x="1670" y="160" />
+        <di:waypoint x="1670" y="189" />
+        <di:waypoint x="1753" y="189" />
+        <di:waypoint x="1753" y="217" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qx2evq_di" bpmnElement="Flow_1qx2evq">
+        <di:waypoint x="1803" y="257" />
+        <di:waypoint x="1865" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0omccdo_di" bpmnElement="Flow_0omccdo">
+        <di:waypoint x="1965" y="257" />
+        <di:waypoint x="2027" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0prdjbn_di" bpmnElement="Flow_0prdjbn">
+        <di:waypoint x="2127" y="257" />
+        <di:waypoint x="2182" y="257" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

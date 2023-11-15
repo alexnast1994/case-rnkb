@@ -26,9 +26,7 @@ BaseDictionary getClientType(String code) {
 }
 
 ReasonedJudgment reasonedJudgment = new ReasonedJudgment()
-Boolean nonCase = execution.getVariable("nonCase") as Boolean
-println("Имеется кейс: " + nonCase)
-if (!nonCase) {
+if (!execution.getVariable("nonCase") as Boolean) {
 
     def case1 = execution.getVariable("caseBase") as Case
     def caseDic = case1.caseType as BaseDictionary
@@ -48,35 +46,30 @@ else {
 
 
 def typeRj = getTypeRj(execution.getVariable("typeRj"))
-def typeRjJson = execution.getVariable("typeRj")
-println("Тайп rj: " + typeRjJson)
-reasonedJudgment.status = typeRjJson == "1" || typeRjJson == "2" ? getStatus("5") : getStatus("1")
+reasonedJudgment.status = getStatus("5")
 Client client = execution.getVariable("clientBase")
 reasonedJudgment.clientId = client
 reasonedJudgment.jobStatus = getJobStatus("1")
 reasonedJudgment.typeRj = typeRj
 
 String conclusion = "По результатам проверки деятельности, анализа выписок и всех имеющихся у Банка документов и информации о Клиенте и его контрагентах"
+if (typeRj.code != "3") {
+    if (client.clientType.code == "3" || client.clientType.code == "5") {
+        if (typeRj.code == "1") {
+            conclusion = conclusion + " деятельность Клиента соответствует заявленным масштабам, признаки сомнительности отсутствуют. Операции Клиента осуществляются в рамках заявленной деятельности и соответствуют общепринятой рыночной практике."
+        } else if (typeRj.code == "2") {
+            conclusion = conclusion + " признать операции Клиента, указанные в прилагаемом списке, подозрительными и направить по ним сообщения в Уполномоченный орган в установленный законом срок."
+        }
+    } else if (client.clientType.code == "4") {
+        if (typeRj.code == "1") {
+            conclusion = conclusion + " признаки сомнительности отсутствуют."
+        } else if (typeRj.code == "2") {
+            conclusion = conclusion + " признать операции Клиента, указанные в прилагаемом списке, подозрительными и направить по ним сообщения в Уполномоченный орган в установленный законом срок."
+        }
+    }
 
-if (client.clientType != null && (client.clientType.code == "3" || client.clientType.code == "5")) {
-    if (typeRj.code == "1") {
-        conclusion = conclusion + " деятельность Клиента соответствует заявленным масштабам, признаки сомнительности отсутствуют. Операции Клиента осуществляются в рамках заявленной деятельности и соответствуют общепринятой рыночной практике."
-    }
-    else if (typeRj.code == "2") {
-        conclusion = conclusion + " признать операции Клиента, указанные в прилагаемом списке, подозрительными и направить по ним сообщения в Уполномоченный орган в установленный законом срок."
-    }
+    reasonedJudgment.conclusion = conclusion
 }
-else if (client.clientType != null && client.clientType.code == "4") {
-    if (typeRj.code == "1") {
-        conclusion = conclusion + " признаки сомнительности отсутствуют."
-    }
-    else if (typeRj.code == "2") {
-        conclusion = conclusion + " признать операции Клиента, указанные в прилагаемом списке, подозрительными и направить по ним сообщения в Уполномоченный орган в установленный законом срок."
-    }
-}
-
-reasonedJudgment.conclusion = conclusion
-
 try {
     def startDateLDT = LocalDateTime.parse(execution.getVariable("startDate")) as LocalDateTime
     reasonedJudgment.startDate = startDateLDT

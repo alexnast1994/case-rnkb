@@ -1,6 +1,7 @@
 package com.cognive.projects.casernkb.model.fes;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.prime.db.rnkb.model.BaseDictionary;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -16,10 +17,10 @@ public class FesAddressDto implements Serializable {
     Long participantId;
     Long eioId;
     Long beneficiaryId;
-    Long addressTypeId;
+    BaseDictionary addressType;
     String postal;
-    Long countryCodeId;
-    Long okatoId;
+    BaseDictionary countryCode;
+    BaseDictionary okato;
     String district;
     String township;
     String street;

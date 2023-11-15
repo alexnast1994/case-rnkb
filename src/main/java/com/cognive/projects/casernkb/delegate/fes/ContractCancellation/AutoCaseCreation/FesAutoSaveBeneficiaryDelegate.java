@@ -13,10 +13,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_23;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_328;
+
 @Component
 @RequiredArgsConstructor
 public class FesAutoSaveBeneficiaryDelegate implements JavaDelegate {
-    private static final Integer DICTIONARY328 = 328;
 
     private final FesService fesService;
 
@@ -26,7 +28,7 @@ public class FesAutoSaveBeneficiaryDelegate implements JavaDelegate {
         var client = (Client) execution.getVariable("client");
         var fesParticipant = (FesParticipant) execution.getVariable("fesParticipant");
 
-        var relationType = fesService.getBd("1", 23);
+        var relationType = fesService.getBd(DICTIONARY_23,"1");
 
         BaseDictionary beneficiaryType = checkBeneficiaryType(client, relationType);
 
@@ -36,25 +38,25 @@ public class FesAutoSaveBeneficiaryDelegate implements JavaDelegate {
         if (beneficiary == null || beneficiary.equals(client)) {
             beneficiary = client;
         }
-        fesService.addParticipantIndividualBeneficiary(fesBeneficiary, beneficiary);
+        fesService.addParticipantIndividualGeneric(null, fesBeneficiary, null, beneficiary);
     }
 
     private BaseDictionary checkBeneficiaryType(Client client, BaseDictionary relationType) {
         Optional<ClientRelation> clientRelation = client.getClientRelationToList().stream()
                 .filter(p -> p.getRelationType().equals(relationType))
                 .findFirst();
-        BaseDictionary beneficiaryType = fesService.getBd("21", DICTIONARY328);
+        BaseDictionary beneficiaryType = fesService.getBd(DICTIONARY_328,"21");
         if (clientRelation.isPresent()) {
             ClientRelation cr = clientRelation.get();
             if (cr.getFromClientId() != null) {
                 if (!cr.getFromClientId().equals(cr.getToClientId())
                         && (client.getIseio() == null || !client.getIseio())) {
-                    beneficiaryType = fesService.getBd("11", DICTIONARY328);
+                    beneficiaryType = fesService.getBd(DICTIONARY_328, "11");
                 } else if (!cr.getFromClientId().equals(cr.getToClientId())
                         && client.getIseio()) {
-                    beneficiaryType = fesService.getBd("12", DICTIONARY328);
+                    beneficiaryType = fesService.getBd(DICTIONARY_328, "12");
                 } else {
-                    beneficiaryType = fesService.getBd("23", DICTIONARY328);
+                    beneficiaryType = fesService.getBd(DICTIONARY_328, "23");
                 }
             }
         }

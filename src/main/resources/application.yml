@@ -102,27 +102,31 @@ spring:
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         saveRiskResponseMessageInput-in-0:
-          destination: ${TOPIC_RISK_RESPONSE_SAVE_INPUT:rnkb-risk-scoring-resp}
+          destination: ${TOPIC_RISK_RESPONSE_SAVE_INPUT:risk-scoring-resp}
+          group: ${KAFKA_GROUP:case-rnkb}
+          binder: kafka
+        kycCaseCreationInput-in-0:
+          destination: ${TOPIC_KYC_CASE_CREATION:kyc_casecreation}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         rjCreationInput-in-0:
-          destination: ${TOPIC_RJ_CREATION:rnkb-aml_camunda_rj_request}
+          destination: ${TOPIC_RJ_CREATION:aml_camunda_rj_request}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         zkAmlRequestInput-in-0:
-          destination: ${TOPIC_ZK_REQUEST:rnkb-transport-req-requestClient}
+          destination: ${TOPIC_ZK_REQUEST:transport-req-requestClient}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         zkAmlResponseInput-in-0:
-          destination: ${TOPIC_ZK_RESPONSE_IN:rnkb-transport-req-responseClient}
+          destination: ${TOPIC_ZK_RESPONSE_IN:transport-req-responseClient}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         zkAmlStatusInput-in-0:
-          destination: ${TOPIC_ZK_STATUS:rnkb-transport-req-statusClient}
+          destination: ${TOPIC_ZK_STATUS:transport-req-statusClient}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         biMessageInput-in-0:
-          destination: ${TOPIC_BENEFICIARY_IDENTIFIED:rnkb-beneficiary-camunda-in}
+          destination: ${TOPIC_BENEFICIARY_IDENTIFIED:beneficiary-camunda-in}
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
         outMessage-out-0:
@@ -134,7 +138,7 @@ spring:
           group: ${KAFKA_GROUP:case-rnkb}
           binder: kafka
       function:
-        definition: commonMessageInput;pipelineMessageInput;saveRiskResponseMessageInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput;biMessageInput
+        definition: commonMessageInput;pipelineMessageInput;saveRiskResponseMessageInput;kycCaseCreationInput;zkAmlRequestInput;zkAmlResponseInput;zkAmlStatusInput;rjCreationInput;biMessageInput
     vault:
       enabled: false
 
@@ -167,11 +171,11 @@ server:
     case-send-decision:
       process-name: ${CASE_SEND_DECISION_PROCESS_NAME:amlCaseSendDecision}
       response-topic-mapping:
-        paymentRespTopic: ${CASE_SEND_DECISION_PAYMENT_TOPIC:rnkb-payment-resp}
-        clientRespTopic: ${CASE_SEND_DECISION_CLIENT_TOPIC:rnkb-client-resp}
+        paymentRespTopic: ${CASE_SEND_DECISION_PAYMENT_TOPIC:payment-resp}
+        clientRespTopic: ${CASE_SEND_DECISION_CLIENT_TOPIC:client-resp}
     error-topic: ${TOPIC_ERROR_OUT:}
-    zk-aml-request-output-topic: ${TOPIC_ZK_REQUEST_OUT:rnkb-requestClient-resp}
-    zk-aml-response-output-topic: ${TOPIC_ZK_RESPONSE_OUT:rnkb-responseClient-resp}
+    zk-aml-request-output-topic: ${TOPIC_ZK_REQUEST_OUT:requestClient-resp}
+    zk-aml-response-output-topic: ${TOPIC_ZK_RESPONSE_OUT:responseClient-resp}
 zk:
   legal-doc-pattern: ${LEGAL_DOC_PATTERN:PatternLegal.docx}
   legal-doc-pattern-table: ${LEGAL_DOC_PATTERN_TABLE:PatternLegalTable.docx}
