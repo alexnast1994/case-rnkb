@@ -60,6 +60,11 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_323;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_325;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_331;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -82,11 +87,9 @@ public class FesService {
     private static final String WRONG_CLIENT_TYPE = "0";
     private static final String NAME = "ФЭС";
     private static final String SUBNAME = "Отказ от заключения договора (расторжение)";
-
     private static final String UNKNOWN_RESIDENCE_STATUS = "9";
     private static final String RESIDENT = "1";
     private static final String NON_RESIDENT = "0";
-    private static final int FES_SIGN_OF_RESIDENT = 323;
 
     private final AddressRepository addressRepository;
     private final FesParticipantRepository fesParticipantRepository;
@@ -101,101 +104,57 @@ public class FesService {
     private final FesBeneficiaryRepository fesBeneficiaryRepository;
     private final FesCategoryRepository fesCategoryRepository;
 
-    public void addParticipantIndividual(FesCategory fesCategory, FesParticipant fesParticipant, Client client) {
-
+    public void addParticipantIndividualGeneric(FesParticipant fesParticipant,
+                                                FesBeneficiary fesBeneficiary,
+                                                FesEio fesEio,
+                                                Client client) {
         ClientIndividual clientIndividual = client.getClientIndividual();
         List<Address> clientAddresses = addressRepository.findAllByClient(client);
         Address clientAddress = findMainAddress(clientAddresses);
         List<VerificationDocument> verificationDocuments = verificationDocumentRepository.findAllByClient(client);
         VerificationDocument verificationDocument = findMainDocument(verificationDocuments);
 
-        var physicalIdentificationFeature =
-                baseDictionaryRepository.getBaseDictionary("1", 325);
-        var addressType =
-                baseDictionaryRepository.getBaseDictionary("8", 331);
+        var physicalIdentificationFeature = getBd(DICTIONARY_325, "1");
+        var addressType = getBd(DICTIONARY_331, "8");
 
-        FesParticipantIndividual fesParticipantIndividual = getFesParticipantIndividual(fesParticipant, null, null, physicalIdentificationFeature, client, clientIndividual, clientAddress);
+        FesParticipantIndividual fesParticipantIndividual = getFesParticipantIndividual(fesParticipant, fesBeneficiary, fesEio,
+                physicalIdentificationFeature, client, clientIndividual, clientAddress);
+
         FesIdentityDocumentGeneral fesIdentityDocumentGeneral = getFesIdentityDocumentGeneral(fesParticipantIndividual, verificationDocument);
+        saveDocByType(fesIdentityDocumentGeneral, verificationDocument);
+
+        addAddress(null, fesParticipant, fesBeneficiary, fesEio, addressType, clientAddress);
+    }
+
+    private void saveDocByType(FesIdentityDocumentGeneral fesIdentityDocumentGeneral, VerificationDocument verificationDocument) {
         if (fesIdentityDocumentGeneral.getIdentityDocumentType() != null
-                && fesIdentityDocumentGeneral.getIdentityDocumentType().equals(getBd("1", 337))) {
+                && fesIdentityDocumentGeneral.getIdentityDocumentType().equals(getBd(DICTIONARY_337, "1"))) {
             getFesIdentityDocument(fesIdentityDocumentGeneral, verificationDocument);
         }
         if (fesIdentityDocumentGeneral.getIdentityDocumentType() != null
-                && fesIdentityDocumentGeneral.getIdentityDocumentType().equals(getBd("2", 337))) {
+                && fesIdentityDocumentGeneral.getIdentityDocumentType().equals(getBd(DICTIONARY_337, "2"))) {
             getFesRightOfResidenceDocument(fesIdentityDocumentGeneral, verificationDocument);
         }
-        addAddress(null, fesParticipant, null, null, addressType, clientAddress);
-
     }
 
-    public void addParticipantIndividualBeneficiary(FesBeneficiary fesBeneficiary, Client client) {
-
-        ClientIndividual clientIndividual = client.getClientIndividual();
-        List<Address> clientAddresses = addressRepository.findAllByClient(client);
-        Address clientAddress = findMainAddress(clientAddresses);
-        List<VerificationDocument> verificationDocuments = verificationDocumentRepository.findAllByClient(client);
-        VerificationDocument verificationDocument = findMainDocument(verificationDocuments);
-
-        var physicalIdentificationFeature =
-                baseDictionaryRepository.getBaseDictionary("1", 325);
-        var addressType =
-                baseDictionaryRepository.getBaseDictionary("8", 331);
-
-        FesParticipantIndividual fesParticipantIndividual = getFesParticipantIndividual(null, fesBeneficiary, null, physicalIdentificationFeature, client, clientIndividual, clientAddress);
-        FesIdentityDocumentGeneral fesIdentityDocumentGeneral = getFesIdentityDocumentGeneral(fesParticipantIndividual, verificationDocument);
-        if (fesIdentityDocumentGeneral.getIdentityDocumentType() != null
-                && fesIdentityDocumentGeneral.getIdentityDocumentType().equals(getBd("1", 337))) {
-            getFesIdentityDocument(fesIdentityDocumentGeneral, verificationDocument);
-        }
-        if (fesIdentityDocumentGeneral.getIdentityDocumentType() != null
-                && fesIdentityDocumentGeneral.getIdentityDocumentType().equals(getBd("2", 337))) {
-            getFesRightOfResidenceDocument(fesIdentityDocumentGeneral, verificationDocument);
-        }
-        addAddress(null, null, fesBeneficiary, null, addressType, clientAddress);
-
-    }
-
-    public void addParticipantIndividualEio(FesEio fesEio, Client client) {
-
-        ClientIndividual clientIndividual = client.getClientIndividual();
-        List<Address> clientAddresses = addressRepository.findAllByClient(client);
-        Address clientAddress = findMainAddress(clientAddresses);
-        List<VerificationDocument> verificationDocuments = verificationDocumentRepository.findAllByClient(client);
-        VerificationDocument verificationDocument = findMainDocument(verificationDocuments);
-
-        var physicalIdentificationFeature =
-                baseDictionaryRepository.getBaseDictionary("1", 325);
-        var addressType =
-                baseDictionaryRepository.getBaseDictionary("8", 331);
-
-        FesParticipantIndividual fesParticipantIndividual = getFesParticipantIndividual(null, null, fesEio, physicalIdentificationFeature, client, clientIndividual, clientAddress);
-        FesIdentityDocumentGeneral fesIdentityDocumentGeneral = getFesIdentityDocumentGeneral(fesParticipantIndividual, verificationDocument);
-        if (fesIdentityDocumentGeneral.getIdentityDocumentType() != null
-                && fesIdentityDocumentGeneral.getIdentityDocumentType().equals(getBd("1", 337))) {
-            getFesIdentityDocument(fesIdentityDocumentGeneral, verificationDocument);
-        }
-        if (fesIdentityDocumentGeneral.getIdentityDocumentType() != null
-                && fesIdentityDocumentGeneral.getIdentityDocumentType().equals(getBd("2", 337))) {
-            getFesRightOfResidenceDocument(fesIdentityDocumentGeneral, verificationDocument);
-        }
-        addAddress(null, null, null, fesEio, addressType, clientAddress);
-
-    }
-
-    public FesParticipant addParticipant(FesCategory fesCategory, BaseDictionary participantType, Boolean isResidentRus) {
+    public FesParticipant addParticipant(FesCategory fesCategory, BaseDictionary participantType, Boolean isResidentRus, String rejectTypeCode) {
         FesParticipant fesParticipant = new FesParticipant();
         fesParticipant.setCategoryId(fesCategory);
         fesParticipant.setParticipantType(participantType);
-        String residenceStatus;
-        if (isResidentRus == null) {
-            residenceStatus = UNKNOWN_RESIDENCE_STATUS;
-        } else if (Boolean.TRUE.equals(isResidentRus)) {
-            residenceStatus = RESIDENT;
-        } else {
-            residenceStatus = NON_RESIDENT;
-        }
-        fesParticipant.setParticipantResidentFeature(getBd(residenceStatus, FES_SIGN_OF_RESIDENT));
+
+        String residenceStatus = determineResidenceStatus(isResidentRus, rejectTypeCode);
+        fesParticipant.setParticipantResidentFeature(residenceStatus != null ? getBd(DICTIONARY_323, residenceStatus) : null);
+
         return fesParticipantRepository.save(fesParticipant);
+    }
+
+    private String determineResidenceStatus(Boolean isResidentRus, String rejectTypeCode) {
+        if (("2".equals(rejectTypeCode) || "3".equals(rejectTypeCode)) && isResidentRus == null) {
+            return null;
+        }
+        return isResidentRus != null
+                ? (isResidentRus ? RESIDENT : NON_RESIDENT)
+                : UNKNOWN_RESIDENCE_STATUS;
     }
 
     public void addParticipantLegal(FesParticipant fesParticipant, FesEio fesEio, Client client) {
@@ -259,17 +218,13 @@ public class FesService {
 
     public void findEioAddressAndAdd(FesEio fesEio, Client client, String addressTypeCode, String fesAddressTypeCode) {
         Address clientAddress = findMainLegalAddress(client.getAddressList(), addressTypeCode);
-
-        var addressOfRegType = getBd(fesAddressTypeCode, 331);
-
+        var addressOfRegType = getBd(DICTIONARY_331, fesAddressTypeCode);
         addAddress(null, null, null, fesEio, addressOfRegType, clientAddress);
     }
 
     public void findForeignAddressAndAdd(FesCategory fesCategory, Client client, String addressTypeCode, String fesAddressTypeCode) {
         Address clientAddress = findMainLegalAddress(client.getAddressList(), addressTypeCode);
-
-        var addressOfRegType = getBd(fesAddressTypeCode, 331);
-
+        var addressOfRegType = getBd(DICTIONARY_331, fesAddressTypeCode);
         addAddress(fesCategory, null, null, null, addressOfRegType, clientAddress);
     }
 
@@ -319,8 +274,11 @@ public class FesService {
         return clientRelation.map(ClientRelation::getFromClientId).orElse(null);
     }
 
-    public BaseDictionary getBd(String code, Integer type) {
-        return baseDictionaryRepository.getBaseDictionary(code, type);
+    public BaseDictionary getBd(Integer typeCode, String code) {
+        if (code == null) {
+            return null;
+        }
+        return baseDictionaryRepository.findByType_CodeAndCode(typeCode, code).stream().findFirst().orElse(null);
     }
 
     private void getFesRightOfResidenceDocument(FesIdentityDocumentGeneral fesIdentityDocumentGeneral, VerificationDocument verificationDocument) {
@@ -461,16 +419,16 @@ public class FesService {
             String typeCode = type.getCode();
             for (String code : DOC_RF) {
                 if (typeCode.equals(code)) {
-                    return getBd("1", 337);
+                    return getBd(DICTIONARY_337, "1");
                 }
             }
-            return getBd("2", 337);
+            return getBd(DICTIONARY_337, "2");
         }
         return null;
     }
 
     @Transactional
-    public FesCategory getFesCategory(BaseDictionary caseType, BaseDictionary caseCategory, BaseDictionary caseObjectType, BaseDictionary caseStatus, SysUser responsibleUser, BaseDictionary caseCondition, Optional<BaseDictionary> rejectType, FesCaseSaveDto fesCaseSaveDto) {
+    public FesCategory getFesCategory(BaseDictionary caseType, BaseDictionary caseCategory, BaseDictionary caseObjectType, BaseDictionary caseStatus, SysUser responsibleUser, BaseDictionary caseCondition, BaseDictionary rejectType, FesCaseSaveDto fesCaseSaveDto) {
         Case aCase = createCase(caseType, caseCategory, caseObjectType, caseStatus, responsibleUser, caseCondition);
         FesCategory fesCategory = createFesCategory(aCase, caseCategory);
         FesRefusalCaseDetails fesRefusalCaseDetails = createFesRefusalCaseDetails(fesCategory, rejectType);
@@ -478,7 +436,8 @@ public class FesService {
         FesCasesStatus fesCasesStatus = createFesCasesStatus(fesCategory, caseStatus, caseCondition);
         fesCategory.setFesCasesStatuses(new ArrayList<>(List.of(fesCasesStatus)));
         createFesMainPageNew(fesCasesStatus, aCase);
-        createFesMainPageOtherSections(responsibleUser, fesCasesStatus, fesCaseSaveDto);
+        FesMainPageOtherSections fesMainPageOtherSections = createFesMainPageOtherSections(responsibleUser, fesCasesStatus, fesCaseSaveDto);
+        fesCasesStatus.setFesMainPageOtherSections(new ArrayList<>(List.of(fesMainPageOtherSections)));
         createFesMainPageUserDecision(responsibleUser, fesCategory, caseStatus, caseCondition, fesCaseSaveDto);
         fesCategory = fesCategoryRepository.save(fesCategory);
         return fesCategory;
@@ -493,11 +452,11 @@ public class FesService {
         return fesCategory;
     }
 
-    private FesRefusalCaseDetails createFesRefusalCaseDetails(FesCategory fesCategory, Optional<BaseDictionary> rejectType) {
+    private FesRefusalCaseDetails createFesRefusalCaseDetails(FesCategory fesCategory, BaseDictionary rejectType) {
         FesRefusalCaseDetails fesRefusalCaseDetails = new FesRefusalCaseDetails();
         fesRefusalCaseDetails.setCategoryId(fesCategory);
         fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
-        fesRefusalCaseDetails.setRejectType(rejectType.orElseThrow());
+        fesRefusalCaseDetails.setRejectType(rejectType);
         return fesRefusalCaseDetailsRepository.save(fesRefusalCaseDetails);
     }
 
@@ -518,12 +477,12 @@ public class FesService {
         fesMainPageNewRepository.save(fesMainPageNew);
     }
 
-    private void createFesMainPageOtherSections(SysUser responsibleUser, FesCasesStatus fesCasesStatus, FesCaseSaveDto fesCaseSaveDto) {
+    private FesMainPageOtherSections createFesMainPageOtherSections(SysUser responsibleUser, FesCasesStatus fesCasesStatus, FesCaseSaveDto fesCaseSaveDto) {
         FesMainPageOtherSections fesMainPageOtherSections = new FesMainPageOtherSections();
         fesMainPageOtherSections.setResponsibleUser(responsibleUser);
         fesMainPageOtherSections.setCasesStatusId(fesCasesStatus);
         fesMainPageOtherSections.setComment(fesCaseSaveDto.getComment());
-        fesMainPageOtherSectionsRepository.save(fesMainPageOtherSections);
+        return fesMainPageOtherSectionsRepository.save(fesMainPageOtherSections);
     }
 
     private void createFesMainPageUserDecision(SysUser responsibleUser, FesCategory fesCategory, BaseDictionary caseStatus, BaseDictionary caseCondition, FesCaseSaveDto fesCaseSaveDto) {

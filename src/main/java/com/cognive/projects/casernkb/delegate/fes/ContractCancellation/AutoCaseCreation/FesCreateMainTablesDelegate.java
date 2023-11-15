@@ -1,10 +1,10 @@
 package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.AutoCaseCreation;
 
+import com.cognive.projects.casernkb.service.FesService;
 import com.prime.db.rnkb.model.Case;
 import com.prime.db.rnkb.model.fes.FesCasesStatus;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesMainPageNew;
-import com.prime.db.rnkb.repository.BaseDictionaryRepository;
 import com.prime.db.rnkb.repository.CaseRepository;
 import com.prime.db.rnkb.repository.fes.FesCasesStatusRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
@@ -16,6 +16,12 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_14;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_18;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_305;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_309;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_38;
+
 @Component
 @RequiredArgsConstructor
 public class FesCreateMainTablesDelegate implements JavaDelegate {
@@ -23,22 +29,22 @@ public class FesCreateMainTablesDelegate implements JavaDelegate {
     private static final String SUBNAME = "Отказ от заключения договора";
     private static final String SUBNAME_CANCEL_CONTRACT = "Расторжение договора";
 
-    private final BaseDictionaryRepository baseDictionaryRepository;
     private final CaseRepository caseRepository;
     private final FesCategoryRepository fesCategoryRepository;
     private final FesMainPageNewRepository fesMainPageNewRepository;
     private final FesCasesStatusRepository fesCasesStatusRepository;
+    private final FesService fesService;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
 
         var rejectTypeCode = (String) execution.getVariable("rejectType");
 
-        var caseType = baseDictionaryRepository.getBaseDictionary("12", 18);
-        var caseObjectType = baseDictionaryRepository.getBaseDictionary("1", 14);
-        var caseObjectSubType = baseDictionaryRepository.getBaseDictionary("4", 309);
-        var status = baseDictionaryRepository.getBaseDictionary("1", 38);
-        var caseStatus = baseDictionaryRepository.getBaseDictionary("1", 305);
+        var caseType = fesService.getBd(DICTIONARY_18, "12");
+        var caseObjectType = fesService.getBd(DICTIONARY_14, "1");
+        var caseObjectSubType = fesService.getBd(DICTIONARY_309, "4");
+        var status = fesService.getBd(DICTIONARY_38, "1");
+        var caseStatus = fesService.getBd(DICTIONARY_305, "1");
 
         Case aCase = new Case();
         aCase.setName(NAME);

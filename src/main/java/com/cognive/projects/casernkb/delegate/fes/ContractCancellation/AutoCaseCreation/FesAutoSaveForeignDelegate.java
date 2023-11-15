@@ -12,6 +12,8 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_322;
+
 @Component
 @RequiredArgsConstructor
 public class FesAutoSaveForeignDelegate implements JavaDelegate {
@@ -27,11 +29,12 @@ public class FesAutoSaveForeignDelegate implements JavaDelegate {
     public void execute(DelegateExecution execution) throws Exception {
 
         var fesCategory = (FesCategory) execution.getVariable("fesCategory");
+        var rejectTypeCode = (String) execution.getVariable("rejectType");
         var client = (Client) execution.getVariable("client");
-        var participantType = fesService.getBd("5", 322);
+        var participantType = fesService.getBd(DICTIONARY_322, "5");
         var clientLegal = client.getClientLegal();
 
-        FesParticipant fesParticipant = fesService.addParticipant(fesCategory, participantType, client.getIsResidentRus());
+        FesParticipant fesParticipant = fesService.addParticipant(fesCategory, participantType, client.getIsResidentRus(), rejectTypeCode);
 
         FesParticipantForeign fesParticipantForeign = new FesParticipantForeign();
         fesParticipantForeign.setParticipantId(fesParticipant);

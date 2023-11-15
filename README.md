@@ -51,6 +51,7 @@
 - LEGAL_DOC_PATTERN - Путь к шаблону ЮЛ
 - INDIVIDUAL_DOC_PATTERN - Путь к шаблону ФЛ
 - TOPIC_RISK_RESPONSE_SAVE_INPUT - Топик для чтения сообщений по обработке рисков
+- TOPIC_KYC_CASE_CREATION - Топик входящих сообщений для формирования кейса KYC
 - TOPIC_ZK_REQUEST - Топик входящих сообщений по спецификации запроса ЗК
 - TOPIC_ZK_RESPONSE_IN - Топик входящих сообщений по спецификации ответа ЗК
 - TOPIC_ZK_STATUS - Топик входящих сообщений по спецификации смены статуса ЗК

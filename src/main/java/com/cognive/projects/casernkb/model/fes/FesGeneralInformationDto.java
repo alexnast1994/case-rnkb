@@ -1,6 +1,7 @@
 package com.cognive.projects.casernkb.model.fes;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.prime.db.rnkb.model.BaseDictionary;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,6 +14,6 @@ import java.io.Serializable;
 public class FesGeneralInformationDto implements Serializable {
     Long id;
     Long categoryId;
-    Long recordTypeId;
+    BaseDictionary recordType;
     String num;
 }

@@ -1,12 +1,12 @@
 package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.AutoCaseCreation;
 
+import com.cognive.projects.casernkb.service.FesService;
 import com.prime.db.rnkb.model.fes.FesBankInformation;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesDataPrefill;
 import com.prime.db.rnkb.model.fes.FesGeneralInformation;
 import com.prime.db.rnkb.model.fes.FesRefusalCaseDetails;
 import com.prime.db.rnkb.model.fes.FesServiceInformation;
-import com.prime.db.rnkb.repository.BaseDictionaryRepository;
 import com.prime.db.rnkb.repository.fes.FesBankInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesDataPrefillRepository;
 import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
@@ -19,6 +19,11 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_307;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_312;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_318;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_86;
+
 @Component
 @RequiredArgsConstructor
 public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
@@ -26,9 +31,9 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
     private final FesDataPrefillRepository fesDataPrefillRepository;
     private final FesBankInformationRepository fesBankInformationRepository;
     private final FesServiceInformationRepository fesServiceInformationRepository;
-    private final BaseDictionaryRepository baseDictionaryRepository;
     private final FesGeneralInformationRepository fesGeneralInformationRepository;
     private final FesRefusalCaseDetailsRepository fesRefusalCaseDetailsRepository;
+    private final FesService fesService;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
@@ -36,11 +41,11 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
         var fesCategory = (FesCategory) execution.getVariable("fesCategory");
         var rejectTypeCode = (String) execution.getVariable("rejectType");
 
-        var recordType = baseDictionaryRepository.getBaseDictionary("1", 86);
+        var recordType = fesService.getBd(DICTIONARY_86, "1");
         var groundOfRefusal = rejectTypeCode.equals("2") ?
-                baseDictionaryRepository.getBaseDictionary("03", 318):
-                baseDictionaryRepository.getBaseDictionary("09", 318);
-        var rejectType = baseDictionaryRepository.getBaseDictionary(rejectTypeCode, 307);
+                fesService.getBd(DICTIONARY_318, "03"):
+                fesService.getBd(DICTIONARY_318, "09");
+        var rejectType = fesService.getBd(DICTIONARY_307, rejectTypeCode);
 
         FesDataPrefill fesDataPrefill = fesDataPrefillRepository.findAll().get(0);
 
@@ -54,7 +59,7 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
 
         FesServiceInformation fesServiceInformation = new FesServiceInformation();
         if (rejectTypeCode.equals("2") || rejectTypeCode.equals("3")) {
-            fesServiceInformation.setInformationType(baseDictionaryRepository.getBaseDictionary("01", 312));
+            fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "01"));
         }
         fesServiceInformation.setCategoryId(fesCategory);
         fesServiceInformation.setFormatVersion(fesDataPrefill.getFormatVersion());

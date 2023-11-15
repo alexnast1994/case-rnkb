@@ -35,7 +35,6 @@ import com.prime.db.rnkb.model.fes.FesRefusalCaseDetails;
 import com.prime.db.rnkb.model.fes.FesRefusalReason;
 import com.prime.db.rnkb.model.fes.FesRightOfResidenceDocument;
 import com.prime.db.rnkb.model.fes.FesServiceInformation;
-import com.prime.db.rnkb.repository.BaseDictionaryRepository;
 import com.prime.db.rnkb.repository.fes.FesAddressRepository;
 import com.prime.db.rnkb.repository.fes.FesBankInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesBeneficiaryRepository;
@@ -56,20 +55,48 @@ import com.prime.db.rnkb.repository.fes.FesServiceInformationRepository;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_101;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_307;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_312;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_317;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_318;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_320;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_321;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_322;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_323;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_324;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_325;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_326;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_327;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_328;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_329;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_330;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_331;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_338;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_342;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_346;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_347;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_348;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_40;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_86;
 
 @RequiredArgsConstructor
 @Component
 public class FesChangeCaseDelegate implements JavaDelegate {
 
     private final FesServiceInformationRepository fesServiceInformationRepository;
-    private final BaseDictionaryRepository baseDictionaryRepository;
     private final FesBankInformationRepository fesBankInformationRepository;
     private final FesRefusalReasonRepository fesRefusalReasonRepository;
     private final FesRefusalCaseDetailsRepository fesRefusalCaseDetailsRepository;
@@ -95,7 +122,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
 
         var fesCategory = fesCategoryRepository.findById(categoryId).get();
         var fesCaseSaveDto = (FesCaseSaveDto) delegateExecution.getVariable("fesCaseSaveDto");
-        var recordType = baseDictionaryRepository.getBaseDictionary("1", 86);
+        var recordType = fesService.getBd(DICTIONARY_86, "1");
 
         if (!fesCaseSaveDto.getFesCategory().getFesServiceInformations().isEmpty()) {
             FesServiceInformationDto fesServiceInformationDto = fesCaseSaveDto.getFesCategory().getFesServiceInformations().get(0);
@@ -104,13 +131,13 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                 fesServiceInformation = new FesServiceInformation();
                 fesServiceInformation.setCategoryId(fesCategory);
                 if (rejectTypeCode.equals("2") || rejectTypeCode.equals("3")) {
-                    fesServiceInformation.setInformationType(baseDictionaryRepository.getBaseDictionary("01", 312));
+                    fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "01"));
                 }
             } else {
                 fesServiceInformation = fesCategory.getFesServiceInformations().get(0);
             }
-            if (fesServiceInformationDto.getInformationTypeId() != null) {
-                fesServiceInformation.setInformationType(getBdById(fesServiceInformationDto.getInformationTypeId()));
+            if (fesServiceInformationDto.getInformationType() != null) {
+                fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, fesServiceInformationDto.getInformationType().getCode()));
             }
             fesServiceInformation.setFormatVersion(fesCaseSaveDto.getFesDataPrefill().getFormatVersion());
             fesServiceInformation.setSoftVersion(fesCaseSaveDto.getFesDataPrefill().getSoftVersion());
@@ -126,15 +153,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesServiceInformationRepository.save(fesServiceInformation);
         }
 
-        FesGeneralInformation fesGeneralInformation;
-        if (fesCategory.getFesGeneralInformations() == null || fesCategory.getFesGeneralInformations().isEmpty()) {
-            fesGeneralInformation = new FesGeneralInformation();
-            fesGeneralInformation.setCategoryId(fesCategory);
-        } else {
-            fesGeneralInformation = fesCategory.getFesGeneralInformations().get(0);
-        }
-        fesGeneralInformation.setCategoryId(fesCategory);
-        fesGeneralInformation.setRecordType(recordType);
+        FesGeneralInformation fesGeneralInformation = getFesGeneralInformation(fesCategory, recordType);
         fesGeneralInformationRepository.save(fesGeneralInformation);
 
         List<FesBankInformationDto> fesBankInformationDtoList = fesCaseSaveDto.getFesCategory().getFesBankInformations();
@@ -170,53 +189,60 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesRefusalReasonRepository.deleteAll(existingFesRefusalReasons);
         }
 
-        List<FesRefusalCaseDetailsDto> fesRefusalCaseDetailsDtoList = fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails();
-        List<FesRefusalCaseDetails> existingFesRefusalCaseDetails = fesRefusalCaseDetailsRepository.findByCategoryId(fesCategory);
-        if (fesRefusalCaseDetailsDtoList != null && !fesRefusalCaseDetailsDtoList.isEmpty()) {
-            fesService.deleteMissingItems(fesRefusalCaseDetailsDtoList, existingFesRefusalCaseDetails, fesRefusalCaseDetailsRepository, FesRefusalCaseDetailsDto::getId, FesRefusalCaseDetails::getId);
-            fesService.createAndSaveAllItems(fesRefusalCaseDetailsDtoList, dto -> createOrUpdateFesRefusalCaseDetails(dto, fesCategory), fesRefusalCaseDetailsRepository, fesCategory);
-        } else {
-            fesRefusalCaseDetailsRepository.deleteAll(existingFesRefusalCaseDetails);
+        if (!fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().isEmpty()) {
+            FesRefusalCaseDetailsDto fesRefusalCaseDetailsDto = fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().get(0);
+            FesRefusalCaseDetails fesRefusalCaseDetails = fesCategory.getFesRefusalCaseDetails().get(0);
+
+            fesRefusalCaseDetails.setBankInfFeature(fesService.getBd(DICTIONARY_317, fesRefusalCaseDetailsDto.getBankInfFeature() != null ?
+                    fesRefusalCaseDetailsDto.getBankInfFeature().getCode() : null));
+            fesRefusalCaseDetails.setGroundOfRefusal(fesService.getBd(DICTIONARY_318, fesRefusalCaseDetailsDto.getGroundOfRefusal() != null ?
+                    fesRefusalCaseDetailsDto.getGroundOfRefusal().getCode() : null));
+            fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
+            fesRefusalCaseDetails.setRejectType(fesService.getBd(DICTIONARY_307, fesRefusalCaseDetailsDto.getRejectType() != null ?
+                    fesRefusalCaseDetailsDto.getRejectType().getCode() : null));
+            fesRefusalCaseDetails.setRemovalReason(fesRefusalCaseDetailsDto.getRemovalReason());
+            fesRefusalCaseDetailsRepository.save(fesRefusalCaseDetails);
         }
 
-        FesCasesStatus fesCasesStatuses = fesCategory.getFesCasesStatuses().get(0);
-        List<FesMainPageOtherSections> otherSectionsList = fesCasesStatuses.getFesMainPageOtherSections();
-        FesMainPageOtherSections fesMainPageOtherSections = (otherSectionsList == null || otherSectionsList.isEmpty())
-                ? new FesMainPageOtherSections()
-                : otherSectionsList.get(0);
-        if (otherSectionsList == null || otherSectionsList.isEmpty()) {
-            fesMainPageOtherSections.setCasesStatusId(fesCasesStatuses);
-        }
-        fesMainPageOtherSections.setComment(fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().get(0).getComment());
+//        List<FesRefusalCaseDetailsDto> fesRefusalCaseDetailsDtoList = fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails();
+//        List<FesRefusalCaseDetails> existingFesRefusalCaseDetails = fesRefusalCaseDetailsRepository.findByCategoryId(fesCategory);
+//        if (fesRefusalCaseDetailsDtoList != null && !fesRefusalCaseDetailsDtoList.isEmpty()) {
+//            fesService.deleteMissingItems(fesRefusalCaseDetailsDtoList, existingFesRefusalCaseDetails, fesRefusalCaseDetailsRepository, FesRefusalCaseDetailsDto::getId, FesRefusalCaseDetails::getId);
+//            fesService.createAndSaveAllItems(fesRefusalCaseDetailsDtoList, dto -> createOrUpdateFesRefusalCaseDetails(dto, fesCategory), fesRefusalCaseDetailsRepository, fesCategory);
+//        } else {
+//            fesRefusalCaseDetailsRepository.deleteAll(existingFesRefusalCaseDetails);
+//        }
+
+        FesMainPageOtherSections fesMainPageOtherSections = getFesMainPageOtherSections(fesCategory, fesCaseSaveDto);
         fesMainPageOtherSectionsRepository.save(fesMainPageOtherSections);
 
         List<FesParticipantDto> fesParticipantDtoList = fesCaseSaveDto.getFesCategory().getFesParticipants();
         List<FesParticipant> existingFesParticipants = fesParticipantRepository.findFesParticipantsByCategoryId(fesCategory);
         if (fesParticipantDtoList != null && !fesParticipantDtoList.isEmpty()) {
-            Set<Long> fesParticipantDtoIds = fesParticipantDtoList.stream()
-                    .map(FesParticipantDto::getId)
-                    .collect(Collectors.toSet());
-            for (FesParticipant existingFesParticipant : existingFesParticipants) {
-                if (!fesParticipantDtoIds.contains(existingFesParticipant.getId())) {
-                    fesParticipantRepository.delete(existingFesParticipant);
-                }
-            }
+            removeUnnecessaryEntities(
+                    fesParticipantDtoList,
+                    existingFesParticipants,
+                    FesParticipantDto::getId,
+                    FesParticipant::getId,
+                    fesParticipantRepository
+            );
             List<FesParticipant> fesParticipants = new ArrayList<>();
             for (FesParticipantDto fesParticipantDto : fesParticipantDtoList) {
                 FesParticipant fesParticipant = createOrUpdateFesParticipant(fesParticipantDto, fesCategory);
+
+                fesParticipantRepository.save(fesParticipant);
 
                 List<FesEioDto> fesEioDtoList = fesParticipantDto.getFesEios();
                 List<FesEio> existingFesEios = fesParticipant.getId() > 0 ?
                         fesEioRepository.findByParticipantId(fesParticipant) : new ArrayList<>();
                 if (fesEioDtoList != null && !fesEioDtoList.isEmpty()) {
-                    Set<Long> fesEioDtoIds = fesEioDtoList.stream()
-                            .map(FesEioDto::getId)
-                            .collect(Collectors.toSet());
-                    for (FesEio existingFesEio : existingFesEios) {
-                        if (!fesEioDtoIds.contains(existingFesEio.getId())) {
-                            fesEioRepository.delete(existingFesEio);
-                        }
-                    }
+                    removeUnnecessaryEntities(
+                            fesEioDtoList,
+                            existingFesEios,
+                            FesEioDto::getId,
+                            FesEio::getId,
+                            fesEioRepository
+                    );
                     List<FesEio> fesEios = new ArrayList<>();
                     for (FesEioDto fesEioDto : fesEioDtoList) {
                         FesEio fesEio = createOrUpdateFesEio(fesEioDto, fesParticipant);
@@ -225,14 +251,13 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                         List<FesParticipantLegal> existingFesParticipantLegals = fesEio.getId() > 0 ?
                                 fesParticipantLegalRepository.findByEioId(fesEio) : new ArrayList<>();
                         if (fesParticipantLegalDtoList != null && !fesParticipantLegalDtoList.isEmpty()) {
-                            Set<Long> fesParticipantLegalDtoIds = fesParticipantLegalDtoList.stream()
-                                    .map(FesParticipantLegalDto::getId)
-                                    .collect(Collectors.toSet());
-                            for (FesParticipantLegal existingFesParticipantLegal : existingFesParticipantLegals) {
-                                if (!fesParticipantLegalDtoIds.contains(existingFesParticipantLegal.getId())) {
-                                    fesParticipantLegalRepository.delete(existingFesParticipantLegal);
-                                }
-                            }
+                            removeUnnecessaryEntities(
+                                    fesParticipantLegalDtoList,
+                                    existingFesParticipantLegals,
+                                    FesParticipantLegalDto::getId,
+                                    FesParticipantLegal::getId,
+                                    fesParticipantLegalRepository
+                            );
                             List<FesParticipantLegal> fesParticipantLegals = new ArrayList<>();
                             for (FesParticipantLegalDto fesParticipantLegalDto : fesParticipantLegalDtoList) {
                                 FesParticipantLegal fesParticipantLegal = createOrUpdateFesParticipantLegal(fesParticipantLegalDto, null, fesEio);
@@ -246,92 +271,27 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                         List<FesParticipantIndividual> existingFesParticipantIndividuals = fesEio.getId() > 0 ?
                                 fesParticipantIndividualRepository.findByEioId(fesEio) : new ArrayList<>();
                         if (fesParticipantIndividualDtoList != null && !fesParticipantIndividualDtoList.isEmpty()) {
-                            Set<Long> fesParticipantIndividualDtoIds = fesParticipantIndividualDtoList.stream()
-                                    .map(FesParticipantIndividualDto::getId)
-                                    .collect(Collectors.toSet());
-                            for (FesParticipantIndividual existingFesParticipantIndividual : existingFesParticipantIndividuals) {
-                                if (!fesParticipantIndividualDtoIds.contains(existingFesParticipantIndividual.getId())) {
-                                    fesParticipantIndividualRepository.delete(existingFesParticipantIndividual);
-                                }
-                            }
+                            removeUnnecessaryEntities(
+                                    fesParticipantIndividualDtoList,
+                                    existingFesParticipantIndividuals,
+                                    FesParticipantIndividualDto::getId,
+                                    FesParticipantIndividual::getId,
+                                    fesParticipantIndividualRepository
+                            );
                             List<FesParticipantIndividual> fesParticipantIndividuals = new ArrayList<>();
                             for (FesParticipantIndividualDto fesParticipantIndividualDto : fesParticipantIndividualDtoList) {
                                 FesParticipantIndividual fesParticipantIndividual = createOrUpdateFesParticipantIndividual(fesParticipantIndividualDto, null, null, fesEio);
 
-                                List<FesIdentityDocumentGeneralDto> fesIdentityDocumentGeneralDtoList = fesParticipantIndividualDto.getFesIdentityDocumentGenerals();
-                                List<FesIdentityDocumentGeneral> existingFesIdentityDocumentGenerals = fesParticipantIndividual.getId() > 0 ?
-                                        fesIdentityDocumentGeneralRepository.findByParticipantIndividualId(fesParticipantIndividual) : new ArrayList<>();
-                                if (fesIdentityDocumentGeneralDtoList != null && !fesIdentityDocumentGeneralDtoList.isEmpty()) {
-                                    Set<Long> fesIdentityDocumentGeneralDtoIds = fesIdentityDocumentGeneralDtoList.stream()
-                                            .map(FesIdentityDocumentGeneralDto::getId)
-                                            .collect(Collectors.toSet());
-                                    for (FesIdentityDocumentGeneral existingEntity : existingFesIdentityDocumentGenerals) {
-                                        if (!fesIdentityDocumentGeneralDtoIds.contains(existingEntity.getId())) {
-                                            fesIdentityDocumentGeneralRepository.delete(existingEntity);
-                                        }
-                                    }
-                                    List<FesIdentityDocumentGeneral> fesIdentityDocumentGenerals = new ArrayList<>();
-                                    for (FesIdentityDocumentGeneralDto fesIdentityDocumentGeneralDto : fesIdentityDocumentGeneralDtoList) {
-                                        FesIdentityDocumentGeneral fesIdentityDocumentGeneral = createOrUpdateFesIdentityDocumentGeneral(fesIdentityDocumentGeneralDto, fesParticipantIndividual);
-
-                                        List<FesIdentityDocumentDto> fesIdentityDocumentDtoList = fesIdentityDocumentGeneralDto.getFesIdentityDocuments();
-                                        List<FesIdentityDocument> existingFesIdentityDocuments = fesIdentityDocumentGeneral.getId() > 0 ?
-                                                fesIdentityDocumentRepository.findByIdentityDocumentGeneralId(fesIdentityDocumentGeneral) : new ArrayList<>();
-                                        if (fesIdentityDocumentDtoList != null && !fesIdentityDocumentDtoList.isEmpty()) {
-                                            Set<Long> fesIdentityDocumentDtoIds = fesIdentityDocumentDtoList.stream()
-                                                    .map(FesIdentityDocumentDto::getId)
-                                                    .collect(Collectors.toSet());
-                                            for (FesIdentityDocument existingEntity : existingFesIdentityDocuments) {
-                                                if (!fesIdentityDocumentDtoIds.contains(existingEntity.getId())) {
-                                                    fesIdentityDocumentRepository.delete(existingEntity);
-                                                }
-                                            }
-                                            List<FesIdentityDocument> fesIdentityDocuments = new ArrayList<>();
-                                            for (FesIdentityDocumentDto fesIdentityDocumentDto : fesIdentityDocumentDtoList) {
-                                                FesIdentityDocument fesIdentityDocument = createOrUpdateFesIdentityDocument(fesIdentityDocumentDto, fesIdentityDocumentGeneral);
-                                                fesIdentityDocuments.add(fesIdentityDocument);
-                                            }
-                                            fesIdentityDocumentRepository.saveAll(fesIdentityDocuments);
-                                            fesIdentityDocumentGeneral.setFesIdentityDocuments(fesIdentityDocuments);
-                                        }
-
-                                        List<FesRightOfResidenceDocumentDto> fesRightOfResidenceDocumentDtoList = fesIdentityDocumentGeneralDto.getFesRightOfResidenceDocuments();
-                                        List<FesRightOfResidenceDocument> existingFesRightOfResidenceDocuments = fesIdentityDocumentGeneral.getId() > 0 ?
-                                                fesRightOfResidenceDocumentRepository.findByIdentityDocumentGeneralId(fesIdentityDocumentGeneral) : new ArrayList<>();
-                                        if (fesRightOfResidenceDocumentDtoList != null && !fesRightOfResidenceDocumentDtoList.isEmpty()) {
-                                            Set<Long> fesRightOfResidenceDocumentDtoIds = fesRightOfResidenceDocumentDtoList.stream()
-                                                    .map(FesRightOfResidenceDocumentDto::getId)
-                                                    .collect(Collectors.toSet());
-                                            for (FesRightOfResidenceDocument existingEntity : existingFesRightOfResidenceDocuments) {
-                                                if (!fesRightOfResidenceDocumentDtoIds.contains(existingEntity.getId())) {
-                                                    fesRightOfResidenceDocumentRepository.delete(existingEntity);
-                                                }
-                                            }
-                                            List<FesRightOfResidenceDocument> fesRightOfResidenceDocuments = new ArrayList<>();
-                                            for (FesRightOfResidenceDocumentDto fesRightOfResidenceDocumentDto : fesRightOfResidenceDocumentDtoList) {
-                                                FesRightOfResidenceDocument fesRightOfResidenceDocument = createOrUpdateFesRightOfResidenceDocument(fesRightOfResidenceDocumentDto, fesIdentityDocumentGeneral);
-                                                fesRightOfResidenceDocuments.add(fesRightOfResidenceDocument);
-                                            }
-                                            fesRightOfResidenceDocumentRepository.saveAll(fesRightOfResidenceDocuments);
-                                            fesIdentityDocumentGeneral.setFesRightOfResidenceDocuments(fesRightOfResidenceDocuments);
-                                        }
-                                        fesIdentityDocumentGenerals.add(fesIdentityDocumentGeneral);
-                                    }
-                                    fesIdentityDocumentGeneralRepository.saveAll(fesIdentityDocumentGenerals);
-                                    fesParticipantIndividual.setFesIdentityDocumentGenerals(fesIdentityDocumentGenerals);
-                                }
-                                fesParticipantIndividuals.add(fesParticipantIndividual);
+                                fesDocumentsProcessing(fesParticipantIndividuals, fesParticipantIndividualDto, fesParticipantIndividual);
                             }
                             fesParticipantIndividualRepository.saveAll(fesParticipantIndividuals);
                             fesParticipant.setFesParticipantIndividuals(fesParticipantIndividuals);
                         }
 
-
                         List<FesAddressDto> fesAddressDtoList = fesEioDto.getFesAddresses();
                         List<FesAddress> existingFesAddresses = fesEio.getId() > 0 ?
                                 fesAddressRepository.findByEioId(fesEio) : new ArrayList<>();
                         processingAddress(fesAddressDtoList, existingFesAddresses, null, null, fesEio, null);
-
                         fesEios.add(fesEio);
                     }
                     fesEioRepository.saveAll(fesEios);
@@ -342,14 +302,13 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                 List<FesBeneficiary> existingFesBeneficiaries = fesParticipant.getId() > 0 ?
                         fesBeneficiaryRepository.findByParticipantId(fesParticipant) : new ArrayList<>();
                 if (fesBeneficiaryDtoList != null && !fesBeneficiaryDtoList.isEmpty()) {
-                    Set<Long> fesBeneficiaryDtoIds = fesBeneficiaryDtoList.stream()
-                            .map(FesBeneficiaryDto::getId)
-                            .collect(Collectors.toSet());
-                    for (FesBeneficiary existingFesBeneficiary : existingFesBeneficiaries) {
-                        if (!fesBeneficiaryDtoIds.contains(existingFesBeneficiary.getId())) {
-                            fesBeneficiaryRepository.delete(existingFesBeneficiary);
-                        }
-                    }
+                    removeUnnecessaryEntities(
+                            fesBeneficiaryDtoList,
+                            existingFesBeneficiaries,
+                            FesBeneficiaryDto::getId,
+                            FesBeneficiary::getId,
+                            fesBeneficiaryRepository
+                    );
                     List<FesBeneficiary> fesBeneficiaries = new ArrayList<>();
                     for (FesBeneficiaryDto fesBeneficiaryDto : fesBeneficiaryDtoList) {
                         FesBeneficiary fesBeneficiary = createOrUpdateFesBeneficiary(fesBeneficiaryDto, fesParticipant);
@@ -358,81 +317,18 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                         List<FesParticipantIndividual> existingFesParticipantIndividuals = fesBeneficiary.getId() > 0 ?
                                 fesParticipantIndividualRepository.findByBeneficiaryId(fesBeneficiary) : new ArrayList<>();
                         if (fesParticipantIndividualDtoList != null && !fesParticipantIndividualDtoList.isEmpty()) {
-                            Set<Long> fesParticipantIndividualDtoIds = fesParticipantIndividualDtoList.stream()
-                                    .map(FesParticipantIndividualDto::getId)
-                                    .collect(Collectors.toSet());
-                            for (FesParticipantIndividual existingFesParticipantIndividual : existingFesParticipantIndividuals) {
-                                if (!fesParticipantIndividualDtoIds.contains(existingFesParticipantIndividual.getId())) {
-                                    fesParticipantIndividualRepository.delete(existingFesParticipantIndividual);
-                                }
-                            }
+                            removeUnnecessaryEntities(
+                                    fesParticipantIndividualDtoList,
+                                    existingFesParticipantIndividuals,
+                                    FesParticipantIndividualDto::getId,
+                                    FesParticipantIndividual::getId,
+                                    fesParticipantIndividualRepository
+                            );
                             List<FesParticipantIndividual> fesParticipantIndividuals = new ArrayList<>();
                             for (FesParticipantIndividualDto fesParticipantIndividualDto : fesParticipantIndividualDtoList) {
                                 FesParticipantIndividual fesParticipantIndividual = createOrUpdateFesParticipantIndividual(fesParticipantIndividualDto, null, fesBeneficiary, null);
 
-                                List<FesIdentityDocumentGeneralDto> fesIdentityDocumentGeneralDtoList = fesParticipantIndividualDto.getFesIdentityDocumentGenerals();
-                                List<FesIdentityDocumentGeneral> existingFesIdentityDocumentGenerals = fesParticipantIndividual.getId() > 0 ?
-                                        fesIdentityDocumentGeneralRepository.findByParticipantIndividualId(fesParticipantIndividual) : new ArrayList<>();
-                                if (fesIdentityDocumentGeneralDtoList != null && !fesIdentityDocumentGeneralDtoList.isEmpty()) {
-                                    Set<Long> fesIdentityDocumentGeneralDtoIds = fesIdentityDocumentGeneralDtoList.stream()
-                                            .map(FesIdentityDocumentGeneralDto::getId)
-                                            .collect(Collectors.toSet());
-                                    for (FesIdentityDocumentGeneral existingEntity : existingFesIdentityDocumentGenerals) {
-                                        if (!fesIdentityDocumentGeneralDtoIds.contains(existingEntity.getId())) {
-                                            fesIdentityDocumentGeneralRepository.delete(existingEntity);
-                                        }
-                                    }
-                                    List<FesIdentityDocumentGeneral> fesIdentityDocumentGenerals = new ArrayList<>();
-                                    for (FesIdentityDocumentGeneralDto fesIdentityDocumentGeneralDto : fesIdentityDocumentGeneralDtoList) {
-                                        FesIdentityDocumentGeneral fesIdentityDocumentGeneral = createOrUpdateFesIdentityDocumentGeneral(fesIdentityDocumentGeneralDto, fesParticipantIndividual);
-
-                                        List<FesIdentityDocumentDto> fesIdentityDocumentDtoList = fesIdentityDocumentGeneralDto.getFesIdentityDocuments();
-                                        List<FesIdentityDocument> existingFesIdentityDocuments = fesIdentityDocumentGeneral.getId() > 0 ?
-                                                fesIdentityDocumentRepository.findByIdentityDocumentGeneralId(fesIdentityDocumentGeneral) : new ArrayList<>();
-                                        if (fesIdentityDocumentDtoList != null && !fesIdentityDocumentDtoList.isEmpty()) {
-                                            Set<Long> fesIdentityDocumentDtoIds = fesIdentityDocumentDtoList.stream()
-                                                    .map(FesIdentityDocumentDto::getId)
-                                                    .collect(Collectors.toSet());
-                                            for (FesIdentityDocument existingEntity : existingFesIdentityDocuments) {
-                                                if (!fesIdentityDocumentDtoIds.contains(existingEntity.getId())) {
-                                                    fesIdentityDocumentRepository.delete(existingEntity);
-                                                }
-                                            }
-                                            List<FesIdentityDocument> fesIdentityDocuments = new ArrayList<>();
-                                            for (FesIdentityDocumentDto fesIdentityDocumentDto : fesIdentityDocumentDtoList) {
-                                                FesIdentityDocument fesIdentityDocument = createOrUpdateFesIdentityDocument(fesIdentityDocumentDto, fesIdentityDocumentGeneral);
-                                                fesIdentityDocuments.add(fesIdentityDocument);
-                                            }
-                                            fesIdentityDocumentRepository.saveAll(fesIdentityDocuments);
-                                            fesIdentityDocumentGeneral.setFesIdentityDocuments(fesIdentityDocuments);
-                                        }
-
-                                        List<FesRightOfResidenceDocumentDto> fesRightOfResidenceDocumentDtoList = fesIdentityDocumentGeneralDto.getFesRightOfResidenceDocuments();
-                                        List<FesRightOfResidenceDocument> existingFesRightOfResidenceDocuments = fesIdentityDocumentGeneral.getId() > 0 ?
-                                                fesRightOfResidenceDocumentRepository.findByIdentityDocumentGeneralId(fesIdentityDocumentGeneral) : new ArrayList<>();
-                                        if (fesRightOfResidenceDocumentDtoList != null && !fesRightOfResidenceDocumentDtoList.isEmpty()) {
-                                            Set<Long> fesRightOfResidenceDocumentDtoIds = fesRightOfResidenceDocumentDtoList.stream()
-                                                    .map(FesRightOfResidenceDocumentDto::getId)
-                                                    .collect(Collectors.toSet());
-                                            for (FesRightOfResidenceDocument existingEntity : existingFesRightOfResidenceDocuments) {
-                                                if (!fesRightOfResidenceDocumentDtoIds.contains(existingEntity.getId())) {
-                                                    fesRightOfResidenceDocumentRepository.delete(existingEntity);
-                                                }
-                                            }
-                                            List<FesRightOfResidenceDocument> fesRightOfResidenceDocuments = new ArrayList<>();
-                                            for (FesRightOfResidenceDocumentDto fesRightOfResidenceDocumentDto : fesRightOfResidenceDocumentDtoList) {
-                                                FesRightOfResidenceDocument fesRightOfResidenceDocument = createOrUpdateFesRightOfResidenceDocument(fesRightOfResidenceDocumentDto, fesIdentityDocumentGeneral);
-                                                fesRightOfResidenceDocuments.add(fesRightOfResidenceDocument);
-                                            }
-                                            fesRightOfResidenceDocumentRepository.saveAll(fesRightOfResidenceDocuments);
-                                            fesIdentityDocumentGeneral.setFesRightOfResidenceDocuments(fesRightOfResidenceDocuments);
-                                        }
-                                        fesIdentityDocumentGenerals.add(fesIdentityDocumentGeneral);
-                                    }
-                                    fesIdentityDocumentGeneralRepository.saveAll(fesIdentityDocumentGenerals);
-                                    fesParticipantIndividual.setFesIdentityDocumentGenerals(fesIdentityDocumentGenerals);
-                                }
-                                fesParticipantIndividuals.add(fesParticipantIndividual);
+                                fesDocumentsProcessing(fesParticipantIndividuals, fesParticipantIndividualDto, fesParticipantIndividual);
                             }
                             fesParticipantIndividualRepository.saveAll(fesParticipantIndividuals);
                             fesParticipant.setFesParticipantIndividuals(fesParticipantIndividuals);
@@ -454,81 +350,18 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                 List<FesParticipantIndividual> existingFesParticipantIndividuals = fesParticipant.getId() > 0 ?
                         fesParticipantIndividualRepository.findByParticipantId(fesParticipant) : new ArrayList<>();
                 if (fesParticipantIndividualDtoList != null && !fesParticipantIndividualDtoList.isEmpty()) {
-                    Set<Long> fesParticipantIndividualDtoIds = fesParticipantIndividualDtoList.stream()
-                            .map(FesParticipantIndividualDto::getId)
-                            .collect(Collectors.toSet());
-                    for (FesParticipantIndividual existingFesParticipantIndividual : existingFesParticipantIndividuals) {
-                        if (!fesParticipantIndividualDtoIds.contains(existingFesParticipantIndividual.getId())) {
-                            fesParticipantIndividualRepository.delete(existingFesParticipantIndividual);
-                        }
-                    }
+                    removeUnnecessaryEntities(
+                            fesParticipantIndividualDtoList,
+                            existingFesParticipantIndividuals,
+                            FesParticipantIndividualDto::getId,
+                            FesParticipantIndividual::getId,
+                            fesParticipantIndividualRepository
+                    );
                     List<FesParticipantIndividual> fesParticipantIndividuals = new ArrayList<>();
                     for (FesParticipantIndividualDto fesParticipantIndividualDto : fesParticipantIndividualDtoList) {
                         FesParticipantIndividual fesParticipantIndividual = createOrUpdateFesParticipantIndividual(fesParticipantIndividualDto, fesParticipant, null, null);
 
-                        List<FesIdentityDocumentGeneralDto> fesIdentityDocumentGeneralDtoList = fesParticipantIndividualDto.getFesIdentityDocumentGenerals();
-                        List<FesIdentityDocumentGeneral> existingFesIdentityDocumentGenerals = fesParticipantIndividual.getId() > 0 ?
-                                fesIdentityDocumentGeneralRepository.findByParticipantIndividualId(fesParticipantIndividual) : new ArrayList<>();
-                        if (fesIdentityDocumentGeneralDtoList != null && !fesIdentityDocumentGeneralDtoList.isEmpty()) {
-                            Set<Long> fesIdentityDocumentGeneralDtoIds = fesIdentityDocumentGeneralDtoList.stream()
-                                    .map(FesIdentityDocumentGeneralDto::getId)
-                                    .collect(Collectors.toSet());
-                            for (FesIdentityDocumentGeneral existingEntity : existingFesIdentityDocumentGenerals) {
-                                if (!fesIdentityDocumentGeneralDtoIds.contains(existingEntity.getId())) {
-                                    fesIdentityDocumentGeneralRepository.delete(existingEntity);
-                                }
-                            }
-                            List<FesIdentityDocumentGeneral> fesIdentityDocumentGenerals = new ArrayList<>();
-                            for (FesIdentityDocumentGeneralDto fesIdentityDocumentGeneralDto : fesIdentityDocumentGeneralDtoList) {
-                                FesIdentityDocumentGeneral fesIdentityDocumentGeneral = createOrUpdateFesIdentityDocumentGeneral(fesIdentityDocumentGeneralDto, fesParticipantIndividual);
-
-                                List<FesIdentityDocumentDto> fesIdentityDocumentDtoList = fesIdentityDocumentGeneralDto.getFesIdentityDocuments();
-                                List<FesIdentityDocument> existingFesIdentityDocuments = fesIdentityDocumentGeneral.getId() > 0 ?
-                                        fesIdentityDocumentRepository.findByIdentityDocumentGeneralId(fesIdentityDocumentGeneral) : new ArrayList<>();
-                                if (fesIdentityDocumentDtoList != null && !fesIdentityDocumentDtoList.isEmpty()) {
-                                    Set<Long> fesIdentityDocumentDtoIds = fesIdentityDocumentDtoList.stream()
-                                            .map(FesIdentityDocumentDto::getId)
-                                            .collect(Collectors.toSet());
-                                    for (FesIdentityDocument existingEntity : existingFesIdentityDocuments) {
-                                        if (!fesIdentityDocumentDtoIds.contains(existingEntity.getId())) {
-                                            fesIdentityDocumentRepository.delete(existingEntity);
-                                        }
-                                    }
-                                    List<FesIdentityDocument> fesIdentityDocuments = new ArrayList<>();
-                                    for (FesIdentityDocumentDto fesIdentityDocumentDto : fesIdentityDocumentDtoList) {
-                                        FesIdentityDocument fesIdentityDocument = createOrUpdateFesIdentityDocument(fesIdentityDocumentDto, fesIdentityDocumentGeneral);
-                                        fesIdentityDocuments.add(fesIdentityDocument);
-                                    }
-                                    fesIdentityDocumentRepository.saveAll(fesIdentityDocuments);
-                                    fesIdentityDocumentGeneral.setFesIdentityDocuments(fesIdentityDocuments);
-                                }
-
-                                List<FesRightOfResidenceDocumentDto> fesRightOfResidenceDocumentDtoList = fesIdentityDocumentGeneralDto.getFesRightOfResidenceDocuments();
-                                List<FesRightOfResidenceDocument> existingFesRightOfResidenceDocuments = fesIdentityDocumentGeneral.getId() > 0 ?
-                                        fesRightOfResidenceDocumentRepository.findByIdentityDocumentGeneralId(fesIdentityDocumentGeneral) : new ArrayList<>();
-                                if (fesRightOfResidenceDocumentDtoList != null && !fesRightOfResidenceDocumentDtoList.isEmpty()) {
-                                    Set<Long> fesRightOfResidenceDocumentDtoIds = fesRightOfResidenceDocumentDtoList.stream()
-                                            .map(FesRightOfResidenceDocumentDto::getId)
-                                            .collect(Collectors.toSet());
-                                    for (FesRightOfResidenceDocument existingEntity : existingFesRightOfResidenceDocuments) {
-                                        if (!fesRightOfResidenceDocumentDtoIds.contains(existingEntity.getId())) {
-                                            fesRightOfResidenceDocumentRepository.delete(existingEntity);
-                                        }
-                                    }
-                                    List<FesRightOfResidenceDocument> fesRightOfResidenceDocuments = new ArrayList<>();
-                                    for (FesRightOfResidenceDocumentDto fesRightOfResidenceDocumentDto : fesRightOfResidenceDocumentDtoList) {
-                                        FesRightOfResidenceDocument fesRightOfResidenceDocument = createOrUpdateFesRightOfResidenceDocument(fesRightOfResidenceDocumentDto, fesIdentityDocumentGeneral);
-                                        fesRightOfResidenceDocuments.add(fesRightOfResidenceDocument);
-                                    }
-                                    fesRightOfResidenceDocumentRepository.saveAll(fesRightOfResidenceDocuments);
-                                    fesIdentityDocumentGeneral.setFesRightOfResidenceDocuments(fesRightOfResidenceDocuments);
-                                }
-                                fesIdentityDocumentGenerals.add(fesIdentityDocumentGeneral);
-                            }
-                            fesIdentityDocumentGeneralRepository.saveAll(fesIdentityDocumentGenerals);
-                            fesParticipantIndividual.setFesIdentityDocumentGenerals(fesIdentityDocumentGenerals);
-                        }
-                        fesParticipantIndividuals.add(fesParticipantIndividual);
+                        fesDocumentsProcessing(fesParticipantIndividuals, fesParticipantIndividualDto, fesParticipantIndividual);
                     }
                     fesParticipantIndividualRepository.saveAll(fesParticipantIndividuals);
                     fesParticipant.setFesParticipantIndividuals(fesParticipantIndividuals);
@@ -538,14 +371,13 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                 List<FesParticipantLegal> existingFesParticipantLegals = fesParticipant.getId() > 0 ?
                         fesParticipantLegalRepository.findByParticipantId(fesParticipant) : new ArrayList<>();
                 if (fesParticipantLegalDtoList != null && !fesParticipantLegalDtoList.isEmpty()) {
-                    Set<Long> fesParticipantLegalDtoIds = fesParticipantLegalDtoList.stream()
-                            .map(FesParticipantLegalDto::getId)
-                            .collect(Collectors.toSet());
-                    for (FesParticipantLegal existingFesParticipantLegal : existingFesParticipantLegals) {
-                        if (!fesParticipantLegalDtoIds.contains(existingFesParticipantLegal.getId())) {
-                            fesParticipantLegalRepository.delete(existingFesParticipantLegal);
-                        }
-                    }
+                    removeUnnecessaryEntities(
+                            fesParticipantLegalDtoList,
+                            existingFesParticipantLegals,
+                            FesParticipantLegalDto::getId,
+                            FesParticipantLegal::getId,
+                            fesParticipantLegalRepository
+                    );
                     List<FesParticipantLegal> fesParticipantLegals = new ArrayList<>();
                     for (FesParticipantLegalDto fesParticipantLegalDto : fesParticipantLegalDtoList) {
                         FesParticipantLegal fesParticipantLegal = createOrUpdateFesParticipantLegal(fesParticipantLegalDto, fesParticipant, null);
@@ -574,19 +406,108 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         if (fesCategory.getCaseId() != null) {
             delegateExecution.setVariable("caseId", fesCategory.getCaseId().getId());
         }
-        System.out.println("Кейс сохранен");
+    }
+
+    private void fesDocumentsProcessing(List<FesParticipantIndividual> fesParticipantIndividuals, FesParticipantIndividualDto fesParticipantIndividualDto, FesParticipantIndividual fesParticipantIndividual) {
+        List<FesIdentityDocumentGeneralDto> fesIdentityDocumentGeneralDtoList = fesParticipantIndividualDto.getFesIdentityDocumentGenerals();
+        List<FesIdentityDocumentGeneral> existingFesIdentityDocumentGenerals = fesParticipantIndividual.getId() > 0 ?
+                fesIdentityDocumentGeneralRepository.findByParticipantIndividualId(fesParticipantIndividual) : new ArrayList<>();
+        if (fesIdentityDocumentGeneralDtoList != null && !fesIdentityDocumentGeneralDtoList.isEmpty()) {
+            removeUnnecessaryEntities(
+                    fesIdentityDocumentGeneralDtoList,
+                    existingFesIdentityDocumentGenerals,
+                    FesIdentityDocumentGeneralDto::getId,
+                    FesIdentityDocumentGeneral::getId,
+                    fesIdentityDocumentGeneralRepository
+            );
+            List<FesIdentityDocumentGeneral> fesIdentityDocumentGenerals = new ArrayList<>();
+            for (FesIdentityDocumentGeneralDto fesIdentityDocumentGeneralDto : fesIdentityDocumentGeneralDtoList) {
+                FesIdentityDocumentGeneral fesIdentityDocumentGeneral = createOrUpdateFesIdentityDocumentGeneral(fesIdentityDocumentGeneralDto, fesParticipantIndividual);
+
+                List<FesIdentityDocumentDto> fesIdentityDocumentDtoList = fesIdentityDocumentGeneralDto.getFesIdentityDocuments();
+                List<FesIdentityDocument> existingFesIdentityDocuments = fesIdentityDocumentGeneral.getId() > 0 ?
+                        fesIdentityDocumentRepository.findByIdentityDocumentGeneralId(fesIdentityDocumentGeneral) : new ArrayList<>();
+                if (fesIdentityDocumentDtoList != null && !fesIdentityDocumentDtoList.isEmpty()) {
+                    removeUnnecessaryEntities(
+                            fesIdentityDocumentDtoList,
+                            existingFesIdentityDocuments,
+                            FesIdentityDocumentDto::getId,
+                            FesIdentityDocument::getId,
+                            fesIdentityDocumentRepository
+                    );
+                    List<FesIdentityDocument> fesIdentityDocuments = new ArrayList<>();
+                    for (FesIdentityDocumentDto fesIdentityDocumentDto : fesIdentityDocumentDtoList) {
+                        FesIdentityDocument fesIdentityDocument = createOrUpdateFesIdentityDocument(fesIdentityDocumentDto, fesIdentityDocumentGeneral);
+                        fesIdentityDocuments.add(fesIdentityDocument);
+                    }
+                    fesIdentityDocumentRepository.saveAll(fesIdentityDocuments);
+                    fesIdentityDocumentGeneral.setFesIdentityDocuments(fesIdentityDocuments);
+                }
+
+                List<FesRightOfResidenceDocumentDto> fesRightOfResidenceDocumentDtoList = fesIdentityDocumentGeneralDto.getFesRightOfResidenceDocuments();
+                List<FesRightOfResidenceDocument> existingFesRightOfResidenceDocuments = fesIdentityDocumentGeneral.getId() > 0 ?
+                        fesRightOfResidenceDocumentRepository.findByIdentityDocumentGeneralId(fesIdentityDocumentGeneral) : new ArrayList<>();
+                if (fesRightOfResidenceDocumentDtoList != null && !fesRightOfResidenceDocumentDtoList.isEmpty()) {
+                    removeUnnecessaryEntities(
+                            fesRightOfResidenceDocumentDtoList,
+                            existingFesRightOfResidenceDocuments,
+                            FesRightOfResidenceDocumentDto::getId,
+                            FesRightOfResidenceDocument::getId,
+                            fesRightOfResidenceDocumentRepository
+                    );
+                    List<FesRightOfResidenceDocument> fesRightOfResidenceDocuments = new ArrayList<>();
+                    for (FesRightOfResidenceDocumentDto fesRightOfResidenceDocumentDto : fesRightOfResidenceDocumentDtoList) {
+                        FesRightOfResidenceDocument fesRightOfResidenceDocument = createOrUpdateFesRightOfResidenceDocument(fesRightOfResidenceDocumentDto, fesIdentityDocumentGeneral);
+                        fesRightOfResidenceDocuments.add(fesRightOfResidenceDocument);
+                    }
+                    fesRightOfResidenceDocumentRepository.saveAll(fesRightOfResidenceDocuments);
+                    fesIdentityDocumentGeneral.setFesRightOfResidenceDocuments(fesRightOfResidenceDocuments);
+                }
+                fesIdentityDocumentGenerals.add(fesIdentityDocumentGeneral);
+            }
+            fesIdentityDocumentGeneralRepository.saveAll(fesIdentityDocumentGenerals);
+            fesParticipantIndividual.setFesIdentityDocumentGenerals(fesIdentityDocumentGenerals);
+        }
+        fesParticipantIndividuals.add(fesParticipantIndividual);
+    }
+
+    @NotNull
+    private static FesGeneralInformation getFesGeneralInformation(FesCategory fesCategory, BaseDictionary recordType) {
+        FesGeneralInformation fesGeneralInformation;
+        if (fesCategory.getFesGeneralInformations() == null || fesCategory.getFesGeneralInformations().isEmpty()) {
+            fesGeneralInformation = new FesGeneralInformation();
+            fesGeneralInformation.setCategoryId(fesCategory);
+        } else {
+            fesGeneralInformation = fesCategory.getFesGeneralInformations().get(0);
+        }
+        fesGeneralInformation.setCategoryId(fesCategory);
+        fesGeneralInformation.setRecordType(recordType);
+        return fesGeneralInformation;
+    }
+
+    @NotNull
+    private static FesMainPageOtherSections getFesMainPageOtherSections(FesCategory fesCategory, FesCaseSaveDto fesCaseSaveDto) {
+        FesCasesStatus fesCasesStatuses = fesCategory.getFesCasesStatuses().get(0);
+        List<FesMainPageOtherSections> otherSectionsList = fesCasesStatuses.getFesMainPageOtherSections();
+        FesMainPageOtherSections fesMainPageOtherSections = (otherSectionsList == null || otherSectionsList.isEmpty())
+                ? new FesMainPageOtherSections()
+                : otherSectionsList.get(0);
+        if (otherSectionsList == null || otherSectionsList.isEmpty()) {
+            fesMainPageOtherSections.setCasesStatusId(fesCasesStatuses);
+        }
+        fesMainPageOtherSections.setComment(fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().get(0).getComment());
+        return fesMainPageOtherSections;
     }
 
     private void processingAddress(List<FesAddressDto> fesAddressDtoList, List<FesAddress> existingFesAddresses, FesCategory fesCategory, FesParticipant fesParticipant, FesEio fesEio, FesBeneficiary fesBeneficiary) {
         if (fesAddressDtoList != null && !fesAddressDtoList.isEmpty()) {
-            Set<Long> fesAddressDtoIds = fesAddressDtoList.stream()
-                    .map(FesAddressDto::getId)
-                    .collect(Collectors.toSet());
-            for (FesAddress existingFesAddress : existingFesAddresses) {
-                if (!fesAddressDtoIds.contains(existingFesAddress.getId())) {
-                    fesAddressRepository.delete(existingFesAddress);
-                }
-            }
+            removeUnnecessaryEntities(
+                    fesAddressDtoList,
+                    existingFesAddresses,
+                    FesAddressDto::getId,
+                    FesAddress::getId,
+                    fesAddressRepository
+            );
             List<FesAddress> fesAddresses = new ArrayList<>();
             for (FesAddressDto fesAddressDto : fesAddressDtoList) {
                 FesAddress fesAddress = createOrUpdateFesAddress(fesAddressDto, fesCategory, fesParticipant, fesEio, fesBeneficiary);
@@ -598,13 +519,6 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         }
     }
 
-    private BaseDictionary getBdById(Long id) {
-        if (id == null) {
-            return null;
-        }
-        return baseDictionaryRepository.findById(id).orElse(null);
-    }
-
     private FesRefusalReason createOrUpdateFesRefusalReason(FesRefusalReasonDto fesRefusalReasonDto, FesCategory fesCategory) {
         FesRefusalReason fesRefusalReason = new FesRefusalReason();
 
@@ -613,7 +527,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         }
 
         fesRefusalReason.setCategoryId(fesCategory);
-        fesRefusalReason.setRefusalReason(getBdById(fesRefusalReasonDto.getRefusalReasonId()));
+        fesRefusalReason.setRefusalReason(fesService.getBd(DICTIONARY_320, fesRefusalReasonDto.getRefusalReason() != null ?
+                fesRefusalReasonDto.getRefusalReason().getCode() : null));
         fesRefusalReason.setRefusalReasonOthername(fesRefusalReasonDto.getRefusalReasonOthername());
 
         return fesRefusalReason;
@@ -627,11 +542,13 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         }
 
         fesRefusalCaseDetails.setCategoryId(fesCategory);
-        fesRefusalCaseDetails.setBankInfFeature(getBdById(fesRefusalCaseDetailsDto.getBankInfFeatureId()));
-        fesRefusalCaseDetails.setGroundOfRefusal(getBdById(fesRefusalCaseDetailsDto.getGroundOfRefusalId()));
+        fesRefusalCaseDetails.setBankInfFeature(fesService.getBd(DICTIONARY_317, fesRefusalCaseDetailsDto.getBankInfFeature() != null ?
+                fesRefusalCaseDetailsDto.getBankInfFeature().getCode() : null));
+        fesRefusalCaseDetails.setGroundOfRefusal(fesService.getBd(DICTIONARY_318, fesRefusalCaseDetailsDto.getGroundOfRefusal() != null ?
+                fesRefusalCaseDetailsDto.getGroundOfRefusal().getCode() : null));
         fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
-        fesRefusalCaseDetails.setComment(fesRefusalCaseDetailsDto.getComment());
-        fesRefusalCaseDetails.setRejectType(getBdById(fesRefusalCaseDetailsDto.getRejectTypeId()));
+        fesRefusalCaseDetails.setRejectType(fesService.getBd(DICTIONARY_307, fesRefusalCaseDetailsDto.getRejectType() != null ?
+                fesRefusalCaseDetailsDto.getRejectType().getCode() : null));
         fesRefusalCaseDetails.setRemovalReason(fesRefusalCaseDetailsDto.getRemovalReason());
 
         return fesRefusalCaseDetails;
@@ -644,12 +561,17 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesParticipant = fesParticipantRepository.findById(fesParticipantDto.getId()).orElse(fesParticipant);
         }
         fesParticipant.setCategoryId(fesCategory);
-        fesParticipant.setParticipantStatus(getBdById(fesParticipantDto.getParticipantStatusId()));
-        fesParticipant.setParticipantType(getBdById(fesParticipantDto.getParticipantTypeId()));
-        fesParticipant.setParticipantResidentFeature(getBdById(fesParticipantDto.getParticipantResidentFeatureId()));
-        fesParticipant.setParticipantFeature(getBdById(fesParticipantDto.getParticipantFeatureId()));
+        fesParticipant.setParticipantStatus(fesService.getBd(DICTIONARY_321, fesParticipantDto.getParticipantStatus() != null ?
+                fesParticipantDto.getParticipantStatus().getCode() : null));
+        fesParticipant.setParticipantType(fesService.getBd(DICTIONARY_322, fesParticipantDto.getParticipantType() != null ?
+                fesParticipantDto.getParticipantType().getCode() : null));
+        fesParticipant.setParticipantResidentFeature(fesService.getBd(DICTIONARY_323, fesParticipantDto.getParticipantResidentFeature() != null ?
+                fesParticipantDto.getParticipantResidentFeature().getCode() : null));
+        fesParticipant.setParticipantFeature(fesService.getBd(DICTIONARY_324, fesParticipantDto.getParticipantFeature() != null ?
+                fesParticipantDto.getParticipantFeature().getCode() : null));
         fesParticipant.setParticipantFrommuUuid(fesParticipantDto.getParticipantFrommuUuid());
-        fesParticipant.setParticipantCode(getBdById(fesParticipantDto.getParticipantCodeId()));
+        fesParticipant.setParticipantCode(fesService.getBd(DICTIONARY_348, fesParticipantDto.getParticipantCode() != null ?
+                fesParticipantDto.getParticipantCode().getCode() : null));
 
         return fesParticipant;
     }
@@ -662,7 +584,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         fesParticipantLegal.setParticipantId(fesParticipant);
         fesParticipantLegal.setEioId(fesEio);
         fesParticipantLegal.setParticipantLegalName(fesParticipantLegalDto.getParticipantLegalName());
-        fesParticipantLegal.setBranchFeature(getBdById(fesParticipantLegalDto.getBranchFeatureId()));
+        fesParticipantLegal.setBranchFeature(fesService.getBd(DICTIONARY_342, fesParticipantLegalDto.getBranchFeature() != null ?
+                fesParticipantLegalDto.getBranchFeature().getCode() : null));
         fesParticipantLegal.setInn(fesParticipantLegalDto.getInn());
         fesParticipantLegal.setKpp(fesParticipantLegalDto.getKpp());
         fesParticipantLegal.setOgrn(fesParticipantLegalDto.getOgrn());
@@ -678,7 +601,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         fesParticipantIndividual.setParticipantId(fesParticipant);
         fesParticipantIndividual.setBeneficiaryId(fesBeneficiary);
         fesParticipantIndividual.setEioId(fesEio);
-        fesParticipantIndividual.setPhysicalIdentificationFeature(getBdById(fesParticipantIndividualDto.getPhysicalIdentificationFeatureId()));
+        fesParticipantIndividual.setPhysicalIdentificationFeature(fesService.getBd(DICTIONARY_325, fesParticipantIndividualDto.getPhysicalIdentificationFeature() != null ?
+                fesParticipantIndividualDto.getPhysicalIdentificationFeature().getCode() : null));
         fesParticipantIndividual.setLastName(fesParticipantIndividualDto.getLastName());
         fesParticipantIndividual.setFirstName(fesParticipantIndividualDto.getFirstName());
         fesParticipantIndividual.setMiddleName(fesParticipantIndividualDto.getMiddleName());
@@ -686,13 +610,17 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         fesParticipantIndividual.setSnils(fesParticipantIndividualDto.getSnils());
         fesParticipantIndividual.setHealthCardNum(fesParticipantIndividualDto.getHealthCardNum());
         fesParticipantIndividual.setPhoneNumber(fesParticipantIndividualDto.getPhoneNumber());
-        fesParticipantIndividual.setPrivatePractitionerType(getBdById(fesParticipantIndividualDto.getPrivatePractitionerTypeId()));
+        fesParticipantIndividual.setPrivatePractitionerType(fesService.getBd(DICTIONARY_326, fesParticipantIndividualDto.getPrivatePractitionerType() != null ?
+                fesParticipantIndividualDto.getPrivatePractitionerType().getCode() : null));
         fesParticipantIndividual.setPrivatePractitionerRegNum(fesParticipantIndividualDto.getPrivatePractitionerRegNum());
         fesParticipantIndividual.setFullName(fesParticipantIndividualDto.getFullName());
         fesParticipantIndividual.setBirthDate(fesParticipantIndividualDto.getBirthDate());
-        fesParticipantIndividual.setCitizenshipCountryCode(getBdById(fesParticipantIndividualDto.getCitizenshipCountryCodeId()));
-        fesParticipantIndividual.setPublicFigureFeature(getBdById(fesParticipantIndividualDto.getPublicFigureFeatureId()));
-        fesParticipantIndividual.setIdentityDocumentFeature(getBdById(fesParticipantIndividualDto.getIdentityDocumentFeatureId()));
+        fesParticipantIndividual.setCitizenshipCountryCode(fesService.getBd(DICTIONARY_40, fesParticipantIndividualDto.getCitizenshipCountryCode() != null ?
+                fesParticipantIndividualDto.getCitizenshipCountryCode().getCode() : null));
+        fesParticipantIndividual.setPublicFigureFeature(fesService.getBd(DICTIONARY_330, fesParticipantIndividualDto.getPublicFigureFeature() != null ?
+                fesParticipantIndividualDto.getPublicFigureFeature().getCode() : null));
+        fesParticipantIndividual.setIdentityDocumentFeature(fesService.getBd(DICTIONARY_327, fesParticipantIndividualDto.getIdentityDocumentFeature() != null ?
+                fesParticipantIndividualDto.getIdentityDocumentFeature().getCode() : null));
         fesParticipantIndividual.setOgrnip(fesParticipantIndividualDto.getOrgnip());
 
         return fesParticipantIndividual;
@@ -704,11 +632,13 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesIdentityDocumentGeneral = fesIdentityDocumentGeneralRepository.findById(dto.getId()).orElse(fesIdentityDocumentGeneral);
         }
         fesIdentityDocumentGeneral.setParticipantIndividualId(rootEntity);
-        fesIdentityDocumentGeneral.setDocumentTypeCode(getBdById(dto.getDocumentTypeCodeId()));
+        fesIdentityDocumentGeneral.setDocumentTypeCode(fesService.getBd(DICTIONARY_329, dto.getDocumentTypeCode() != null ?
+                dto.getDocumentTypeCode().getCode() : null));
         fesIdentityDocumentGeneral.setOtherDocumentName(dto.getOtherDocumentName());
         fesIdentityDocumentGeneral.setDocumentSeries(dto.getDocumentSeries());
         fesIdentityDocumentGeneral.setDocumentNum(dto.getDocumentNum());
-        fesIdentityDocumentGeneral.setIdentityDocumentType(getBdById(dto.getIdentityDocumentTypeId()));
+        fesIdentityDocumentGeneral.setIdentityDocumentType(fesService.getBd(DICTIONARY_337, dto.getIdentityDocumentType() != null ?
+                dto.getIdentityDocumentType().getCode() : null));
 
         return fesIdentityDocumentGeneral;
     }
@@ -732,8 +662,9 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             entity = fesEioRepository.findById(dto.getId()).orElse(entity);
         }
         entity.setParticipantId(rootEntity);
-        entity.setEioType(getBdById(dto.getEioTypeId()));
-        entity.setEioResidentFeature(getBdById(dto.getEioResidentFeatureId()));
+        entity.setEioType(fesService.getBd(DICTIONARY_346, dto.getEioType() != null ? dto.getEioType().getCode() : null));
+        entity.setEioResidentFeature(fesService.getBd(DICTIONARY_347, dto.getEioResidentFeature() != null ?
+                dto.getEioResidentFeature().getCode() : null));
 
         return entity;
     }
@@ -744,22 +675,24 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             entity = fesBeneficiaryRepository.findById(dto.getId()).orElse(entity);
         }
         entity.setParticipantId(rootEntity);
-        entity.setBeneficiaryType(getBdById(dto.getBeneficiaryTypeId()));
-        entity.setBeneficiaryResidentFeature(getBdById(dto.getBeneficiaryResidentFeatureId()));
+        entity.setBeneficiaryType(fesService.getBd(DICTIONARY_328, dto.getBeneficiaryType() != null ?
+                dto.getBeneficiaryType().getCode() : null));
+        entity.setBeneficiaryResidentFeature(fesService.getBd(DICTIONARY_338, dto.getBeneficiaryResidentFeature() != null ?
+                dto.getBeneficiaryResidentFeature().getCode() : null));
 
         return entity;
     }
 
     private FesRightOfResidenceDocument createOrUpdateFesRightOfResidenceDocument(FesRightOfResidenceDocumentDto dto, FesIdentityDocumentGeneral rootEntity) {
-        FesRightOfResidenceDocument fesRightOfResidenceDocument = new FesRightOfResidenceDocument();
+        FesRightOfResidenceDocument entity = new FesRightOfResidenceDocument();
         if (dto.getId() != null) {
-            fesRightOfResidenceDocument = fesRightOfResidenceDocumentRepository.findById(dto.getId()).orElse(fesRightOfResidenceDocument);
+            entity = fesRightOfResidenceDocumentRepository.findById(dto.getId()).orElse(entity);
         }
-        fesRightOfResidenceDocument.setIdentityDocumentGeneralId(rootEntity);
-        fesRightOfResidenceDocument.setStartStayDate(dto.getStartStayDate());
-        fesRightOfResidenceDocument.setEndStayDate(dto.getEndStayDate());
+        entity.setIdentityDocumentGeneralId(rootEntity);
+        entity.setStartStayDate(dto.getStartStayDate());
+        entity.setEndStayDate(dto.getEndStayDate());
 
-        return fesRightOfResidenceDocument;
+        return entity;
     }
 
     private FesAddress createOrUpdateFesAddress(FesAddressDto fesAddressDto, FesCategory fesCategory,
@@ -770,10 +703,13 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesAddress = fesAddressRepository.findById(fesAddressDto.getId()).orElse(fesAddress);
         }
         fesAddress.setCategoryId(fesCategory);
-        fesAddress.setAddressType(getBdById(fesAddressDto.getAddressTypeId()));
+        fesAddress.setAddressType(fesService.getBd(DICTIONARY_331, fesAddressDto.getAddressType() != null ?
+                fesAddressDto.getAddressType().getCode() : null));
         fesAddress.setPostal(fesAddressDto.getPostal());
-        fesAddress.setCountryCode(getBdById(fesAddressDto.getCountryCodeId()));
-        fesAddress.setOkato(getBdById(fesAddressDto.getOkatoId()));
+        fesAddress.setCountryCode(fesService.getBd(DICTIONARY_40, fesAddressDto.getCountryCode() != null ?
+                fesAddressDto.getCountryCode().getCode() : null));
+        fesAddress.setOkato(fesService.getBd(DICTIONARY_101, fesAddressDto.getOkato() != null ?
+                fesAddressDto.getOkato().getCode() : null));
         fesAddress.setDistrict(fesAddressDto.getDistrict());
         fesAddress.setTownship(fesAddressDto.getTownship());
         fesAddress.setStreet(fesAddressDto.getStreet());
@@ -788,32 +724,47 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         return fesAddress;
     }
 
-    private FesBankInformation createOrUpdateFesBankInformation(FesBankInformationDto fesBankInformationDto, FesCategory fesCategory) {
-        FesBankInformation fesBankInformation = new FesBankInformation();
-
-        if (fesBankInformationDto.getId() != null) {
-            fesBankInformation = fesBankInformationRepository.findById(fesBankInformationDto.getId()).orElse(fesBankInformation);
+    private FesBankInformation createOrUpdateFesBankInformation(FesBankInformationDto dto, FesCategory rootEntity) {
+        FesBankInformation entity = new FesBankInformation();
+        if (dto.getId() != null) {
+            entity = fesBankInformationRepository.findById(dto.getId()).orElse(entity);
         }
-
-        fesBankInformation.setCategoryId(fesCategory);
-        fesBankInformation.setReportingAttribute(fesBankInformationDto.getReportingAttribute() != null && fesBankInformationDto.getReportingAttribute());
-        fesBankInformation.setBankRegNum(fesBankInformationDto.getBankRegNum());
-        fesBankInformation.setBankBic(fesBankInformationDto.getBankBic());
-        fesBankInformation.setBankOcato(fesBankInformationDto.getBankOcato());
-
-        return fesBankInformation;
+        entity.setCategoryId(rootEntity);
+        entity.setReportingAttribute(dto.getReportingAttribute() != null && dto.getReportingAttribute());
+        entity.setBankRegNum(dto.getBankRegNum());
+        entity.setBankBic(dto.getBankBic());
+        entity.setBankOcato(dto.getBankOcato());
+        return entity;
     }
 
-    private FesBranchInformation createOrUpdateFesBranchInformation(FesBranchInformationDto fesBranchInformationDto, FesBankInformation fesBankInformation) {
-        FesBranchInformation fesBranchInformation = new FesBranchInformation();
-
-        if (fesBranchInformationDto.getId() != null) {
-            fesBranchInformation = fesBranchInformationRepository.findById(fesBranchInformationDto.getId()).orElse(fesBranchInformation);
+    private FesBranchInformation createOrUpdateFesBranchInformation(FesBranchInformationDto dto, FesBankInformation rootEntity) {
+        FesBranchInformation entity = new FesBranchInformation();
+        if (dto.getId() != null) {
+            entity = fesBranchInformationRepository.findById(dto.getId()).orElse(entity);
         }
-        fesBranchInformation.setBankInformationId(fesBankInformation);
-        fesBranchInformation.setBranchNum(fesBranchInformationDto.getBranchNum());
-        fesBranchInformation.setTransferringBranchNum(fesBranchInformationDto.getTransferringBranchNum());
+        entity.setBankInformationId(rootEntity);
+        entity.setBranchNum(dto.getBranchNum());
+        entity.setTransferringBranchNum(dto.getTransferringBranchNum());
+        return entity;
+    }
 
-        return fesBranchInformation;
+    private <DtoType, EntityType, ID> void removeUnnecessaryEntities(
+            List<DtoType> dtoList,
+            List<EntityType> existingList,
+            Function<DtoType, ID> getIdFromDto,
+            Function<EntityType, ID> getIdFromEntity,
+            JpaRepository<EntityType, ID> repository) {
+
+        Set<ID> dtoIds = dtoList.stream()
+                .map(getIdFromDto)
+                .collect(Collectors.toSet());
+
+        List<EntityType> toRemove = existingList.stream()
+                .filter(entity -> !dtoIds.contains(getIdFromEntity.apply(entity)))
+                .collect(Collectors.toList());
+
+        if (!toRemove.isEmpty()) {
+            repository.deleteAll(toRemove);
+        }
     }
 }

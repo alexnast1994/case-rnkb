@@ -5,11 +5,13 @@ import com.prime.db.rnkb.model.Address;
 import com.prime.db.rnkb.model.Client;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesParticipant;
-import com.prime.db.rnkb.repository.BaseDictionaryRepository;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
+
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_322;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_331;
 
 @Component
 @RequiredArgsConstructor
@@ -22,22 +24,21 @@ public class FesAutoSaveLegalDelegate implements JavaDelegate {
 
     private final FesService fesService;
 
-    private final BaseDictionaryRepository baseDictionaryRepository;
-
     @Override
     public void execute(DelegateExecution execution) throws Exception {
 
         var fesCategory = (FesCategory) execution.getVariable("fesCategory");
+        var rejectTypeCode = (String) execution.getVariable("rejectType");
         var client = (Client) execution.getVariable("client");
 
         Address clientAddressOfReg = fesService.findMainLegalAddress(client.getAddressList(), ADDRESS_OF_REG);
         Address clientAddressLocation = fesService.findMainLegalAddress(client.getAddressList(), ADDRESS_LOCATION);
 
-        var participantType = baseDictionaryRepository.getBaseDictionary("1", 322);
-        var addressOfRegType = baseDictionaryRepository.getBaseDictionary(FES_ADDRESS_OF_REG, 331);
-        var addressLocationType = baseDictionaryRepository.getBaseDictionary(FES_ADDRESS_LOCATION, 331);
+        var participantType = fesService.getBd(DICTIONARY_322, "1");
+        var addressOfRegType = fesService.getBd(DICTIONARY_331, FES_ADDRESS_OF_REG);
+        var addressLocationType = fesService.getBd(DICTIONARY_331, FES_ADDRESS_LOCATION);
 
-        FesParticipant fesParticipant = fesService.addParticipant(fesCategory, participantType, client.getIsResidentRus());
+        FesParticipant fesParticipant = fesService.addParticipant(fesCategory, participantType, client.getIsResidentRus(), rejectTypeCode);
 
         fesService.addParticipantLegal(fesParticipant, null, client);
 

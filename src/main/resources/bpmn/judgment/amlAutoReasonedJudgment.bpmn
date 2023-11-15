@@ -181,6 +181,7 @@ if (verificationDocument != null) {
                     rjVerificationdoc.type = baseDic
                     def localDateTime = verificationDocument.issueDate.atTime(0,0,0) as LocalDateTime
                     rjVerificationdoc.issuedate = localDateTime
+rjVerificationdoc.isMain = verificationDocument.isMain
                     }
 
                     return rjVerificationdoc
@@ -190,14 +191,11 @@ if (verificationDocument != null) {
         <bpmn:incoming>Flow_1s5kx7k</bpmn:incoming>
         <bpmn:outgoing>Flow_19akj7z</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.Client
-import com.prime.db.rnkb.model.ClientIndividual
-import com.prime.db.rnkb.model.ClientLegal
 import com.prime.db.rnkb.model.commucation.judgment.ReasonedJudgment
 import com.prime.db.rnkb.model.commucation.judgment.RjClient
-
 import java.sql.Timestamp
-import java.time.LocalDateTime
 import org.slf4j.LoggerFactory
+
 def log = LoggerFactory.getLogger(this.class)
 
 List&lt;Timestamp&gt; getDate(String inn) {
@@ -210,54 +208,30 @@ BigDecimal getShareCapital(String inn) {
 
 def rjClient = new RjClient()
 def reasonedJudgment = execution.getVariable("reasonedJudgmentOut") as ReasonedJudgment
-
 def client = execution.getVariable("clientBase") as Client
 
-def clientLegal = new ClientLegal()
-def clientIndividual = new ClientIndividual()
-
-def share = getShareCapital(client.inn)
-if(client.clientLegal!=null &amp;&amp; share == null ) {
-    println("Клиент - юл")
-    clientLegal = client.clientLegal
-    def sc = clientLegal.sharecapital != null ? clientLegal.sharecapital.longValue() : 0L
-    println("Клиент - юл " + sc)
-    rjClient.sharecapital = sc
-}
-else {
-    rjClient.sharecapital = share == null ? 0L : share.longValue()
-}
-
-if(client.clientIndividual!=null) {
-    println("Клиент - фл")
-    clientIndividual = client.clientIndividual
-}
 rjClient.rjId = reasonedJudgment
 rjClient.clientInn = client.inn
-
-if(client.clientOfBankFromDate!=null){
-    rjClient.clientOfBankFromDate = client.clientOfBankFromDate
-}
-
-if(clientIndividual.birthdate!=null){
-    rjClient.clientBirthdate = clientIndividual.birthdate
-}
-
-if(client.ogrnDate!=null){
-    rjClient.ogrndate = client.ogrnDate
-}
-
-rjClient.placeofbirth = clientIndividual.placeofbirth
+rjClient.numemployees = client.clientLegal?.numemployees
+rjClient.clientOfBankFromDate = client.clientOfBankFromDate
+rjClient.clientBirthdate = client.clientIndividual?.birthdate
+rjClient.ogrndate = client.ogrnDate
+rjClient.placeofbirth = client.clientIndividual?.placeofbirth
 rjClient.clientFullname = client.fullName
 rjClient.manager = client.manager
 rjClient.branch = client.exBranch
 rjClient.fnsSegment = client.fnsSegment
 rjClient.ogrn = client.ogrn
 rjClient.typeOfClient = client.clientType
-
 rjClient.client = client
 rjClient.exClientId = client.exClientId
-rjClient.untrueDate = !getDate(client.inn).isEmpty() &amp;&amp; getDate(client.inn) != null ? getDate(client.inn).get(0).toLocalDateTime() : null
+
+def share = getShareCapital(client.inn)
+rjClient.sharecapital = client.clientLegal ? (share?.longValue() ?: client.clientLegal.sharecapital?.longValue() ?: 0L) : share?.longValue()
+
+def dateList = getDate(client.inn)
+rjClient.untrueDate = !dateList?.isEmpty() ? dateList.get(0).toLocalDateTime() : null
+
 return rjClient</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:scriptTask id="Activity_1nxjv8d" name="RJ_CLIENTRE" scriptFormat="groovy" camunda:resultVariable="rjClientRe">
@@ -391,41 +365,35 @@ if (!execution.getVariable("nonCase") as Boolean) {
 
 }
 else {
-
     reasonedJudgment.typeOfControl = getTypeOfControl("3")
-
 }
 
 
 def typeRj = getTypeRj(execution.getVariable("typeRj"))
-
-reasonedJudgment.status = getStatus("1")
+reasonedJudgment.status = getStatus("5")
 Client client = execution.getVariable("clientBase")
 reasonedJudgment.clientId = client
 reasonedJudgment.jobStatus = getJobStatus("1")
 reasonedJudgment.typeRj = typeRj
 
 String conclusion = "По результатам проверки деятельности, анализа выписок и всех имеющихся у Банка документов и информации о Клиенте и его контрагентах"
+if (typeRj.code != "3") {
+    if (client.clientType.code == "3" || client.clientType.code == "5") {
+        if (typeRj.code == "1") {
+            conclusion = conclusion + " деятельность Клиента соответствует заявленным масштабам, признаки сомнительности отсутствуют. Операции Клиента осуществляются в рамках заявленной деятельности и соответствуют общепринятой рыночной практике."
+        } else if (typeRj.code == "2") {
+            conclusion = conclusion + " признать операции Клиента, указанные в прилагаемом списке, подозрительными и направить по ним сообщения в Уполномоченный орган в установленный законом срок."
+        }
+    } else if (client.clientType.code == "4") {
+        if (typeRj.code == "1") {
+            conclusion = conclusion + " признаки сомнительности отсутствуют."
+        } else if (typeRj.code == "2") {
+            conclusion = conclusion + " признать операции Клиента, указанные в прилагаемом списке, подозрительными и направить по ним сообщения в Уполномоченный орган в установленный законом срок."
+        }
+    }
 
-if (client.clientType.code == "3" || client.clientType.code == "5") {
-    if (typeRj.code == "1") {
-        conclusion = conclusion + " деятельность Клиента соответствует заявленным масштабам, признаки сомнительности отсутствуют. Операции Клиента осуществляются в рамках заявленной деятельности и соответствуют общепринятой рыночной практике."
-    }
-    else if (typeRj.code == "2") {
-        conclusion = conclusion + " признать операции Клиента, указанные в прилагаемом списке, подозрительными и направить по ним сообщения в Уполномоченный орган в установленный законом срок."
-    }
+    reasonedJudgment.conclusion = conclusion
 }
-else if (client.clientType.code == "4") {
-    if (typeRj.code == "1") {
-        conclusion = conclusion + " признаки сомнительности отсутствуют."
-    }
-    else if (typeRj.code == "2") {
-        conclusion = conclusion + " признать операции Клиента, указанные в прилагаемом списке, подозрительными и направить по ним сообщения в Уполномоченный орган в установленный законом срок."
-    }
-}
-
-reasonedJudgment.conclusion = conclusion
-
 try {
     def startDateLDT = LocalDateTime.parse(execution.getVariable("startDate")) as LocalDateTime
     reasonedJudgment.startDate = startDateLDT
@@ -441,8 +409,7 @@ try {
 }
 
 reasonedJudgment.developmentDate = LocalDateTime.now()
-return reasonedJudgment
-</bpmn:script>
+return reasonedJudgment</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:serviceTask id="Activity_10rgy42" name="SaveDelegate" camunda:delegateExpression="${saveObjectDelegate}">
         <bpmn:extensionElements>
@@ -844,6 +811,7 @@ if (clientAccounts != null &amp;&amp; clientAccounts.size() &gt; 0) {
         RjAccount rjAccount = new RjAccount()
         rjAccount.rjclient = execution.getVariable("rjClient") as RjClient
         rjAccount.accountcontracttype = clientAccount.accountcontracttype
+        rjAccount.accountcontractname = clientAccount.accountcontractname
         rjAccount.agreementnumber = clientAccount.agreementnumber
         rjAccount.accountnumber = clientAccount.accountnumber
         rjAccount.startdate = clientAccount.startdate

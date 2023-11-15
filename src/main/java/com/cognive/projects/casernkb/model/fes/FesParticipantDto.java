@@ -1,6 +1,7 @@
 package com.cognive.projects.casernkb.model.fes;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.prime.db.rnkb.model.BaseDictionary;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -14,11 +15,11 @@ import java.util.List;
 public class FesParticipantDto implements Serializable {
     Long id;
     Long categoryId;
-    Long participantCodeId;
-    Long participantStatusId;
-    Long participantTypeId;
-    Long participantResidentFeatureId;
-    Long participantFeatureId;
+    BaseDictionary participantCode;
+    BaseDictionary participantStatus;
+    BaseDictionary participantType;
+    BaseDictionary participantResidentFeature;
+    BaseDictionary participantFeature;
     Long participantFrommuUuid;
     List<FesParticipantIndividualDto> fesParticipantIndividuals;
     List<FesParticipantLegalDto> fesParticipantLegals;
