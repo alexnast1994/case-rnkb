@@ -496,7 +496,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         if (otherSectionsList == null || otherSectionsList.isEmpty()) {
             fesMainPageOtherSections.setCasesStatusId(fesCasesStatuses);
         }
-        fesMainPageOtherSections.setComment(fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().get(0).getComment());
+        fesMainPageOtherSections.setComment(fesCaseSaveDto.getFesCategory().getFesGeneralInformations().get(0).getComment());
         return fesMainPageOtherSections;
     }
 
