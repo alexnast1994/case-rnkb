@@ -27,7 +27,7 @@ Case caseData = new Case(
         creationdate: LocalDateTime.now(),
         caseType: getBd(18, isOfm ? "2" : "4"),
         author: user,
-        status: getBd(isOfm ? 104 : 140, "1"),
+        status: getBd(isOfm ? 130 : 140, "1"),
         caseStatus: getBd(isOfm ? 177 : 179, "1")
 )
 
