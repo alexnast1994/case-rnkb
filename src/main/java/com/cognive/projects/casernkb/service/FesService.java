@@ -7,11 +7,13 @@ import com.prime.db.rnkb.model.Case;
 import com.prime.db.rnkb.model.Client;
 import com.prime.db.rnkb.model.ClientIndividual;
 import com.prime.db.rnkb.model.ClientRelation;
+import com.prime.db.rnkb.model.Payment;
 import com.prime.db.rnkb.model.SysUser;
 import com.prime.db.rnkb.model.VerificationDocument;
 import com.prime.db.rnkb.model.fes.FesAddress;
 import com.prime.db.rnkb.model.fes.FesBeneficiary;
 import com.prime.db.rnkb.model.fes.FesCasesStatus;
+import com.prime.db.rnkb.model.fes.FesCashMoneyTransfers;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesEio;
 import com.prime.db.rnkb.model.fes.FesIdentityDocument;
@@ -537,4 +539,12 @@ public class FesService {
         return resultList;
     }
 
+    public void addFesCashMoneyTransfers(FesParticipant fesParticipant, Payment payment) {
+        FesCashMoneyTransfers fesCashMoneyTransfers = new FesCashMoneyTransfers();
+        fesCashMoneyTransfers.setParticipantId(fesParticipant);
+        fesCashMoneyTransfers.setBankBic(payment.getBankPayerId().getBic());
+        fesCashMoneyTransfers.setBankName(payment.getBankPayerId() != null ?
+                payment.getBankPayerId().getName():
+                null);
+    }
 }

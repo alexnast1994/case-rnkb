@@ -10,5 +10,6 @@ import java.io.Serializable;
 public class FesCaseAutoSaveDto implements Serializable {
 
     private long clientId;
+    private long caseId;
     private String rejectType;
 }
