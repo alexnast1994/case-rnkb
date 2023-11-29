@@ -136,10 +136,10 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     public void execute(DelegateExecution delegateExecution) throws Exception {
         var categoryId = (Long) delegateExecution.getVariable("fesCategoryId");
         var rejectTypeCode = (String) delegateExecution.getVariable("rejectTypeCode");
-        var fesCategoryCode = (String) delegateExecution.getVariable("fesCategoryCode");
 
         var fesCategory = fesCategoryRepository.findById(categoryId).get();
         var fesCaseSaveDto = (FesCaseSaveDto) delegateExecution.getVariable("fesCaseSaveDto");
+        var fesCategoryCode = fesCaseSaveDto.getFesCategory().getCategory().getCode();
         var recordType = fesService.getBd(DICTIONARY_86, "1");
 
         if (!fesCaseSaveDto.getFesCategory().getFesServiceInformations().isEmpty()) {
