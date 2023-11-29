@@ -37,4 +37,10 @@ public class FesConstants {
     public static final Integer DICTIONARY_346 = 346;
     public static final Integer DICTIONARY_347 = 347;
     public static final Integer DICTIONARY_348 = 348;
+
+    public static final String NAME = "ФЭС";
+    public static final String SUBNAME_FREEZING = "Заморозка";
+    public static final String SUBNAME_CONTRACT_REJECTION = "Отказ от заключения договора";
+    public static final String SUBNAME_CANCEL_CONTRACT = "Расторжение договора";
+    public static final String SUBNAME_OPERATION_REJECTION = "Отказ в совершении операции";
 }

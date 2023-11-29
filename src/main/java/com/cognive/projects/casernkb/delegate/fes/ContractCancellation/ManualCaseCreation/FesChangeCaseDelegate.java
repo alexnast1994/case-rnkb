@@ -128,6 +128,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     public void execute(DelegateExecution delegateExecution) throws Exception {
         var categoryId = (Long) delegateExecution.getVariable("fesCategoryId");
         var rejectTypeCode = (String) delegateExecution.getVariable("rejectTypeCode");
+        var fesCategoryCode = (String) delegateExecution.getVariable("fesCategoryCode");
 
         var fesCategory = fesCategoryRepository.findById(categoryId).get();
         var fesCaseSaveDto = (FesCaseSaveDto) delegateExecution.getVariable("fesCaseSaveDto");
@@ -139,8 +140,10 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             if (fesCategory.getFesServiceInformations() == null || fesCategory.getFesServiceInformations().isEmpty()) {
                 fesServiceInformation = new FesServiceInformation();
                 fesServiceInformation.setCategoryId(fesCategory);
-                if (rejectTypeCode.equals("2") || rejectTypeCode.equals("3")) {
+                if (fesCategoryCode.equals("4") && (rejectTypeCode.equals("2") || rejectTypeCode.equals("3"))) {
                     fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "01"));
+                } else if (fesCategoryCode.equals("2")) {
+                    fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "3"));
                 }
             } else {
                 fesServiceInformation = fesCategory.getFesServiceInformations().get(0);

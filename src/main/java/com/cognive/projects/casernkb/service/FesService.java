@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.service;
 
+import com.cognive.projects.casernkb.constant.FesConstants;
 import com.cognive.projects.casernkb.model.fes.FesCaseSaveDto;
 import com.prime.db.rnkb.model.Address;
 import com.prime.db.rnkb.model.BaseDictionary;
@@ -62,10 +63,17 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_14;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_18;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_305;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_309;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_323;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_325;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_331;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_38;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_CONTRACT_REJECTION;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_FREEZING;
 
 @Service
 @RequiredArgsConstructor
@@ -87,8 +95,6 @@ public class FesService {
     private static final String FOREIGN = "Foreign";
     private static final String INDIVIDUAL = "Individual";
     private static final String WRONG_CLIENT_TYPE = "0";
-    private static final String NAME = "ФЭС";
-    private static final String SUBNAME = "Отказ от заключения договора (расторжение)";
     private static final String UNKNOWN_RESIDENCE_STATUS = "9";
     private static final String RESIDENT = "1";
     private static final String NON_RESIDENT = "0";
@@ -501,8 +507,8 @@ public class FesService {
     @NotNull
     private Case createCase(BaseDictionary caseType, BaseDictionary caseCategory, BaseDictionary caseObjectType, BaseDictionary caseStatus, SysUser responsibleUser, BaseDictionary caseCondition) {
         Case aCase = new Case();
-        aCase.setName(NAME);
-        aCase.setSubname(SUBNAME);
+        aCase.setName(FesConstants.NAME);
+        aCase.setSubname(getSubname(caseCategory));
         aCase.setCaseType(caseType);
         aCase.setCaseObjectType(caseObjectType);
         aCase.setStatus(caseStatus);
@@ -512,6 +518,10 @@ public class FesService {
         aCase.setCaseObjectSubType(caseCategory);
         aCase = caseRepository.save(aCase);
         return aCase;
+    }
+
+    private String getSubname(BaseDictionary caseCategory) {
+        return caseCategory.getCode().equals("2") ? SUBNAME_FREEZING : SUBNAME_CONTRACT_REJECTION;
     }
 
     public <T, D> void deleteMissingItems(List<D> dtoList, List<T> existingList, JpaRepository<T, Long> repository, Function<D, Long> idExtractorDto, Function<T, Long> idExtractor) {
@@ -546,5 +556,35 @@ public class FesService {
         fesCashMoneyTransfers.setBankName(payment.getBankPayerId() != null ?
                 payment.getBankPayerId().getName():
                 null);
+    }
+
+    public BaseDictionary getCaseObjectType(String fesCategoryCode, String rejectTypeCode) {
+        return Objects.equals(fesCategoryCode, "2") ||
+                Objects.equals(rejectTypeCode, "2") ||
+                Objects.equals(rejectTypeCode, "3") ?
+                getBd(DICTIONARY_14, "1") :
+                getBd(DICTIONARY_14, "2");
+    }
+
+    public BaseDictionary getCaseStatus() {
+        return getBd(DICTIONARY_38, "2");
+    }
+
+    public BaseDictionary getCaseType(String fesCategoryCode) {
+        if (Objects.equals(fesCategoryCode, "1")) {
+            return getBd(DICTIONARY_18, "9");
+        }
+        if (Objects.equals(fesCategoryCode, "2")) {
+            return getBd(DICTIONARY_18, "10");
+        }
+        return getBd(DICTIONARY_18, "12");
+    }
+
+    public BaseDictionary getCaseCategory(String fesCategoryCode) {
+       return getBd(DICTIONARY_309, fesCategoryCode);
+    }
+
+    public BaseDictionary getCaseCondition() {
+        return getBd(DICTIONARY_305, "2");
     }
 }
