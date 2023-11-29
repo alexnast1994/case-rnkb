@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,8 +40,14 @@ public class DocServiceImpl implements DocService {
     @Override
     public DocxRequestData prepareDocDto(ZkCreate zkCreate) {
         var client = clientRepository.findById(zkCreate.getClient()).orElseThrow();
-        var request = new Request();
-        request = requestsRepository.save(request);
+        Request request;
+        if (zkCreate.getRequestId() != null) {
+            request = requestsRepository.findById(zkCreate.getRequestId())
+                    .orElseThrow(() -> new NoSuchElementException("No Request found for id: " + zkCreate.getRequestId()));
+        } else {
+            request = new Request();
+            request = requestsRepository.save(request);
+        }
         var id = request.getId();
         var date = LocalDateTime.now();
         var legalName = client.getFullName();
