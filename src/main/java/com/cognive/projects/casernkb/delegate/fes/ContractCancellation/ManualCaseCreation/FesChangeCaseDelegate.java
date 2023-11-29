@@ -6,6 +6,7 @@ import com.cognive.projects.casernkb.model.fes.FesBeneficiaryDto;
 import com.cognive.projects.casernkb.model.fes.FesBranchInformationDto;
 import com.cognive.projects.casernkb.model.fes.FesCaseSaveDto;
 import com.cognive.projects.casernkb.model.fes.FesEioDto;
+import com.cognive.projects.casernkb.model.fes.FesFreezingAppliedMeasuresDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentGeneralDto;
 import com.cognive.projects.casernkb.model.fes.FesParticipantDto;
@@ -26,6 +27,7 @@ import com.prime.db.rnkb.model.fes.FesBranchInformation;
 import com.prime.db.rnkb.model.fes.FesCasesStatus;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesEio;
+import com.prime.db.rnkb.model.fes.FesFreezingAppliedMeasures;
 import com.prime.db.rnkb.model.fes.FesGeneralInformation;
 import com.prime.db.rnkb.model.fes.FesIdentityDocument;
 import com.prime.db.rnkb.model.fes.FesIdentityDocumentGeneral;
@@ -45,6 +47,7 @@ import com.prime.db.rnkb.repository.fes.FesBeneficiaryRepository;
 import com.prime.db.rnkb.repository.fes.FesBranchInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
 import com.prime.db.rnkb.repository.fes.FesEioRepository;
+import com.prime.db.rnkb.repository.fes.FesFreezingAppliedMeasuresRepository;
 import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentGeneralRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentRepository;
@@ -73,8 +76,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_101;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_26;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_307;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_312;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_314;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_315;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_316;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_317;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_318;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_320;
@@ -123,6 +130,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     private final FesMainPageOtherSectionsRepository fesMainPageOtherSectionsRepository;
     private final FesParticipantForeignRepository fesParticipantForeignRepository;
     private final FesParticipantForeignIdentifierRepository fesParticipantForeignIdentifierRepository;
+    private final FesFreezingAppliedMeasuresRepository fesFreezingAppliedMeasuresRepository;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
@@ -167,6 +175,12 @@ public class FesChangeCaseDelegate implements JavaDelegate {
 
         FesGeneralInformation fesGeneralInformation = getFesGeneralInformation(fesCategory, recordType, fesCaseSaveDto);
         fesGeneralInformationRepository.save(fesGeneralInformation);
+
+        if (fesCategoryCode.equals("2")) {
+            FesFreezingAppliedMeasuresDto fesFreezingAppliedMeasuresDto = fesCaseSaveDto.getFesCategory().getFesFreezingAppliedMeasures().get(0);
+            FesFreezingAppliedMeasures fesFreezingAppliedMeasures = getFesFreezingAppliedMeasures(fesCategory, fesFreezingAppliedMeasuresDto);
+            fesFreezingAppliedMeasuresRepository.save(fesFreezingAppliedMeasures);
+        }
 
         List<FesBankInformationDto> fesBankInformationDtoList = fesCaseSaveDto.getFesCategory().getFesBankInformations();
         if (fesBankInformationDtoList != null && !fesBankInformationDtoList.isEmpty()) {
@@ -215,15 +229,6 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesRefusalCaseDetails.setRemovalReason(fesRefusalCaseDetailsDto.getRemovalReason());
             fesRefusalCaseDetailsRepository.save(fesRefusalCaseDetails);
         }
-
-//        List<FesRefusalCaseDetailsDto> fesRefusalCaseDetailsDtoList = fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails();
-//        List<FesRefusalCaseDetails> existingFesRefusalCaseDetails = fesRefusalCaseDetailsRepository.findByCategoryId(fesCategory);
-//        if (fesRefusalCaseDetailsDtoList != null && !fesRefusalCaseDetailsDtoList.isEmpty()) {
-//            fesService.deleteMissingItems(fesRefusalCaseDetailsDtoList, existingFesRefusalCaseDetails, fesRefusalCaseDetailsRepository, FesRefusalCaseDetailsDto::getId, FesRefusalCaseDetails::getId);
-//            fesService.createAndSaveAllItems(fesRefusalCaseDetailsDtoList, dto -> createOrUpdateFesRefusalCaseDetails(dto, fesCategory), fesRefusalCaseDetailsRepository, fesCategory);
-//        } else {
-//            fesRefusalCaseDetailsRepository.deleteAll(existingFesRefusalCaseDetails);
-//        }
 
         FesMainPageOtherSections fesMainPageOtherSections = getFesMainPageOtherSections(fesCategory, fesCaseSaveDto);
         fesMainPageOtherSectionsRepository.save(fesMainPageOtherSections);
@@ -458,6 +463,31 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         if (fesCategory.getCaseId() != null) {
             delegateExecution.setVariable("caseId", fesCategory.getCaseId().getId());
         }
+    }
+
+    private FesFreezingAppliedMeasures getFesFreezingAppliedMeasures(FesCategory fesCategory, FesFreezingAppliedMeasuresDto dto) {
+        FesFreezingAppliedMeasures fesFreezingAppliedMeasures;
+
+        if (fesCategory.getFesFreezingAppliedMeasures() == null || fesCategory.getFesFreezingAppliedMeasures().isEmpty()) {
+            fesFreezingAppliedMeasures = new FesFreezingAppliedMeasures();
+            fesFreezingAppliedMeasures.setCategoryId(fesCategory);
+        } else {
+            fesFreezingAppliedMeasures = fesCategory.getFesFreezingAppliedMeasures().get(0);
+        }
+        fesFreezingAppliedMeasures.setReasonType(fesService.getBd(DICTIONARY_316, getCode(dto.getReasonType())));
+        fesFreezingAppliedMeasures.setPersonCode(dto.getPersonCode());
+        fesFreezingAppliedMeasures.setFreezingDate(dto.getFreezingDate());
+        fesFreezingAppliedMeasures.setFreezingTime(dto.getFreezingTime());
+        fesFreezingAppliedMeasures.setFreezingMoneyType(fesService.getBd(DICTIONARY_314, getCode(dto.getFreezingMoneyType())));
+        fesFreezingAppliedMeasures.setAccountNum(dto.getAccountNum());
+        fesFreezingAppliedMeasures.setCurrency(fesService.getBd(DICTIONARY_26, getCode(dto.getCurrency())));
+        fesFreezingAppliedMeasures.setAccountAmount(dto.getAccountAmount());
+        fesFreezingAppliedMeasures.setAccountAmountNationalCurrency(dto.getAccountAmountNationalCurrency());
+        fesFreezingAppliedMeasures.setSecuritiesType(fesService.getBd(DICTIONARY_315, getCode(dto.getSecuritiesType())));
+        fesFreezingAppliedMeasures.setSecuritiesNominalPrice(dto.getSecuritiesNominalPrice());
+        fesFreezingAppliedMeasures.setSecuritiesMarketPrice(dto.getSecuritiesMarketPrice());
+
+        return fesFreezingAppliedMeasures;
     }
 
     private void fesDocumentsProcessing(List<FesParticipantIndividual> fesParticipantIndividuals, FesParticipantIndividualDto fesParticipantIndividualDto, FesParticipantIndividual fesParticipantIndividual) {
@@ -846,5 +876,9 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         if (!toRemove.isEmpty()) {
             repository.deleteAll(toRemove);
         }
+    }
+
+    private String getCode(BaseDictionary baseDictionary) {
+        return (baseDictionary != null) ? baseDictionary.getCode() : null;
     }
 }
