@@ -87,7 +87,7 @@ execution.setVariable("typeRj", typeRj)</bpmn:script>
           </camunda:inputOutput>
         </bpmn:extensionElements>
         <bpmn:incoming>Flow_1drg82v</bpmn:incoming>
-        <bpmn:outgoing>Flow_01wrt3k</bpmn:outgoing>
+        <bpmn:outgoing>Flow_009pexq</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:scriptTask id="Activity_0clav10" name="RJ_CLIENTLICENSE" scriptFormat="groovy" camunda:resultVariable="rjLicense">
         <bpmn:incoming>Flow_1jjw6br</bpmn:incoming>
@@ -235,7 +235,7 @@ rjClient.untrueDate = !dateList?.isEmpty() ? dateList.get(0).toLocalDateTime() :
 return rjClient</bpmn:script>
       </bpmn:scriptTask>
       <bpmn:scriptTask id="Activity_1nxjv8d" name="RJ_CLIENTRE" scriptFormat="groovy" camunda:resultVariable="rjClientRe">
-        <bpmn:incoming>Flow_01wrt3k</bpmn:incoming>
+        <bpmn:incoming>Flow_0qvtki5</bpmn:incoming>
         <bpmn:outgoing>Flow_06xamdo</bpmn:outgoing>
         <bpmn:script>import com.prime.db.rnkb.model.BaseDictionary
                     import com.prime.db.rnkb.model.Client
@@ -254,7 +254,7 @@ if(client.clientIndividual!=null){
     clientIndividual=client.clientIndividual
     rjClientRe.birthDate = clientIndividual.birthdate
 }
-def clientRelation = execution.getVariable("clientRelationBase") as ClientRelation
+def clientRelation = execution.getVariable("clientRelationBaseTo") as ClientRelation
 
 
 rjClientRe.rjclient = rjClient
@@ -611,7 +611,6 @@ return rjRbs1</bpmn:script>
         <bpmn:incoming>Flow_1ro8nc8</bpmn:incoming>
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_1drg82v" sourceRef="Activity_05xstuy" targetRef="Activity_0gfu4n2" />
-      <bpmn:sequenceFlow id="Flow_01wrt3k" sourceRef="Activity_0gfu4n2" targetRef="Activity_1nxjv8d" />
       <bpmn:sequenceFlow id="Flow_1jjw6br" sourceRef="Activity_1nzkgv3" targetRef="Activity_0clav10" />
       <bpmn:sequenceFlow id="Flow_0e7mx8m" sourceRef="Activity_1n2yjps" targetRef="Activity_1nzkgv3" />
       <bpmn:sequenceFlow id="Flow_0d951ar" sourceRef="Activity_0tj94ac" targetRef="Activity_18jvan9" />
@@ -1904,6 +1903,23 @@ execution.setVariable("rjRecommendations", rjRecommendations)</bpmn:script>
         <bpmn:outgoing>Flow_183kxyb</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:sequenceFlow id="Flow_183kxyb" sourceRef="Activity_0fb2oxw" targetRef="Activity_17o0dxi" />
+      <bpmn:serviceTask id="Activity_0n8tv2o" name="Select CLientRelationTo from base" camunda:delegateExpression="${selectOneDelegate}">
+        <bpmn:extensionElements>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="outputVarName">clientRelationBaseTo</camunda:inputParameter>
+            <camunda:inputParameter name="parameters">
+              <camunda:map>
+                <camunda:entry key="clientBase">${clientBase}</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="selectQuery">SELECT c FROM ClientRelation c WHERE c.toClientId =:clientBase</camunda:inputParameter>
+          </camunda:inputOutput>
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_009pexq</bpmn:incoming>
+        <bpmn:outgoing>Flow_0qvtki5</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:sequenceFlow id="Flow_009pexq" sourceRef="Activity_0gfu4n2" targetRef="Activity_0n8tv2o" />
+      <bpmn:sequenceFlow id="Flow_0qvtki5" sourceRef="Activity_0n8tv2o" targetRef="Activity_1nxjv8d" />
     </bpmn:subProcess>
     <bpmn:sequenceFlow id="Flow_0afcxcw" sourceRef="Activity_payload" targetRef="Activity_0xhr3ji" />
     <bpmn:sequenceFlow id="Flow_14efkmw" sourceRef="Activity_1508q2q" targetRef="Activity_0dsygxy" />
@@ -2263,13 +2279,13 @@ execution.setVariable("rjRecommendations", rjRecommendations)</bpmn:script>
       <bpmndi:BPMNShape id="Activity_030a0tx_di" bpmnElement="Activity_0fb2oxw">
         <dc:Bounds x="5060" y="300" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0n8tv2o_di" bpmnElement="Activity_0n8tv2o">
+        <dc:Bounds x="2730" y="400" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="BPMNEdge_000634j" bpmnElement="Flow_1drg82v">
         <di:waypoint x="2710" y="340" />
         <di:waypoint x="2730" y="340" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_0ux2d46" bpmnElement="Flow_01wrt3k">
-        <di:waypoint x="2830" y="340" />
-        <di:waypoint x="2850" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_0tzwee0" bpmnElement="Flow_1jjw6br">
         <di:waypoint x="3200" y="340" />
@@ -2744,6 +2760,16 @@ execution.setVariable("rjRecommendations", rjRecommendations)</bpmn:script>
       <bpmndi:BPMNEdge id="Flow_183kxyb_di" bpmnElement="Flow_183kxyb">
         <di:waypoint x="5160" y="340" />
         <di:waypoint x="5180" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_009pexq_di" bpmnElement="Flow_009pexq">
+        <di:waypoint x="2780" y="380" />
+        <di:waypoint x="2780" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qvtki5_di" bpmnElement="Flow_0qvtki5">
+        <di:waypoint x="2830" y="440" />
+        <di:waypoint x="2840" y="440" />
+        <di:waypoint x="2840" y="370" />
+        <di:waypoint x="2850" y="370" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Activity_1judvsr_di" bpmnElement="Activity_0xhr3ji">
         <dc:Bounds x="670" y="230" width="100" height="80" />
