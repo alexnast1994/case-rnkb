@@ -9,6 +9,8 @@ import com.cognive.projects.casernkb.model.fes.FesEioDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentGeneralDto;
 import com.cognive.projects.casernkb.model.fes.FesParticipantDto;
+import com.cognive.projects.casernkb.model.fes.FesParticipantForeignDto;
+import com.cognive.projects.casernkb.model.fes.FesParticipantForeignIdentifierDto;
 import com.cognive.projects.casernkb.model.fes.FesParticipantIndividualDto;
 import com.cognive.projects.casernkb.model.fes.FesParticipantLegalDto;
 import com.cognive.projects.casernkb.model.fes.FesRefusalCaseDetailsDto;
@@ -29,6 +31,8 @@ import com.prime.db.rnkb.model.fes.FesIdentityDocument;
 import com.prime.db.rnkb.model.fes.FesIdentityDocumentGeneral;
 import com.prime.db.rnkb.model.fes.FesMainPageOtherSections;
 import com.prime.db.rnkb.model.fes.FesParticipant;
+import com.prime.db.rnkb.model.fes.FesParticipantForeign;
+import com.prime.db.rnkb.model.fes.FesParticipantForeignIdentifier;
 import com.prime.db.rnkb.model.fes.FesParticipantIndividual;
 import com.prime.db.rnkb.model.fes.FesParticipantLegal;
 import com.prime.db.rnkb.model.fes.FesRefusalCaseDetails;
@@ -45,6 +49,8 @@ import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentGeneralRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageOtherSectionsRepository;
+import com.prime.db.rnkb.repository.fes.FesParticipantForeignIdentifierRepository;
+import com.prime.db.rnkb.repository.fes.FesParticipantForeignRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantIndividualRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantLegalRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantRepository;
@@ -86,6 +92,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_331
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_338;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_342;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_343;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_346;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_347;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_348;
@@ -114,6 +121,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     private final FesBeneficiaryRepository fesBeneficiaryRepository;
     private final FesService fesService;
     private final FesMainPageOtherSectionsRepository fesMainPageOtherSectionsRepository;
+    private final FesParticipantForeignRepository fesParticipantForeignRepository;
+    private final FesParticipantForeignIdentifierRepository fesParticipantForeignIdentifierRepository;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
@@ -387,6 +396,46 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                     fesParticipant.setFesParticipantLegals(fesParticipantLegals);
                 }
 
+                List<FesParticipantForeignDto> fesParticipantForeignDtoList = fesParticipantDto.getFesParticipantForeigns();
+                List<FesParticipantForeign> existingFesParticipantForeigns = fesParticipant.getId() > 0 ?
+                        fesParticipantForeignRepository.findByParticipantId(fesParticipant) : new ArrayList<>();
+                if (fesParticipantForeignDtoList != null && !fesParticipantForeignDtoList.isEmpty()) {
+                    removeUnnecessaryEntities(
+                            fesParticipantForeignDtoList,
+                            existingFesParticipantForeigns,
+                            FesParticipantForeignDto::getId,
+                            FesParticipantForeign::getId,
+                            fesParticipantForeignRepository
+                    );
+                    List<FesParticipantForeign> fesParticipantForeigns = new ArrayList<>();
+                    for (FesParticipantForeignDto fesParticipantForeignDto : fesParticipantForeignDtoList) {
+                        FesParticipantForeign fesParticipantForeign = createOrUpdateFesParticipantForeign(fesParticipantForeignDto, fesParticipant);
+
+                        List<FesParticipantForeignIdentifierDto> fesParticipantForeignIdentifierDtoList = fesParticipantForeignDto.getFesParticipantForeignIdentifiers();
+                        List<FesParticipantForeignIdentifier> existingFesParticipantForeignIdentifiers = fesParticipantForeign.getId() > 0 ?
+                                fesParticipantForeignIdentifierRepository.findByParticipantForeignId(fesParticipantForeign) : new ArrayList<>();
+                        if (fesParticipantForeignIdentifierDtoList != null && !fesParticipantForeignIdentifierDtoList.isEmpty()) {
+                            removeUnnecessaryEntities(
+                                    fesParticipantForeignIdentifierDtoList,
+                                    existingFesParticipantForeignIdentifiers,
+                                    FesParticipantForeignIdentifierDto::getId,
+                                    FesParticipantForeignIdentifier::getId,
+                                    fesParticipantForeignIdentifierRepository
+                            );
+                            List<FesParticipantForeignIdentifier> fesParticipantForeignIdentifiers = new ArrayList<>();
+                            for (FesParticipantForeignIdentifierDto fesParticipantForeignIdentifierDto : fesParticipantForeignIdentifierDtoList) {
+                                FesParticipantForeignIdentifier fesParticipantForeignIdentifier = createOrUpdateFesParticipantForeignIdentifier(fesParticipantForeignIdentifierDto, fesParticipantForeign);
+                                fesParticipantForeignIdentifiers.add(fesParticipantForeignIdentifier);
+                            }
+                            fesParticipantForeignIdentifierRepository.saveAll(fesParticipantForeignIdentifiers);
+                            fesParticipantForeign.setFesParticipantForeignIdentifiers(fesParticipantForeignIdentifiers);
+                        }
+                        fesParticipantForeigns.add(fesParticipantForeign);
+                    }
+                    fesParticipantForeignRepository.saveAll(fesParticipantForeigns);
+                    fesParticipant.setFesParticipantForeigns(fesParticipantForeigns);
+                }
+
                 List<FesAddressDto> fesAddressDtoList = fesParticipantDto.getFesAddresses();
                 List<FesAddress> existingFesAddresses = fesParticipant.getId() > 0 ?
                         fesAddressRepository.findByParticipantId(fesParticipant) : new ArrayList<>();
@@ -592,6 +641,33 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         fesParticipantLegal.setOgrn(fesParticipantLegalDto.getOgrn());
         fesParticipantLegal.setRegistrationDate(fesParticipantLegalDto.getRegistrationDate());
         return fesParticipantLegal;
+    }
+
+    private FesParticipantForeign createOrUpdateFesParticipantForeign(FesParticipantForeignDto fesParticipantForeignDto, FesParticipant fesParticipant) {
+        FesParticipantForeign fesParticipantForeign = new FesParticipantForeign();
+        if (fesParticipantForeignDto.getId() != null) {
+            fesParticipantForeign = fesParticipantForeignRepository.findById(fesParticipantForeignDto.getId()).orElse(fesParticipantForeign);
+        }
+        fesParticipantForeign.setParticipantId(fesParticipant);
+        fesParticipantForeign.setParticipantForeignName(fesParticipantForeignDto.getParticipantForeignName());
+        fesParticipantForeign.setOrgFormFeature(fesService.getBd(DICTIONARY_343, fesParticipantForeignDto.getOrgFormFeature() != null ?
+                fesParticipantForeignDto.getOrgFormFeature().getCode() : null));
+        fesParticipantForeign.setFounderLastname(fesParticipantForeignDto.getFounderLastname());
+        fesParticipantForeign.setFounderFirstname(fesParticipantForeignDto.getFounderFirstname());
+        fesParticipantForeign.setFounderMiddlename(fesParticipantForeignDto.getFounderMiddlename());
+        fesParticipantForeign.setFounderFullName(fesParticipantForeignDto.getFounderFullName());
+        return fesParticipantForeign;
+    }
+
+    private FesParticipantForeignIdentifier createOrUpdateFesParticipantForeignIdentifier(FesParticipantForeignIdentifierDto fesParticipantForeignIdentifierDto, FesParticipantForeign fesParticipantForeign) {
+        FesParticipantForeignIdentifier fesParticipantForeignIdentifier = new FesParticipantForeignIdentifier();
+        if (fesParticipantForeignIdentifierDto.getId() != null) {
+            fesParticipantForeignIdentifier = fesParticipantForeignIdentifierRepository.findById(fesParticipantForeignIdentifierDto.getId()).orElse(fesParticipantForeignIdentifier);
+        }
+        fesParticipantForeignIdentifier.setParticipantForeignId(fesParticipantForeign);
+        fesParticipantForeignIdentifier.setForeignNum(fesParticipantForeignIdentifierDto.getForeignNum());
+        fesParticipantForeignIdentifier.setForeignCode(fesParticipantForeignIdentifierDto.getForeignCode());
+        return fesParticipantForeignIdentifier;
     }
 
     private FesParticipantIndividual createOrUpdateFesParticipantIndividual(FesParticipantIndividualDto fesParticipantIndividualDto, FesParticipant fesParticipant, FesBeneficiary fesBeneficiary, FesEio fesEio) {
