@@ -48,6 +48,10 @@ public class FesCasePrepareDataDelegate implements JavaDelegate {
             Payment payment = aCase.getCaseOperationList().get(0).getPaymentId();
             client = payment.getPayerClientId();
             execution.setVariable("payment", payment);
+            execution.setVariable("baseRejectCode", fesCaseAutoSaveDto.getBaseRejectCode());
+            execution.setVariable("causeReject", fesCaseAutoSaveDto.getCauseReject());
+            execution.setVariable("codeUnusualOp", fesCaseAutoSaveDto.getCodeUnusualOp());
+            execution.setVariable("conclusion", fesCaseAutoSaveDto.getConclusion());
         } else {
             var clientId = fesCaseAutoSaveDto.getClientId();
             client = clientRepository.findById(clientId).orElseThrow();

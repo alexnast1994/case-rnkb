@@ -1,6 +1,7 @@
 package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.AutoCaseCreation;
 
 import com.cognive.projects.casernkb.service.FesService;
+import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
 import com.prime.db.rnkb.model.CaseRules;
 import com.prime.db.rnkb.model.Payment;
@@ -10,6 +11,7 @@ import com.prime.db.rnkb.model.fes.FesDataPrefill;
 import com.prime.db.rnkb.model.fes.FesGeneralInformation;
 import com.prime.db.rnkb.model.fes.FesOperationInformation;
 import com.prime.db.rnkb.model.fes.FesRefusalCaseDetails;
+import com.prime.db.rnkb.model.fes.FesRefusalReason;
 import com.prime.db.rnkb.model.fes.FesServiceInformation;
 import com.prime.db.rnkb.model.fes.FesSuspiciousActivityIdentifier;
 import com.prime.db.rnkb.model.fes.FesUnusualOperationFeature;
@@ -18,6 +20,7 @@ import com.prime.db.rnkb.repository.fes.FesDataPrefillRepository;
 import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesOperationInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesRefusalCaseDetailsRepository;
+import com.prime.db.rnkb.repository.fes.FesRefusalReasonRepository;
 import com.prime.db.rnkb.repository.fes.FesServiceInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesSuspiciousActivityIdentifierRepository;
 import com.prime.db.rnkb.repository.fes.FesUnusualOperationFeatureRepository;
@@ -36,8 +39,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_307;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_310;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_312;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_318;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_320;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_86;
 
 @Component
@@ -53,12 +58,14 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
     private final FesSuspiciousActivityIdentifierRepository fesSuspiciousActivityIdentifierRepository;
     private final FesUnusualOperationFeatureRepository fesUnusualOperationFeatureRepository;
     private final FesService fesService;
+    private final FesRefusalReasonRepository fesRefusalReasonRepository;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
 
         var fesCategory = (FesCategory) execution.getVariable("fesCategory");
         var rejectTypeCode = (String) execution.getVariable("rejectType");
+        var baseRejectCode = (String) execution.getVariable("baseRejectCode");
         var aCase = (Case) execution.getVariable("case");
         var isOperationRejection = (boolean) execution.getVariable("isOperationRejection");
 
@@ -92,12 +99,17 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
         FesGeneralInformation fesGeneralInformation = new FesGeneralInformation();
         fesGeneralInformation.setCategoryId(fesCategory);
         fesGeneralInformation.setRecordType(recordType);
+        if (isOperationRejection) {
+            fesGeneralInformation.setComment((String) execution.getVariable("conclusion"));
+        }
         fesGeneralInformationRepository.save(fesGeneralInformation);
 
         FesRefusalCaseDetails fesRefusalCaseDetails = new FesRefusalCaseDetails();
         fesRefusalCaseDetails.setCategoryId(fesCategory);
         fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
-        fesRefusalCaseDetails.setGroundOfRefusal(groundOfRefusal);
+        fesRefusalCaseDetails.setGroundOfRefusal(isOperationRejection ?
+                fesService.getBd(DICTIONARY_318, baseRejectCode):
+                groundOfRefusal);
         fesRefusalCaseDetails.setRejectType(rejectType);
         fesRefusalCaseDetailsRepository.save(fesRefusalCaseDetails);
 
@@ -122,22 +134,43 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
             fesSuspiciousActivityIdentifier.setSuspiciousActivityIdentifier("TO-DO");
             fesSuspiciousActivityIdentifierRepository.save(fesSuspiciousActivityIdentifier);
 
-            List<FesUnusualOperationFeature> fesUnusualOperationFeatureList = payment.getCaseOperationList().stream()
-                    .map(caseOperation -> caseOperation.getCaseId().getCaseRules())
-                    .flatMap(List::stream)
-                    .filter(distinctByKey(CaseRules::getCode))
-                    .map(caseRule -> getFesUnusualOperationFeature(caseRule, fesCategory))
-                    .collect(Collectors.toList());
-            fesUnusualOperationFeatureRepository.saveAll(fesUnusualOperationFeatureList);
+            List<String> codeUnusualOpList = (List<String>) execution.getVariable("codeUnusualOp");
+            List<FesUnusualOperationFeature> unusualOperationFeatures =
+                    (codeUnusualOpList != null && !codeUnusualOpList.isEmpty()) ?
+                            codeUnusualOpList.stream()
+                                    .map(code -> getFesUnusualOperationFeature(fesService.getBd(DICTIONARY_310, code), fesCategory))
+                                    .collect(Collectors.toList()) :
+                            payment.getCaseOperationList().stream()
+                                    .map(caseOperation -> caseOperation.getCaseId().getCaseRules())
+                                    .flatMap(List::stream)
+                                    .filter(distinctByKey(CaseRules::getCode))
+                                    .map(caseRule -> getFesUnusualOperationFeature(caseRule.getCode(), fesCategory))
+                                    .collect(Collectors.toList());
+            fesUnusualOperationFeatureRepository.saveAll(unusualOperationFeatures);
+
+            List<String> causeRejectList = (List<String>) execution.getVariable("causeReject");
+            if (causeRejectList != null && !causeRejectList.isEmpty()) {
+                List<FesRefusalReason> fesRefusalReasons = causeRejectList.stream()
+                        .map(s -> addFesRefusalReason(s, fesCategory)).collect(Collectors.toList());
+                fesRefusalReasonRepository.saveAll(fesRefusalReasons);
+            }
+
         }
 
         execution.setVariable("caseId", aCase.getId());
     }
 
-    private static FesUnusualOperationFeature getFesUnusualOperationFeature(CaseRules caseRule, FesCategory fesCategory) {
+    private FesRefusalReason addFesRefusalReason(String causeRejectCode, FesCategory fesCategory) {
+        FesRefusalReason fesRefusalReason = new FesRefusalReason();
+        fesRefusalReason.setCategoryId(fesCategory);
+        fesRefusalReason.setRefusalReason(fesService.getBd(DICTIONARY_320, causeRejectCode));
+        return fesRefusalReason;
+    }
+
+    private static FesUnusualOperationFeature getFesUnusualOperationFeature(BaseDictionary code, FesCategory fesCategory) {
         FesUnusualOperationFeature fesUnusualOperationFeature = new FesUnusualOperationFeature();
         fesUnusualOperationFeature.setCategoryId(fesCategory);
-        fesUnusualOperationFeature.setUnusualOperationType(caseRule.getCode());
+        fesUnusualOperationFeature.setUnusualOperationType(code);
         return fesUnusualOperationFeature;
     }
 
