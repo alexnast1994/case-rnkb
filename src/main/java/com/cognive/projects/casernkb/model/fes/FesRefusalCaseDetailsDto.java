@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * DTO for {@link com.prime.db.rnkb.model.fes.FesRefusalCaseDetails}
@@ -21,4 +22,5 @@ public class FesRefusalCaseDetailsDto implements Serializable {
     LocalDateTime refusalDate;
     String comment;
     String removalReason;
+    List<FesRefusalOperationDto> fesRefusalOperations;
 }
