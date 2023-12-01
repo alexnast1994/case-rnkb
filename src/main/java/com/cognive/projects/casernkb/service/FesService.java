@@ -443,7 +443,8 @@ public class FesService {
         fesCategory.setFesRefusalCaseDetails(new ArrayList<>(List.of(fesRefusalCaseDetails)));
         FesCasesStatus fesCasesStatus = createFesCasesStatus(fesCategory, caseStatus, caseCondition);
         fesCategory.setFesCasesStatuses(new ArrayList<>(List.of(fesCasesStatus)));
-        createFesMainPageNew(fesCasesStatus, aCase);
+        FesMainPageNew fesMainPageNew = createFesMainPageNew(fesCasesStatus, aCase);
+        fesCasesStatus.setFesMainPageNews(new ArrayList<>(List.of(fesMainPageNew)));
         FesMainPageOtherSections fesMainPageOtherSections = createFesMainPageOtherSections(responsibleUser, fesCasesStatus, fesCaseSaveDto);
         fesCasesStatus.setFesMainPageOtherSections(new ArrayList<>(List.of(fesMainPageOtherSections)));
         createFesMainPageUserDecision(responsibleUser, fesCategory, caseStatus, caseCondition, fesCaseSaveDto);
@@ -478,11 +479,11 @@ public class FesService {
         return fesCasesStatus;
     }
 
-    private void createFesMainPageNew(FesCasesStatus fesCasesStatus, Case aCase) {
+    private FesMainPageNew createFesMainPageNew(FesCasesStatus fesCasesStatus, Case aCase) {
         FesMainPageNew fesMainPageNew = new FesMainPageNew();
         fesMainPageNew.setCasesStatusId(fesCasesStatus);
         fesMainPageNew.setCaseDate(aCase.getCreationdate());
-        fesMainPageNewRepository.save(fesMainPageNew);
+        return fesMainPageNewRepository.save(fesMainPageNew);
     }
 
     private FesMainPageOtherSections createFesMainPageOtherSections(SysUser responsibleUser, FesCasesStatus fesCasesStatus, FesCaseSaveDto fesCaseSaveDto) {
