@@ -74,6 +74,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_38;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_CONTRACT_REJECTION;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_FREEZING;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_OPERATION;
 
 @Service
 @RequiredArgsConstructor
@@ -522,7 +523,11 @@ public class FesService {
     }
 
     private String getSubname(BaseDictionary caseCategory) {
-        return caseCategory.getCode().equals("2") ? SUBNAME_FREEZING : SUBNAME_CONTRACT_REJECTION;
+        return caseCategory.getCode().equals("2") ?
+                SUBNAME_FREEZING :
+                caseCategory.getCode().equals("1") ?
+                        SUBNAME_OPERATION :
+                        SUBNAME_CONTRACT_REJECTION;
     }
 
     public <T, D> void deleteMissingItems(List<D> dtoList, List<T> existingList, JpaRepository<T, Long> repository, Function<D, Long> idExtractorDto, Function<T, Long> idExtractor) {

@@ -100,6 +100,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_101;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_22;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_24;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_26;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_276;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_307;
@@ -131,6 +133,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_346
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_347;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_348;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_40;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_45;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_69;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_83;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_86;
@@ -703,7 +706,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
 
     private FesMainPageNew getFesMainPageNew(FesCategory fesCategory, FesCaseSaveDto fesCaseSaveDto) {
         FesCasesStatus fesCasesStatuses = fesCategory.getFesCasesStatuses().get(0);
-        FesMainPageNewDto fesMainPageNewDto = fesCaseSaveDto.getFesCategory().getFesCasesStatuses().get(0).getFesMainPageNews().get(0);
+        FesMainPageNewDto dto = fesCaseSaveDto.getFesCategory().getFesCasesStatuses().get(0).getFesMainPageNews().get(0);
         List<FesMainPageNew> fesMainPageNewList = fesCasesStatuses.getFesMainPageNews();
         FesMainPageNew fesMainPageNew = (fesMainPageNewList == null || fesMainPageNewList.isEmpty())
                 ? new FesMainPageNew()
@@ -711,9 +714,18 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         if (fesMainPageNewList == null || fesMainPageNewList.isEmpty()) {
             fesMainPageNew.setCasesStatusId(fesCasesStatuses);
         }
-        fesMainPageNew.setOperationDate(fesMainPageNewDto.getOperationDate());
-        fesMainPageNew.setPaymentReference(fesMainPageNewDto.getPaymentReference());
-        fesMainPageNew.setPurpose(fesMainPageNewDto.getPurpose());
+        fesMainPageNew.setOperationDate(dto.getOperationDate());
+        fesMainPageNew.setPaymentReference(dto.getPaymentReference());
+        fesMainPageNew.setPurpose(dto.getPurpose());
+        fesMainPageNew.setPayerName(dto.getPayerName());
+        fesMainPageNew.setPayerInn(dto.getPayerInn());
+        fesMainPageNew.setPayerType(fesService.getBd(DICTIONARY_24, getCode(dto.getPayerType())));
+        fesMainPageNew.setPayerMark(fesService.getBd(DICTIONARY_22, getCode(dto.getPayerMark())));
+        fesMainPageNew.setPayeeName(dto.getPayeeName());
+        fesMainPageNew.setPayeeInn(dto.getPayeeInn());
+        fesMainPageNew.setPayeeType(fesService.getBd(DICTIONARY_24, getCode(dto.getPayeeType())));
+        fesMainPageNew.setPayeeMark(fesService.getBd(DICTIONARY_22, getCode(dto.getPayeeMark())));
+        fesMainPageNew.setOperationStatus(fesService.getBd(DICTIONARY_45, getCode(dto.getOperationStatus())));
 
         return fesMainPageNew;
     }
