@@ -74,6 +74,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_38;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_CONTRACT_REJECTION;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_FREEZING;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_OPERATION;
 
 @Service
 @RequiredArgsConstructor
@@ -443,7 +444,8 @@ public class FesService {
         fesCategory.setFesRefusalCaseDetails(new ArrayList<>(List.of(fesRefusalCaseDetails)));
         FesCasesStatus fesCasesStatus = createFesCasesStatus(fesCategory, caseStatus, caseCondition);
         fesCategory.setFesCasesStatuses(new ArrayList<>(List.of(fesCasesStatus)));
-        createFesMainPageNew(fesCasesStatus, aCase);
+        FesMainPageNew fesMainPageNew = createFesMainPageNew(fesCasesStatus, aCase);
+        fesCasesStatus.setFesMainPageNews(new ArrayList<>(List.of(fesMainPageNew)));
         FesMainPageOtherSections fesMainPageOtherSections = createFesMainPageOtherSections(responsibleUser, fesCasesStatus, fesCaseSaveDto);
         fesCasesStatus.setFesMainPageOtherSections(new ArrayList<>(List.of(fesMainPageOtherSections)));
         createFesMainPageUserDecision(responsibleUser, fesCategory, caseStatus, caseCondition, fesCaseSaveDto);
@@ -478,11 +480,11 @@ public class FesService {
         return fesCasesStatus;
     }
 
-    private void createFesMainPageNew(FesCasesStatus fesCasesStatus, Case aCase) {
+    private FesMainPageNew createFesMainPageNew(FesCasesStatus fesCasesStatus, Case aCase) {
         FesMainPageNew fesMainPageNew = new FesMainPageNew();
         fesMainPageNew.setCasesStatusId(fesCasesStatus);
         fesMainPageNew.setCaseDate(aCase.getCreationdate());
-        fesMainPageNewRepository.save(fesMainPageNew);
+        return fesMainPageNewRepository.save(fesMainPageNew);
     }
 
     private FesMainPageOtherSections createFesMainPageOtherSections(SysUser responsibleUser, FesCasesStatus fesCasesStatus, FesCaseSaveDto fesCaseSaveDto) {
@@ -521,7 +523,11 @@ public class FesService {
     }
 
     private String getSubname(BaseDictionary caseCategory) {
-        return caseCategory.getCode().equals("2") ? SUBNAME_FREEZING : SUBNAME_CONTRACT_REJECTION;
+        return caseCategory.getCode().equals("2") ?
+                SUBNAME_FREEZING :
+                caseCategory.getCode().equals("1") ?
+                        SUBNAME_OPERATION :
+                        SUBNAME_CONTRACT_REJECTION;
     }
 
     public <T, D> void deleteMissingItems(List<D> dtoList, List<T> existingList, JpaRepository<T, Long> repository, Function<D, Long> idExtractorDto, Function<T, Long> idExtractor) {

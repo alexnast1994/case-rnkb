@@ -9,13 +9,16 @@ import com.cognive.projects.casernkb.model.fes.FesEioDto;
 import com.cognive.projects.casernkb.model.fes.FesFreezingAppliedMeasuresDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentGeneralDto;
+import com.cognive.projects.casernkb.model.fes.FesMainPageNewDto;
 import com.cognive.projects.casernkb.model.fes.FesOperationInformationDto;
+import com.cognive.projects.casernkb.model.fes.FesOperationsDetailsDto;
 import com.cognive.projects.casernkb.model.fes.FesOperationsReasonDto;
 import com.cognive.projects.casernkb.model.fes.FesParticipantDto;
 import com.cognive.projects.casernkb.model.fes.FesParticipantForeignDto;
 import com.cognive.projects.casernkb.model.fes.FesParticipantForeignIdentifierDto;
 import com.cognive.projects.casernkb.model.fes.FesParticipantIndividualDto;
 import com.cognive.projects.casernkb.model.fes.FesParticipantLegalDto;
+import com.cognive.projects.casernkb.model.fes.FesPreciousMetalDataDto;
 import com.cognive.projects.casernkb.model.fes.FesRefusalCaseDetailsDto;
 import com.cognive.projects.casernkb.model.fes.FesRefusalOperationDto;
 import com.cognive.projects.casernkb.model.fes.FesRefusalReasonDto;
@@ -36,14 +39,17 @@ import com.prime.db.rnkb.model.fes.FesFreezingAppliedMeasures;
 import com.prime.db.rnkb.model.fes.FesGeneralInformation;
 import com.prime.db.rnkb.model.fes.FesIdentityDocument;
 import com.prime.db.rnkb.model.fes.FesIdentityDocumentGeneral;
+import com.prime.db.rnkb.model.fes.FesMainPageNew;
 import com.prime.db.rnkb.model.fes.FesMainPageOtherSections;
 import com.prime.db.rnkb.model.fes.FesOperationInformation;
+import com.prime.db.rnkb.model.fes.FesOperationsDetails;
 import com.prime.db.rnkb.model.fes.FesOperationsReason;
 import com.prime.db.rnkb.model.fes.FesParticipant;
 import com.prime.db.rnkb.model.fes.FesParticipantForeign;
 import com.prime.db.rnkb.model.fes.FesParticipantForeignIdentifier;
 import com.prime.db.rnkb.model.fes.FesParticipantIndividual;
 import com.prime.db.rnkb.model.fes.FesParticipantLegal;
+import com.prime.db.rnkb.model.fes.FesPreciousMetalData;
 import com.prime.db.rnkb.model.fes.FesRefusalCaseDetails;
 import com.prime.db.rnkb.model.fes.FesRefusalOperation;
 import com.prime.db.rnkb.model.fes.FesRefusalReason;
@@ -61,14 +67,17 @@ import com.prime.db.rnkb.repository.fes.FesFreezingAppliedMeasuresRepository;
 import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentGeneralRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentRepository;
+import com.prime.db.rnkb.repository.fes.FesMainPageNewRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageOtherSectionsRepository;
 import com.prime.db.rnkb.repository.fes.FesOperationInformationRepository;
+import com.prime.db.rnkb.repository.fes.FesOperationsDetailsRepository;
 import com.prime.db.rnkb.repository.fes.FesOperationsReasonRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantForeignIdentifierRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantForeignRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantIndividualRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantLegalRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantRepository;
+import com.prime.db.rnkb.repository.fes.FesPreciousMetalDataRepository;
 import com.prime.db.rnkb.repository.fes.FesRefusalCaseDetailsRepository;
 import com.prime.db.rnkb.repository.fes.FesRefusalOperationRepository;
 import com.prime.db.rnkb.repository.fes.FesRefusalReasonRepository;
@@ -91,7 +100,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_101;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_22;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_24;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_26;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_276;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_307;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_310;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_312;
@@ -121,6 +133,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_346
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_347;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_348;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_40;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_45;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_69;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_83;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_86;
@@ -155,6 +168,9 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     private final FesSuspiciousActivityIdentifierRepository fesSuspiciousActivityIdentifierRepository;
     private final FesOperationsReasonRepository fesOperationsReasonRepository;
     private final FesUnusualOperationFeatureRepository fesUnusualOperationFeatureRepository;
+    private final FesMainPageNewRepository fesMainPageNewRepository;
+    private final FesOperationsDetailsRepository fesOperationsDetailsRepository;
+    private final FesPreciousMetalDataRepository fesPreciousMetalDataRepository;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
@@ -178,6 +194,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                     fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "2"));
                 } else if (fesCategoryCode.equals("2")) {
                     fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "3"));
+                } else if (fesCategoryCode.equals("1")) {
+                    fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "1"));
                 }
             } else {
                 fesServiceInformation = fesCategory.getFesServiceInformations().get(0);
@@ -208,7 +226,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesFreezingAppliedMeasuresRepository.save(fesFreezingAppliedMeasures);
         }
 
-        if (rejectTypeCode.equals("1")) {
+        if (fesCategoryCode.equals("1") || (rejectTypeCode != null && rejectTypeCode.equals("1"))) {
             List<FesOperationInformationDto> fesOperationInformationDtoList = fesCaseSaveDto.getFesCategory().getFesOperationInformations();
             List<FesOperationInformation> existingFesOperationInformations = fesOperationInformationRepository.findByCategoryId(fesCategory);
             if (fesOperationInformationDtoList != null && !fesOperationInformationDtoList.isEmpty()) {
@@ -292,7 +310,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                     fesRefusalCaseDetailsDto.getRejectType().getCode() : null));
             fesRefusalCaseDetails.setRemovalReason(fesRefusalCaseDetailsDto.getRemovalReason());
 
-            if (rejectTypeCode.equals("1")) {
+            if (rejectTypeCode != null && rejectTypeCode.equals("1")) {
                 List<FesRefusalOperationDto> fesRefusalOperationDtoList = fesRefusalCaseDetailsDto.getFesRefusalOperations();
                 List<FesRefusalOperation> existingFesRefusalOperations = fesRefusalCaseDetails.getId() > 0 ?
                         fesRefusalOperationRepository.findByRefusalCaseDetailsId(fesRefusalCaseDetails) : new ArrayList<>();
@@ -319,6 +337,23 @@ public class FesChangeCaseDelegate implements JavaDelegate {
 
         FesMainPageOtherSections fesMainPageOtherSections = getFesMainPageOtherSections(fesCategory, fesCaseSaveDto);
         fesMainPageOtherSectionsRepository.save(fesMainPageOtherSections);
+
+        if (fesCategoryCode.equals("1")) {
+            FesMainPageNew fesMainPageNew = getFesMainPageNew(fesCategory, fesCaseSaveDto);
+            fesMainPageNewRepository.save(fesMainPageNew);
+
+            FesOperationsDetails fesOperationsDetails = getFesOperationsDetails(fesCategory, fesCaseSaveDto);
+            fesOperationsDetailsRepository.save(fesOperationsDetails);
+
+            List<FesPreciousMetalDataDto> fesPreciousMetalDataDtoList = fesCaseSaveDto.getFesCategory().getFesPreciousMetalData();
+            List<FesPreciousMetalData> existingFesPreciousMetalDatas = fesPreciousMetalDataRepository.findByCategoryId(fesCategory);
+            if (fesPreciousMetalDataDtoList != null && !fesPreciousMetalDataDtoList.isEmpty()) {
+                fesService.deleteMissingItems(fesPreciousMetalDataDtoList, existingFesPreciousMetalDatas, fesPreciousMetalDataRepository, FesPreciousMetalDataDto::getId, FesPreciousMetalData::getId);
+                fesService.createAndSaveAllItems(fesPreciousMetalDataDtoList, dto -> createOrUpdateFesPreciousMetalData(dto, fesCategory), fesPreciousMetalDataRepository, fesCategory);
+            } else {
+                fesPreciousMetalDataRepository.deleteAll(existingFesPreciousMetalDatas);
+            }
+        }
 
         List<FesParticipantDto> fesParticipantDtoList = fesCaseSaveDto.getFesCategory().getFesParticipants();
         List<FesParticipant> existingFesParticipants = fesParticipantRepository.findFesParticipantsByCategoryId(fesCategory);
@@ -641,7 +676,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     }
 
     @NotNull
-    private static FesGeneralInformation getFesGeneralInformation(FesCategory fesCategory, BaseDictionary recordType, FesCaseSaveDto fesCaseSaveDto) {
+    private FesGeneralInformation getFesGeneralInformation(FesCategory fesCategory, BaseDictionary recordType, FesCaseSaveDto fesCaseSaveDto) {
         FesGeneralInformation fesGeneralInformation;
         if (fesCategory.getFesGeneralInformations() == null || fesCategory.getFesGeneralInformations().isEmpty()) {
             fesGeneralInformation = new FesGeneralInformation();
@@ -656,7 +691,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     }
 
     @NotNull
-    private static FesMainPageOtherSections getFesMainPageOtherSections(FesCategory fesCategory, FesCaseSaveDto fesCaseSaveDto) {
+    private FesMainPageOtherSections getFesMainPageOtherSections(FesCategory fesCategory, FesCaseSaveDto fesCaseSaveDto) {
         FesCasesStatus fesCasesStatuses = fesCategory.getFesCasesStatuses().get(0);
         List<FesMainPageOtherSections> otherSectionsList = fesCasesStatuses.getFesMainPageOtherSections();
         FesMainPageOtherSections fesMainPageOtherSections = (otherSectionsList == null || otherSectionsList.isEmpty())
@@ -667,6 +702,45 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         }
         fesMainPageOtherSections.setComment(fesCaseSaveDto.getFesCategory().getFesGeneralInformations().get(0).getComment());
         return fesMainPageOtherSections;
+    }
+
+    private FesMainPageNew getFesMainPageNew(FesCategory fesCategory, FesCaseSaveDto fesCaseSaveDto) {
+        FesCasesStatus fesCasesStatuses = fesCategory.getFesCasesStatuses().get(0);
+        FesMainPageNewDto dto = fesCaseSaveDto.getFesCategory().getFesCasesStatuses().get(0).getFesMainPageNews().get(0);
+        List<FesMainPageNew> fesMainPageNewList = fesCasesStatuses.getFesMainPageNews();
+        FesMainPageNew fesMainPageNew = (fesMainPageNewList == null || fesMainPageNewList.isEmpty())
+                ? new FesMainPageNew()
+                : fesMainPageNewList.get(0);
+        if (fesMainPageNewList == null || fesMainPageNewList.isEmpty()) {
+            fesMainPageNew.setCasesStatusId(fesCasesStatuses);
+        }
+        fesMainPageNew.setOperationDate(dto.getOperationDate());
+        fesMainPageNew.setPaymentReference(dto.getPaymentReference());
+        fesMainPageNew.setPurpose(dto.getPurpose());
+        fesMainPageNew.setPayerName(dto.getPayerName());
+        fesMainPageNew.setPayerInn(dto.getPayerInn());
+        fesMainPageNew.setPayerType(fesService.getBd(DICTIONARY_24, getCode(dto.getPayerType())));
+        fesMainPageNew.setPayerMark(fesService.getBd(DICTIONARY_22, getCode(dto.getPayerMark())));
+        fesMainPageNew.setPayeeName(dto.getPayeeName());
+        fesMainPageNew.setPayeeInn(dto.getPayeeInn());
+        fesMainPageNew.setPayeeType(fesService.getBd(DICTIONARY_24, getCode(dto.getPayeeType())));
+        fesMainPageNew.setPayeeMark(fesService.getBd(DICTIONARY_22, getCode(dto.getPayeeMark())));
+        fesMainPageNew.setOperationStatus(fesService.getBd(DICTIONARY_45, getCode(dto.getOperationStatus())));
+
+        return fesMainPageNew;
+    }
+
+    private FesOperationsDetails getFesOperationsDetails(FesCategory fesCategory, FesCaseSaveDto fesCaseSaveDto) {
+        FesOperationsDetailsDto fesOperationsDetailsDto = fesCaseSaveDto.getFesCategory().getFesOperationsDetails().get(0);
+        List<FesOperationsDetails> fesOperationsDetailsList = fesCategory.getFesOperationsDetails();
+        FesOperationsDetails fesOperationsDetails = (fesOperationsDetailsList == null || fesOperationsDetailsList.isEmpty())
+                ? new FesOperationsDetails()
+                : fesOperationsDetailsList.get(0);
+        if (fesOperationsDetailsList == null || fesOperationsDetailsList.isEmpty()) {
+            fesOperationsDetails.setCategoryId(fesCategory);
+        }
+        fesOperationsDetails.setPaySystemName1(fesOperationsDetailsDto.getPaySystemName1());
+        return fesOperationsDetails;
     }
 
     private void processingAddress(List<FesAddressDto> fesAddressDtoList, List<FesAddress> existingFesAddresses, FesCategory fesCategory, FesParticipant fesParticipant, FesEio fesEio, FesBeneficiary fesBeneficiary) {
@@ -729,6 +803,17 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         entity.setInn(dto.getInn());
         entity.setForeignNum(dto.getForeignNum());
 
+        return entity;
+    }
+
+    private FesPreciousMetalData createOrUpdateFesPreciousMetalData(FesPreciousMetalDataDto dto, FesCategory rootEntity) {
+        FesPreciousMetalData entity = new FesPreciousMetalData();
+        if (dto.getId() != null) {
+            entity = fesPreciousMetalDataRepository.findById(dto.getId()).orElse(entity);
+        }
+        entity.setCategoryId(rootEntity);
+        entity.setPreciousMetal(fesService.getBd(DICTIONARY_276, getCode(dto.getPreciousMetal())));
+        entity.setPreciousMetalOthername(dto.getPreciousMetalOthername());
         return entity;
     }
 

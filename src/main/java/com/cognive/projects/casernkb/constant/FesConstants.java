@@ -7,14 +7,18 @@ import lombok.NoArgsConstructor;
 public class FesConstants {
     public static final Integer DICTIONARY_14 = 14;
     public static final Integer DICTIONARY_18 = 18;
+    public static final Integer DICTIONARY_22 = 22;
     public static final Integer DICTIONARY_23 = 23;
+    public static final Integer DICTIONARY_24 = 24;
     public static final Integer DICTIONARY_26 = 26;
     public static final Integer DICTIONARY_38 = 38;
     public static final Integer DICTIONARY_40 = 40;
+    public static final Integer DICTIONARY_45 = 45;
     public static final Integer DICTIONARY_69 = 69;
     public static final Integer DICTIONARY_83 = 83;
     public static final Integer DICTIONARY_86 = 86;
     public static final Integer DICTIONARY_101 = 101;
+    public static final Integer DICTIONARY_276 = 276;
     public static final Integer DICTIONARY_305 = 305;
     public static final Integer DICTIONARY_307 = 307;
     public static final Integer DICTIONARY_309 = 309;
@@ -48,6 +52,7 @@ public class FesConstants {
 
     public static final String NAME = "ФЭС";
     public static final String SUBNAME_FREEZING = "Заморозка";
+    public static final String SUBNAME_OPERATION = "Операции";
     public static final String SUBNAME_CONTRACT_REJECTION = "Отказ от заключения договора";
     public static final String SUBNAME_CANCEL_CONTRACT = "Расторжение договора";
     public static final String SUBNAME_OPERATION_REJECTION = "Отказ в совершении операции";

@@ -27,4 +27,8 @@ public class FesCategoryDto implements Serializable {
     List<FesOperationsReasonDto> fesOperationsReason;
     List<FesSuspiciousActivityIdentifierDto> fesSuspiciousActivityIdentifiers;
     List<FesUnusualOperationFeatureDto> fesUnusualOperationFeatures;
+    List<FesCasesStatusDto> fesCasesStatuses;
+    List<FesOperationsDetailsDto> fesOperationsDetails;
+    List<FesPreciousMetalDataDto> fesPreciousMetalData;
+
 }
