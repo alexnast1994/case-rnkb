@@ -1,7 +1,7 @@
 package com.cognive.projects.casernkb.model.fes;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Value;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * DTO for {@link com.prime.db.rnkb.model.fes.FesInspectionDetails}
  */
-@Value
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FesInspectionDetailsDto implements Serializable {
     Long id;
