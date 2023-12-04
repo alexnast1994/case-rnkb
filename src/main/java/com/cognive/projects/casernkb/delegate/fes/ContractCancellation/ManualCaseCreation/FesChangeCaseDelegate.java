@@ -833,7 +833,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         entity.setPaySystemName2(dto.getPaySystemName2());
         entity.setConversionCurrency(fesService.getBd(DICTIONARY_26, getCode(dto.getConversionCurrency())));
         entity.setAmountConversionCurrency(dto.getAmountConversionCurrency());
-        entity.setEspOperationFeature(fesService.getBd(DICTIONARY_311, getCode(dto.getConversionCurrency())));
+        entity.setEspOperationFeature(fesService.getBd(DICTIONARY_311, getCode(dto.getEspOperationFeature())));
         entity.setOperationCharacteristic(dto.getOperationCharacteristic());
         entity.setEspTime(dto.getEspTime());
         return entity;
