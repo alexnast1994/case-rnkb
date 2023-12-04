@@ -118,6 +118,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_26;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_276;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_307;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_310;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_311;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_312;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_314;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_315;
@@ -793,16 +794,22 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     }
 
     private FesOperationsDetails getFesOperationsDetails(FesCategory fesCategory, FesCaseSaveDto fesCaseSaveDto) {
-        FesOperationsDetailsDto fesOperationsDetailsDto = fesCaseSaveDto.getFesCategory().getFesOperationsDetails().get(0);
+        FesOperationsDetailsDto dto = fesCaseSaveDto.getFesCategory().getFesOperationsDetails().get(0);
         List<FesOperationsDetails> fesOperationsDetailsList = fesCategory.getFesOperationsDetails();
-        FesOperationsDetails fesOperationsDetails = (fesOperationsDetailsList == null || fesOperationsDetailsList.isEmpty())
+        FesOperationsDetails entity = (fesOperationsDetailsList == null || fesOperationsDetailsList.isEmpty())
                 ? new FesOperationsDetails()
                 : fesOperationsDetailsList.get(0);
         if (fesOperationsDetailsList == null || fesOperationsDetailsList.isEmpty()) {
-            fesOperationsDetails.setCategoryId(fesCategory);
+            entity.setCategoryId(fesCategory);
         }
-        fesOperationsDetails.setPaySystemName1(fesOperationsDetailsDto.getPaySystemName1());
-        return fesOperationsDetails;
+        entity.setPaySystemName1(dto.getPaySystemName1());
+        entity.setPaySystemName2(dto.getPaySystemName2());
+        entity.setConversionCurrency(fesService.getBd(DICTIONARY_26, getCode(dto.getConversionCurrency())));
+        entity.setAmountConversionCurrency(dto.getAmountConversionCurrency());
+        entity.setEspOperationFeature(fesService.getBd(DICTIONARY_311, getCode(dto.getConversionCurrency())));
+        entity.setOperationCharacteristic(dto.getOperationCharacteristic());
+        entity.setEspTime(dto.getEspTime());
+        return entity;
     }
 
     private void processingAddress(List<FesAddressDto> fesAddressDtoList, List<FesAddress> existingFesAddresses, FesCategory fesCategory, FesParticipant fesParticipant, FesEio fesEio, FesBeneficiary fesBeneficiary) {
@@ -847,10 +854,11 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         }
         fesOperationInformation.setCategoryId(fesCategory);
         fesOperationInformation.setOperationFeature(fesService.getBd(DICTIONARY_83, getCode(dto.getOperationFeature())));
-        fesOperationInformation.setCurrency(fesService.getBd(DICTIONARY_26, getCode(dto.getOperationFeature())));
+        fesOperationInformation.setCurrency(fesService.getBd(DICTIONARY_26, getCode(dto.getCurrency())));
         fesOperationInformation.setAmount(dto.getAmount());
         fesOperationInformation.setAmountNationalCurrency(dto.getAmountNationalCurrency());
         fesOperationInformation.setCurrencyTransactionAttribute(dto.getCurrencyTransactionAttribute());
+        fesOperationInformation.setOperationType(fesService.getBd(DICTIONARY_310, getCode(dto.getOperationType())));
 
         return fesOperationInformation;
     }
