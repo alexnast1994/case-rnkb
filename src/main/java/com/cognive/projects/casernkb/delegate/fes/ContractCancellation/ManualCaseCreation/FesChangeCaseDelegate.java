@@ -1218,7 +1218,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                 fesParticipantIndividualDto.getPublicFigureFeature().getCode() : null));
         fesParticipantIndividual.setIdentityDocumentFeature(fesService.getBd(DICTIONARY_327, fesParticipantIndividualDto.getIdentityDocumentFeature() != null ?
                 fesParticipantIndividualDto.getIdentityDocumentFeature().getCode() : null));
-        fesParticipantIndividual.setOgrnip(fesParticipantIndividualDto.getOrgnip());
+        fesParticipantIndividual.setOgrnip(fesParticipantIndividualDto.getOgrnip());
 
         return fesParticipantIndividual;
     }
