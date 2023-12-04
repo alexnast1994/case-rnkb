@@ -8,6 +8,7 @@ import com.cognive.projects.casernkb.model.fes.FesBranchInformationDto;
 import com.cognive.projects.casernkb.model.fes.FesCaseSaveDto;
 import com.cognive.projects.casernkb.model.fes.FesCashMoneyTransfersDto;
 import com.cognive.projects.casernkb.model.fes.FesEioDto;
+import com.cognive.projects.casernkb.model.fes.FesForeignCardTransactionsDto;
 import com.cognive.projects.casernkb.model.fes.FesFreezingAppliedMeasuresDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentGeneralDto;
@@ -43,6 +44,7 @@ import com.prime.db.rnkb.model.fes.FesCasesStatus;
 import com.prime.db.rnkb.model.fes.FesCashMoneyTransfers;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesEio;
+import com.prime.db.rnkb.model.fes.FesForeignCardTransactions;
 import com.prime.db.rnkb.model.fes.FesFreezingAppliedMeasures;
 import com.prime.db.rnkb.model.fes.FesGeneralInformation;
 import com.prime.db.rnkb.model.fes.FesIdentityDocument;
@@ -77,6 +79,7 @@ import com.prime.db.rnkb.repository.fes.FesBranchInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesCashMoneyTransfersRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
 import com.prime.db.rnkb.repository.fes.FesEioRepository;
+import com.prime.db.rnkb.repository.fes.FesForeignCardTransactionsRepository;
 import com.prime.db.rnkb.repository.fes.FesFreezingAppliedMeasuresRepository;
 import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentGeneralRepository;
@@ -149,6 +152,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_332
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_333;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_334;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_335;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_336;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_338;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_342;
@@ -201,6 +205,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     private final FesMoneyPlaceRepository fesMoneyPlaceRepository;
     private final FesAdditionalOperationRepository fesAdditionalOperationRepository;
     private final FesTerrorismFinancingRepository fesTerrorismFinancingRepository;
+    private final FesForeignCardTransactionsRepository fesForeignCardTransactionsRepository;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
@@ -443,6 +448,15 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             } else {
                 fesTerrorismFinancingRepository.deleteAll(existingFesTerrorismFinancings);
             }
+
+            List<FesForeignCardTransactionsDto> fesForeignCardTransactionsDtoList = fesCaseSaveDto.getFesCategory().getFesForeignCardTransactions();
+            List<FesForeignCardTransactions> existingFesForeignCardTransactions = fesForeignCardTransactionsRepository.findByCategoryId(fesCategory);
+            if (fesForeignCardTransactionsDtoList != null && !fesForeignCardTransactionsDtoList.isEmpty()) {
+                fesService.deleteMissingItems(fesForeignCardTransactionsDtoList, existingFesForeignCardTransactions, fesForeignCardTransactionsRepository, FesForeignCardTransactionsDto::getId, FesForeignCardTransactions::getId);
+                fesService.createAndSaveAllItems(fesForeignCardTransactionsDtoList, dto -> createOrUpdateFesForeignCardTransactions(dto, fesCategory), fesForeignCardTransactionsRepository, fesCategory);
+            } else {
+                fesForeignCardTransactionsRepository.deleteAll(existingFesForeignCardTransactions);
+            }
         }
 
         List<FesParticipantDto> fesParticipantDtoList = fesCaseSaveDto.getFesCategory().getFesParticipants();
@@ -496,6 +510,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                             }
                             fesParticipantLegalRepository.saveAll(fesParticipantLegals);
                             fesParticipant.setFesParticipantLegals(fesParticipantLegals);
+                        } else {
+                            fesParticipantLegalRepository.deleteAll(existingFesParticipantLegals);
                         }
 
                         List<FesParticipantIndividualDto> fesParticipantIndividualDtoList = fesEioDto.getFesParticipantIndividuals();
@@ -517,6 +533,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                             }
                             fesParticipantIndividualRepository.saveAll(fesParticipantIndividuals);
                             fesParticipant.setFesParticipantIndividuals(fesParticipantIndividuals);
+                        } else {
+                            fesParticipantIndividualRepository.deleteAll(existingFesParticipantIndividuals);
                         }
 
                         List<FesAddressDto> fesAddressDtoList = fesEioDto.getFesAddresses();
@@ -567,6 +585,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                             }
                             fesParticipantIndividualRepository.saveAll(fesParticipantIndividuals);
                             fesParticipant.setFesParticipantIndividuals(fesParticipantIndividuals);
+                        } else {
+                            fesParticipantIndividualRepository.deleteAll(existingFesParticipantIndividuals);
                         }
 
 
@@ -602,6 +622,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                     }
                     fesParticipantIndividualRepository.saveAll(fesParticipantIndividuals);
                     fesParticipant.setFesParticipantIndividuals(fesParticipantIndividuals);
+                } else {
+                    fesParticipantIndividualRepository.deleteAll(existingFesParticipantIndividuals);
                 }
 
                 List<FesParticipantLegalDto> fesParticipantLegalDtoList = fesParticipantDto.getFesParticipantLegals();
@@ -622,6 +644,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                     }
                     fesParticipantLegalRepository.saveAll(fesParticipantLegals);
                     fesParticipant.setFesParticipantLegals(fesParticipantLegals);
+                } else {
+                    fesParticipantLegalRepository.deleteAll(existingFesParticipantLegals);
                 }
 
                 List<FesParticipantForeignDto> fesParticipantForeignDtoList = fesParticipantDto.getFesParticipantForeigns();
@@ -657,11 +681,15 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                             }
                             fesParticipantForeignIdentifierRepository.saveAll(fesParticipantForeignIdentifiers);
                             fesParticipantForeign.setFesParticipantForeignIdentifiers(fesParticipantForeignIdentifiers);
+                        } else {
+                            fesParticipantForeignIdentifierRepository.deleteAll(existingFesParticipantForeignIdentifiers);
                         }
                         fesParticipantForeigns.add(fesParticipantForeign);
                     }
                     fesParticipantForeignRepository.saveAll(fesParticipantForeigns);
                     fesParticipant.setFesParticipantForeigns(fesParticipantForeigns);
+                } else {
+                    fesParticipantForeignRepository.deleteAll(existingFesParticipantForeigns);
                 }
 
                 List<FesAddressDto> fesAddressDtoList = fesParticipantDto.getFesAddresses();
@@ -1028,6 +1056,21 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         entity.setCategoryId(rootEntity);
         entity.setTerrorismFinancingType(fesService.getBd(DICTIONARY_313, getCode(dto.getTerrorismFinancingType())));
 
+        return entity;
+    }
+
+    private FesForeignCardTransactions createOrUpdateFesForeignCardTransactions(FesForeignCardTransactionsDto dto, FesCategory rootEntity) {
+        FesForeignCardTransactions entity = new FesForeignCardTransactions();
+        if (dto.getId() != null) {
+            entity = fesForeignCardTransactionsRepository.findById(dto.getId()).orElse(entity);
+        }
+        entity.setCategoryId(rootEntity);
+        entity.setTerritoryCode(dto.getTerritoryCode());
+        entity.setCardNum(dto.getCardNum());
+        entity.setCardHolder(dto.getCardHolder());
+        entity.setAuthorizedOfficerOperationFeature(fesService.getBd(DICTIONARY_336, getCode(dto.getAuthorizedOfficerOperationFeature())));
+        entity.setForeignBankName(dto.getForeignBankName());
+        entity.setSwift(dto.getSwift());
         return entity;
     }
 
