@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.ManualCaseCreation;
 
+import com.cognive.projects.casernkb.model.fes.FesAdditionalOperationDto;
 import com.cognive.projects.casernkb.model.fes.FesAddressDto;
 import com.cognive.projects.casernkb.model.fes.FesBankInformationDto;
 import com.cognive.projects.casernkb.model.fes.FesBeneficiaryDto;
@@ -29,9 +30,11 @@ import com.cognive.projects.casernkb.model.fes.FesRefusalReasonDto;
 import com.cognive.projects.casernkb.model.fes.FesRightOfResidenceDocumentDto;
 import com.cognive.projects.casernkb.model.fes.FesServiceInformationDto;
 import com.cognive.projects.casernkb.model.fes.FesSuspiciousActivityIdentifierDto;
+import com.cognive.projects.casernkb.model.fes.FesTerrorismFinancingDto;
 import com.cognive.projects.casernkb.model.fes.FesUnusualOperationFeatureDto;
 import com.cognive.projects.casernkb.service.FesService;
 import com.prime.db.rnkb.model.BaseDictionary;
+import com.prime.db.rnkb.model.fes.FesAdditionalOperation;
 import com.prime.db.rnkb.model.fes.FesAddress;
 import com.prime.db.rnkb.model.fes.FesBankInformation;
 import com.prime.db.rnkb.model.fes.FesBeneficiary;
@@ -64,7 +67,9 @@ import com.prime.db.rnkb.model.fes.FesRefusalReason;
 import com.prime.db.rnkb.model.fes.FesRightOfResidenceDocument;
 import com.prime.db.rnkb.model.fes.FesServiceInformation;
 import com.prime.db.rnkb.model.fes.FesSuspiciousActivityIdentifier;
+import com.prime.db.rnkb.model.fes.FesTerrorismFinancing;
 import com.prime.db.rnkb.model.fes.FesUnusualOperationFeature;
+import com.prime.db.rnkb.repository.fes.FesAdditionalOperationRepository;
 import com.prime.db.rnkb.repository.fes.FesAddressRepository;
 import com.prime.db.rnkb.repository.fes.FesBankInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesBeneficiaryRepository;
@@ -96,6 +101,7 @@ import com.prime.db.rnkb.repository.fes.FesRefusalReasonRepository;
 import com.prime.db.rnkb.repository.fes.FesRightOfResidenceDocumentRepository;
 import com.prime.db.rnkb.repository.fes.FesServiceInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesSuspiciousActivityIdentifierRepository;
+import com.prime.db.rnkb.repository.fes.FesTerrorismFinancingRepository;
 import com.prime.db.rnkb.repository.fes.FesUnusualOperationFeatureRepository;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
@@ -120,6 +126,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_307
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_310;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_311;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_312;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_313;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_314;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_315;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_316;
@@ -192,6 +199,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     private final FesInspectionDetailsRepository fesInspectionDetailsRepository;
     private final FesCashMoneyTransfersRepository fesCashMoneyTransfersRepository;
     private final FesMoneyPlaceRepository fesMoneyPlaceRepository;
+    private final FesAdditionalOperationRepository fesAdditionalOperationRepository;
+    private final FesTerrorismFinancingRepository fesTerrorismFinancingRepository;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
@@ -281,7 +290,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                 fesSuspiciousActivityIdentifierRepository.deleteAll(existingFesSuspiciousActivityIdentifiers);
             }
 
-            List<FesOperationsReasonDto> fesOperationsReasonDtoList = fesCaseSaveDto.getFesCategory().getFesOperationsReason();
+            List<FesOperationsReasonDto> fesOperationsReasonDtoList = fesCaseSaveDto.getFesCategory().getFesOperationsReasons();
             List<FesOperationsReason> existingFesOperationsReasons = fesOperationsReasonRepository.findByCategoryId(fesCategory);
             if (fesOperationsReasonDtoList != null && !fesOperationsReasonDtoList.isEmpty()) {
                 fesService.deleteMissingItems(fesOperationsReasonDtoList, existingFesOperationsReasons, fesOperationsReasonRepository, FesOperationsReasonDto::getId, FesOperationsReason::getId);
@@ -415,6 +424,24 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                 fesService.createAndSaveAllItems(fesMoneyPlaceDtoList, dto -> createOrUpdateFesMoneyPlace(dto, fesCategory), fesMoneyPlaceRepository, fesCategory);
             } else {
                 fesMoneyPlaceRepository.deleteAll(existingFesMoneyPlaces);
+            }
+
+            List<FesAdditionalOperationDto> fesAdditionalOperationDtoList = fesCaseSaveDto.getFesCategory().getFesAdditionalOperations();
+            List<FesAdditionalOperation> existingFesAdditionalOperations = fesAdditionalOperationRepository.findByCategoryId(fesCategory);
+            if (fesAdditionalOperationDtoList != null && !fesAdditionalOperationDtoList.isEmpty()) {
+                fesService.deleteMissingItems(fesAdditionalOperationDtoList, existingFesAdditionalOperations, fesAdditionalOperationRepository, FesAdditionalOperationDto::getId, FesAdditionalOperation::getId);
+                fesService.createAndSaveAllItems(fesAdditionalOperationDtoList, dto -> createOrUpdateFesAdditionalOperation(dto, fesCategory), fesAdditionalOperationRepository, fesCategory);
+            } else {
+                fesAdditionalOperationRepository.deleteAll(existingFesAdditionalOperations);
+            }
+
+            List<FesTerrorismFinancingDto> fesTerrorismFinancingDtoList = fesCaseSaveDto.getFesCategory().getFesTerrorismFinancings();
+            List<FesTerrorismFinancing> existingFesTerrorismFinancings = fesTerrorismFinancingRepository.findByCategoryId(fesCategory);
+            if (fesTerrorismFinancingDtoList != null && !fesTerrorismFinancingDtoList.isEmpty()) {
+                fesService.deleteMissingItems(fesTerrorismFinancingDtoList, existingFesTerrorismFinancings, fesTerrorismFinancingRepository, FesTerrorismFinancingDto::getId, FesTerrorismFinancing::getId);
+                fesService.createAndSaveAllItems(fesTerrorismFinancingDtoList, dto -> createOrUpdateFesTerrorismFinancing(dto, fesCategory), fesTerrorismFinancingRepository, fesCategory);
+            } else {
+                fesTerrorismFinancingRepository.deleteAll(existingFesTerrorismFinancings);
             }
         }
 
@@ -966,6 +993,28 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         entity.setTerminalNum(dto.getTerminalNum());
         entity.setBankBic(dto.getBankBic());
         entity.setBankName(dto.getBankName());
+        return entity;
+    }
+
+    private FesAdditionalOperation createOrUpdateFesAdditionalOperation(FesAdditionalOperationDto dto, FesCategory rootEntity) {
+        FesAdditionalOperation entity = new FesAdditionalOperation();
+        if (dto.getId() != null) {
+            entity = fesAdditionalOperationRepository.findById(dto.getId()).orElse(entity);
+        }
+        entity.setCategoryId(rootEntity);
+        entity.setAdditionalOperationType(fesService.getBd(DICTIONARY_310, getCode(dto.getAdditionalOperationType())));
+
+        return entity;
+    }
+
+    private FesTerrorismFinancing createOrUpdateFesTerrorismFinancing(FesTerrorismFinancingDto dto, FesCategory rootEntity) {
+        FesTerrorismFinancing entity = new FesTerrorismFinancing();
+        if (dto.getId() != null) {
+            entity = fesTerrorismFinancingRepository.findById(dto.getId()).orElse(entity);
+        }
+        entity.setCategoryId(rootEntity);
+        entity.setTerrorismFinancingType(fesService.getBd(DICTIONARY_313, getCode(dto.getTerrorismFinancingType())));
+
         return entity;
     }
 
