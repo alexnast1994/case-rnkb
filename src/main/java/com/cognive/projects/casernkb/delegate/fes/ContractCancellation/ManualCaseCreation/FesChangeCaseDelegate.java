@@ -10,6 +10,7 @@ import com.cognive.projects.casernkb.model.fes.FesFreezingAppliedMeasuresDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentGeneralDto;
 import com.cognive.projects.casernkb.model.fes.FesMainPageNewDto;
+import com.cognive.projects.casernkb.model.fes.FesMoneyTransfersDto;
 import com.cognive.projects.casernkb.model.fes.FesOperationInformationDto;
 import com.cognive.projects.casernkb.model.fes.FesOperationsDetailsDto;
 import com.cognive.projects.casernkb.model.fes.FesOperationsReasonDto;
@@ -41,6 +42,7 @@ import com.prime.db.rnkb.model.fes.FesIdentityDocument;
 import com.prime.db.rnkb.model.fes.FesIdentityDocumentGeneral;
 import com.prime.db.rnkb.model.fes.FesMainPageNew;
 import com.prime.db.rnkb.model.fes.FesMainPageOtherSections;
+import com.prime.db.rnkb.model.fes.FesMoneyTransfers;
 import com.prime.db.rnkb.model.fes.FesOperationInformation;
 import com.prime.db.rnkb.model.fes.FesOperationsDetails;
 import com.prime.db.rnkb.model.fes.FesOperationsReason;
@@ -69,6 +71,7 @@ import com.prime.db.rnkb.repository.fes.FesIdentityDocumentGeneralRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageNewRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageOtherSectionsRepository;
+import com.prime.db.rnkb.repository.fes.FesMoneyTransfersRepository;
 import com.prime.db.rnkb.repository.fes.FesOperationInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesOperationsDetailsRepository;
 import com.prime.db.rnkb.repository.fes.FesOperationsReasonRepository;
@@ -125,6 +128,9 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_328
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_329;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_330;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_331;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_332;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_333;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_335;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_338;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_342;
@@ -171,6 +177,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     private final FesMainPageNewRepository fesMainPageNewRepository;
     private final FesOperationsDetailsRepository fesOperationsDetailsRepository;
     private final FesPreciousMetalDataRepository fesPreciousMetalDataRepository;
+    private final FesMoneyTransfersRepository fesMoneyTransfersRepository;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
@@ -297,7 +304,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesRefusalReasonRepository.deleteAll(existingFesRefusalReasons);
         }
 
-        if (!fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().isEmpty()) {
+        if (fesCategoryCode.equals("4") && !fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().isEmpty()) {
             FesRefusalCaseDetailsDto fesRefusalCaseDetailsDto = fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().get(0);
             FesRefusalCaseDetails fesRefusalCaseDetails = fesCategory.getFesRefusalCaseDetails().get(0);
 
@@ -352,6 +359,15 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                 fesService.createAndSaveAllItems(fesPreciousMetalDataDtoList, dto -> createOrUpdateFesPreciousMetalData(dto, fesCategory), fesPreciousMetalDataRepository, fesCategory);
             } else {
                 fesPreciousMetalDataRepository.deleteAll(existingFesPreciousMetalDatas);
+            }
+
+            List<FesMoneyTransfersDto> fesMoneyTransfersDtoList = fesCaseSaveDto.getFesCategory().getFesMoneyTransfersList();
+            List<FesMoneyTransfers> existingFesMoneyTransfers = fesMoneyTransfersRepository.findByCategoryId(fesCategory);
+            if (fesMoneyTransfersDtoList != null && !fesMoneyTransfersDtoList.isEmpty()) {
+                fesService.deleteMissingItems(fesMoneyTransfersDtoList, existingFesMoneyTransfers, fesMoneyTransfersRepository, FesMoneyTransfersDto::getId, FesMoneyTransfers::getId);
+                fesService.createAndSaveAllItems(fesMoneyTransfersDtoList, dto -> createOrUpdateFesMoneyTransfers(dto, fesCategory), fesMoneyTransfersRepository, fesCategory);
+            } else {
+                fesMoneyTransfersRepository.deleteAll(existingFesMoneyTransfers);
             }
         }
 
@@ -814,6 +830,26 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         entity.setCategoryId(rootEntity);
         entity.setPreciousMetal(fesService.getBd(DICTIONARY_276, getCode(dto.getPreciousMetal())));
         entity.setPreciousMetalOthername(dto.getPreciousMetalOthername());
+        return entity;
+    }
+
+    private FesMoneyTransfers createOrUpdateFesMoneyTransfers(FesMoneyTransfersDto dto, FesCategory rootEntity) {
+        FesMoneyTransfers entity = new FesMoneyTransfers();
+        if (dto.getId() != null) {
+            entity = fesMoneyTransfersRepository.findById(dto.getId()).orElse(entity);
+        }
+        entity.setCategoryId(rootEntity);
+        entity.setTransferType(fesService.getBd(DICTIONARY_332, getCode(dto.getTransferType())));
+        entity.setMoneyTransferOperatorType(fesService.getBd(DICTIONARY_335, getCode(dto.getMoneyTransferOperatorType())));
+        entity.setPayerAccountNum(dto.getPayerAccountNum());
+        entity.setPayerBankAccount(dto.getPayerBankAccount());
+        entity.setPayeeAccountNum(dto.getPayeeAccountNum());
+        entity.setPayeeBankAccount(dto.getPayeeBankAccount());
+        entity.setPayerBankBic(dto.getPayerBankBic());
+        entity.setPayeeBankBic(dto.getPayeeBankBic());
+        entity.setPayerBankName(dto.getPayerBankName());
+        entity.setPayeeBankName(dto.getPayeeBankName());
+        entity.setTransferStatus(fesService.getBd(DICTIONARY_333, getCode(dto.getTransferStatus())));
         return entity;
     }
 

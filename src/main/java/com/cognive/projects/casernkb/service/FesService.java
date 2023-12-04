@@ -440,8 +440,10 @@ public class FesService {
     public FesCategory getFesCategory(BaseDictionary caseType, BaseDictionary caseCategory, BaseDictionary caseObjectType, BaseDictionary caseStatus, SysUser responsibleUser, BaseDictionary caseCondition, BaseDictionary rejectType, FesCaseSaveDto fesCaseSaveDto) {
         Case aCase = createCase(caseType, caseCategory, caseObjectType, caseStatus, responsibleUser, caseCondition);
         FesCategory fesCategory = createFesCategory(aCase, caseCategory);
-        FesRefusalCaseDetails fesRefusalCaseDetails = createFesRefusalCaseDetails(fesCategory, rejectType);
-        fesCategory.setFesRefusalCaseDetails(new ArrayList<>(List.of(fesRefusalCaseDetails)));
+        if (rejectType != null) {
+            FesRefusalCaseDetails fesRefusalCaseDetails = createFesRefusalCaseDetails(fesCategory, rejectType);
+            fesCategory.setFesRefusalCaseDetails(new ArrayList<>(List.of(fesRefusalCaseDetails)));
+        }
         FesCasesStatus fesCasesStatus = createFesCasesStatus(fesCategory, caseStatus, caseCondition);
         fesCategory.setFesCasesStatuses(new ArrayList<>(List.of(fesCasesStatus)));
         FesMainPageNew fesMainPageNew = createFesMainPageNew(fesCasesStatus, aCase);
@@ -465,7 +467,6 @@ public class FesService {
     private FesRefusalCaseDetails createFesRefusalCaseDetails(FesCategory fesCategory, BaseDictionary rejectType) {
         FesRefusalCaseDetails fesRefusalCaseDetails = new FesRefusalCaseDetails();
         fesRefusalCaseDetails.setCategoryId(fesCategory);
-        fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
         fesRefusalCaseDetails.setRejectType(rejectType);
         return fesRefusalCaseDetailsRepository.save(fesRefusalCaseDetails);
     }

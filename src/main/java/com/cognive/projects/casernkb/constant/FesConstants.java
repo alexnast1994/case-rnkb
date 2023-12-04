@@ -42,6 +42,9 @@ public class FesConstants {
     public static final Integer DICTIONARY_329 = 329;
     public static final Integer DICTIONARY_330 = 330;
     public static final Integer DICTIONARY_331 = 331;
+    public static final Integer DICTIONARY_332 = 332;
+    public static final Integer DICTIONARY_333 = 333;
+    public static final Integer DICTIONARY_335 = 335;
     public static final Integer DICTIONARY_337 = 337;
     public static final Integer DICTIONARY_338 = 338;
     public static final Integer DICTIONARY_342 = 342;
