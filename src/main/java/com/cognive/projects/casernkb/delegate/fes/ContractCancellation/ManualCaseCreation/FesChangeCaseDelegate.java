@@ -9,6 +9,7 @@ import com.cognive.projects.casernkb.model.fes.FesEioDto;
 import com.cognive.projects.casernkb.model.fes.FesFreezingAppliedMeasuresDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentDto;
 import com.cognive.projects.casernkb.model.fes.FesIdentityDocumentGeneralDto;
+import com.cognive.projects.casernkb.model.fes.FesInspectionDetailsDto;
 import com.cognive.projects.casernkb.model.fes.FesMainPageNewDto;
 import com.cognive.projects.casernkb.model.fes.FesMoneyTransfersDto;
 import com.cognive.projects.casernkb.model.fes.FesOperationInformationDto;
@@ -40,6 +41,7 @@ import com.prime.db.rnkb.model.fes.FesFreezingAppliedMeasures;
 import com.prime.db.rnkb.model.fes.FesGeneralInformation;
 import com.prime.db.rnkb.model.fes.FesIdentityDocument;
 import com.prime.db.rnkb.model.fes.FesIdentityDocumentGeneral;
+import com.prime.db.rnkb.model.fes.FesInspectionDetails;
 import com.prime.db.rnkb.model.fes.FesMainPageNew;
 import com.prime.db.rnkb.model.fes.FesMainPageOtherSections;
 import com.prime.db.rnkb.model.fes.FesMoneyTransfers;
@@ -69,6 +71,7 @@ import com.prime.db.rnkb.repository.fes.FesFreezingAppliedMeasuresRepository;
 import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentGeneralRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentRepository;
+import com.prime.db.rnkb.repository.fes.FesInspectionDetailsRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageNewRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageOtherSectionsRepository;
 import com.prime.db.rnkb.repository.fes.FesMoneyTransfersRepository;
@@ -178,6 +181,7 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     private final FesOperationsDetailsRepository fesOperationsDetailsRepository;
     private final FesPreciousMetalDataRepository fesPreciousMetalDataRepository;
     private final FesMoneyTransfersRepository fesMoneyTransfersRepository;
+    private final FesInspectionDetailsRepository fesInspectionDetailsRepository;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
@@ -203,6 +207,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                     fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "3"));
                 } else if (fesCategoryCode.equals("1")) {
                     fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "1"));
+                } else if (fesCategoryCode.equals("3")) {
+                    fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "4"));
                 }
             } else {
                 fesServiceInformation = fesCategory.getFesServiceInformations().get(0);
@@ -233,6 +239,17 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             FesFreezingAppliedMeasuresDto fesFreezingAppliedMeasuresDto = fesCaseSaveDto.getFesCategory().getFesFreezingAppliedMeasures().get(0);
             FesFreezingAppliedMeasures fesFreezingAppliedMeasures = getFesFreezingAppliedMeasures(fesCategory, fesFreezingAppliedMeasuresDto);
             fesFreezingAppliedMeasuresRepository.save(fesFreezingAppliedMeasures);
+        }
+
+        if (fesCategoryCode.equals("3")) {
+            List<FesInspectionDetailsDto> fesInspectionDetailsDtoList = fesCaseSaveDto.getFesCategory().getFesInspectionDetails();
+            List<FesInspectionDetails> existingFesInspectionDetails = fesInspectionDetailsRepository.findByCategoryId(fesCategory);
+            if (fesInspectionDetailsDtoList != null && !fesInspectionDetailsDtoList.isEmpty()) {
+                fesService.deleteMissingItems(fesInspectionDetailsDtoList, existingFesInspectionDetails, fesInspectionDetailsRepository, FesInspectionDetailsDto::getId, FesInspectionDetails::getId);
+                fesService.createAndSaveAllItems(fesInspectionDetailsDtoList, dto -> createOrUpdateFesInspectionDetails(dto, fesCategory), fesInspectionDetailsRepository, fesCategory);
+            } else {
+                fesInspectionDetailsRepository.deleteAll(existingFesInspectionDetails);
+            }
         }
 
         if (fesCategoryCode.equals("1") || (rejectTypeCode != null && rejectTypeCode.equals("1"))) {
@@ -821,6 +838,43 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         entity.setInn(dto.getInn());
         entity.setForeignNum(dto.getForeignNum());
 
+        return entity;
+    }
+
+    private FesInspectionDetails createOrUpdateFesInspectionDetails(FesInspectionDetailsDto dto, FesCategory rootEntity) {
+        FesInspectionDetails entity = new FesInspectionDetails();
+        if (dto.getId() != null) {
+            entity = fesInspectionDetailsRepository.findById(dto.getId()).orElse(entity);
+        }
+        entity.setCategoryId(rootEntity);
+        entity.setPreviousInspectionDate(dto.getPreviousInspectionDate());
+        entity.setCurrentInspectionDate(dto.getCurrentInspectionDate());
+        entity.setCount30(dto.getCount30());
+        entity.setCount50(dto.getCount50());
+        entity.setCountCommon(dto.getCountCommon());
+        entity.setCountCommon1(dto.getCountCommon1());
+        entity.setCountCommon2(dto.getCountCommon2());
+        entity.setCountCommon3(dto.getCountCommon3());
+        entity.setCountCommon0(dto.getCountCommon0());
+        entity.setCountCommon01(dto.getCountCommon01());
+        entity.setCountCommon02(dto.getCountCommon02());
+        entity.setCountCommon03(dto.getCountCommon03());
+        entity.setCountLegal(dto.getCountLegal());
+        entity.setCountLegal1(dto.getCountLegal1());
+        entity.setCountLegal2(dto.getCountLegal2());
+        entity.setCountLegal3(dto.getCountLegal3());
+        entity.setCountLegal0(dto.getCountLegal0());
+        entity.setCountLegal01(dto.getCountLegal01());
+        entity.setCountLegal02(dto.getCountLegal02());
+        entity.setCountLegal03(dto.getCountLegal03());
+        entity.setCountIndividual(dto.getCountIndividual());
+        entity.setCountIndividual1(dto.getCountIndividual1());
+        entity.setCountIndividual2(dto.getCountIndividual2());
+        entity.setCountIndividual3(dto.getCountIndividual3());
+        entity.setCountIndividual0(dto.getCountIndividual0());
+        entity.setCountIndividual01(dto.getCountIndividual01());
+        entity.setCountIndividual02(dto.getCountIndividual02());
+        entity.setCountIndividual03(dto.getCountIndividual03());
         return entity;
     }
 

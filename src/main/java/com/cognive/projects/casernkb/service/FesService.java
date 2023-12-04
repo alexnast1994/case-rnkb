@@ -74,6 +74,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_38;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_CONTRACT_REJECTION;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_FREEZING;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_INSPECTION;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_OPERATION;
 
 @Service
@@ -525,10 +526,10 @@ public class FesService {
 
     private String getSubname(BaseDictionary caseCategory) {
         return caseCategory.getCode().equals("2") ?
-                SUBNAME_FREEZING :
-                caseCategory.getCode().equals("1") ?
-                        SUBNAME_OPERATION :
-                        SUBNAME_CONTRACT_REJECTION;
+                SUBNAME_FREEZING : caseCategory.getCode().equals("3") ?
+                SUBNAME_INSPECTION : caseCategory.getCode().equals("1") ?
+                SUBNAME_OPERATION :
+                SUBNAME_CONTRACT_REJECTION;
     }
 
     public <T, D> void deleteMissingItems(List<D> dtoList, List<T> existingList, JpaRepository<T, Long> repository, Function<D, Long> idExtractorDto, Function<T, Long> idExtractor) {
@@ -570,7 +571,9 @@ public class FesService {
                 Objects.equals(rejectTypeCode, "2") ||
                 Objects.equals(rejectTypeCode, "3") ?
                 getBd(DICTIONARY_14, "1") :
-                getBd(DICTIONARY_14, "2");
+                Objects.equals(fesCategoryCode, "3") ?
+                        getBd(DICTIONARY_14, "5") :
+                        getBd(DICTIONARY_14, "2");
     }
 
     public BaseDictionary getCaseStatus() {
@@ -583,6 +586,9 @@ public class FesService {
         }
         if (Objects.equals(fesCategoryCode, "2")) {
             return getBd(DICTIONARY_18, "10");
+        }
+        if (Objects.equals(fesCategoryCode, "3")) {
+            return getBd(DICTIONARY_18, "11");
         }
         return getBd(DICTIONARY_18, "12");
     }
