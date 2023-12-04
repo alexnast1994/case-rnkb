@@ -968,6 +968,11 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         entity.setPayerBankName(dto.getPayerBankName());
         entity.setPayeeBankName(dto.getPayeeBankName());
         entity.setTransferStatus(fesService.getBd(DICTIONARY_333, getCode(dto.getTransferStatus())));
+        entity.setTerritoryCode(dto.getTerritoryCode());
+        entity.setPayerEspUuid(dto.getPayerEspUuid());
+        entity.setPayeeEspUuid(dto.getPayeeEspUuid());
+        entity.setPayerIpAddress(dto.getPayerIpAddress());
+        entity.setPayerMacAddress(dto.getPayerMacAddress());
         return entity;
     }
 
