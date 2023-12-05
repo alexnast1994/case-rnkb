@@ -280,9 +280,6 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesBankInformationRepository.saveAll(fesBankInformations);
         }
 
-        FesGeneralInformation fesGeneralInformation = getFesGeneralInformation(fesCategory, recordType, fesCaseSaveDto);
-        fesGeneralInformationRepository.save(fesGeneralInformation);
-
         if (fesCategoryCode.equals("2")) {
             FesFreezingAppliedMeasuresDto fesFreezingAppliedMeasuresDto = fesCaseSaveDto.getFesCategory().getFesFreezingAppliedMeasures().get(0);
             FesFreezingAppliedMeasures fesFreezingAppliedMeasures = getFesFreezingAppliedMeasures(fesCategory, fesFreezingAppliedMeasuresDto);
@@ -383,7 +380,11 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             }
 
             fesRefusalCaseDetailsRepository.save(fesRefusalCaseDetails);
+            fesCategory.setFesRefusalCaseDetails(new ArrayList<>(List.of(fesRefusalCaseDetails)));
         }
+
+        FesGeneralInformation fesGeneralInformation = getFesGeneralInformation(fesCategory, recordType, fesCaseSaveDto);
+        fesGeneralInformationRepository.save(fesGeneralInformation);
 
         FesMainPageOtherSections fesMainPageOtherSections = getFesMainPageOtherSections(fesCategory, fesCaseSaveDto);
         fesMainPageOtherSectionsRepository.save(fesMainPageOtherSections);
