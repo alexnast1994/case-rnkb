@@ -811,6 +811,19 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesGeneralInformation = fesCategory.getFesGeneralInformations().get(0);
         }
         fesGeneralInformation.setCategoryId(fesCategory);
+        if (fesGeneralInformation.getNum() == null) {
+            List<FesBankInformation> fesBankInformations = fesCategory.getFesBankInformations();
+            if (fesBankInformations != null && !fesBankInformations.isEmpty()) {
+                FesBankInformation fesBankInformation = fesBankInformations.get(0);
+                String regNum = fesBankInformation.getBankRegNum();
+                String branchNum = fesService.getBranchNum(fesBankInformation);
+
+                String num = fesService.generateNum(regNum, branchNum, fesCategory);
+                if (num != null) {
+                    fesGeneralInformation.setNum(num);
+                }
+            }
+        }
         fesGeneralInformation.setComment(fesCaseSaveDto.getFesCategory().getFesGeneralInformations().get(0).getComment());
         fesGeneralInformation.setRecordType(recordType);
         return fesGeneralInformation;

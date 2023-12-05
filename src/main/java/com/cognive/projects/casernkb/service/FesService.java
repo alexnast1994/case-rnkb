@@ -12,7 +12,9 @@ import com.prime.db.rnkb.model.Payment;
 import com.prime.db.rnkb.model.SysUser;
 import com.prime.db.rnkb.model.VerificationDocument;
 import com.prime.db.rnkb.model.fes.FesAddress;
+import com.prime.db.rnkb.model.fes.FesBankInformation;
 import com.prime.db.rnkb.model.fes.FesBeneficiary;
+import com.prime.db.rnkb.model.fes.FesBranchInformation;
 import com.prime.db.rnkb.model.fes.FesCasesStatus;
 import com.prime.db.rnkb.model.fes.FesCashMoneyTransfers;
 import com.prime.db.rnkb.model.fes.FesCategory;
@@ -36,6 +38,7 @@ import com.prime.db.rnkb.repository.fes.FesBeneficiaryRepository;
 import com.prime.db.rnkb.repository.fes.FesCasesStatusRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
 import com.prime.db.rnkb.repository.fes.FesEioRepository;
+import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentGeneralRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageNewRepository;
@@ -54,6 +57,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -63,6 +67,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.cognive.projects.casernkb.constant.FesConstants.DEFAULT_BRANCHNUM;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_14;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_18;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_305;
@@ -81,6 +86,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_OPERAT
 @RequiredArgsConstructor
 @Slf4j
 public class FesService {
+    private final FesGeneralInformationRepository fesGeneralInformationRepository;
     private final CaseRepository caseRepository;
     private final FesMainPageUserDecisionRepository fesMainPageUserDecisionRepository;
     private final FesMainPageOtherSectionsRepository fesMainPageOtherSectionsRepository;
@@ -599,5 +605,129 @@ public class FesService {
 
     public BaseDictionary getCaseCondition() {
         return getBd(DICTIONARY_305, "2");
+    }
+
+    public String generateNum(String regNum, String branchNum, FesCategory fesCategory) {
+        String currentYearPrefix = String.valueOf(Year.now().getValue());
+        String nnnF = (branchNum != null) ? String.format("%04d", Long.parseLong(branchNum)) : DEFAULT_BRANCHNUM;
+
+        Long categoryId = (fesCategory.getCategory() != null) ? fesCategory.getCategory().getId() : null;
+
+        if (categoryId != null) {
+            List<Long> nums = fesGeneralInformationRepository.findAllNumsByCategory(categoryId)
+                    .stream()
+                    .filter(n -> n.startsWith(currentYearPrefix))
+                    .map(fesCategory.getCategory() != null && !Objects.equals(fesCategory.getCategory().getCode(), "4") ?
+                            this::getLastTwelveDigitsAsLong : this::getLastTenDigitsAsLong)
+                    .sorted().distinct()
+                    .collect(Collectors.toList());
+
+            long num = findFirstMissingNum(nums);
+
+            String delim = "_";
+            String ii = getII(fesCategory);
+            String count = String.format("%010d", num);
+            String nReg = String.format("%04d", Long.parseLong(regNum));
+            return Year.now() + delim + nReg + delim + nnnF + delim + ii + delim + count;
+        }
+        return null;
+    }
+
+    private long getLastTenDigitsAsLong(String num) {
+        String lastTenChars = num.substring(num.length() - 10);
+        try {
+            return Long.parseLong(lastTenChars);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private long getLastTwelveDigitsAsLong(String num) {
+        String lastChars = num.substring(num.length() - 12);
+        try {
+            return Long.parseLong(lastChars);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private long findFirstMissingNum(List<Long> nums) {
+        for (int i = 0; i < nums.size(); i++) {
+            if (nums.get(i) != i) {
+                return i;
+            }
+        }
+        return nums.size();
+    }
+
+    private String getII(FesCategory fesCategory) {
+        String ii = "00";
+        switch (fesCategory.getCategory().getCode()) {
+            case "1":
+                ii = getIIOperation(fesCategory);
+                break;
+            case "2":
+                ii = "03";
+                break;
+            case "3":
+                ii = "04";
+                break;
+            case "4":
+                ii = getIIRefusal(fesCategory);
+                break;
+            case "5":
+                ii = "05";
+                break;
+            case "6":
+                ii = "09";
+                break;
+        }
+        return ii;
+    }
+
+    private String getIIOperation(FesCategory fesCategory) {
+        if (fesCategory.getCaseId().getCaseOperationList() != null && !fesCategory.getCaseId().getCaseOperationList().isEmpty()) {
+            Payment payment = fesCategory.getCaseId().getCaseOperationList().get(0).getPaymentId();
+            if (payment != null && payment.getPaymentSourceStatus() != null &&
+                    Objects.equals(payment.getPaymentSourceStatus().getCode(), "3")) {
+                return "06";
+            }
+        }
+        return "01";
+    }
+
+    private String getIIRefusal(FesCategory fesCategory) {
+        List<FesRefusalCaseDetails> refusalCaseDetails = fesCategory.getFesRefusalCaseDetails();
+
+        if (refusalCaseDetails != null && !refusalCaseDetails.isEmpty()) {
+            FesRefusalCaseDetails fesRefusalCaseDetails = refusalCaseDetails.get(0);
+            if (fesRefusalCaseDetails != null && fesRefusalCaseDetails.getGroundOfRefusal() != null) {
+                String code = fesRefusalCaseDetails.getGroundOfRefusal().getCode();
+                if (Objects.equals(code, "03")) {
+                    return "01";
+                } else if (Objects.equals(code, "09")) {
+                    return "11";
+                }
+            }
+        }
+        return "02";
+    }
+
+    public String getBranchNum(FesBankInformation fesBankInformation) {
+        List<FesBranchInformation> fesBranchInformations = fesBankInformation.getFesBranchInformations();
+
+        if (fesBranchInformations == null || fesBranchInformations.isEmpty()) {
+            return DEFAULT_BRANCHNUM;
+        }
+
+        FesBranchInformation fesBranchInformation = fesBranchInformations.get(0);
+
+        if (fesBankInformation.getReportingAttribute() != null && fesBankInformation.getReportingAttribute()) {
+            return fesBranchInformation.getBranchNum();
+        }
+
+        return fesBranchInformation.getTransferringBranchNum() != null
+                ? fesBranchInformation.getTransferringBranchNum()
+                : DEFAULT_BRANCHNUM;
     }
 }

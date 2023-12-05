@@ -38,6 +38,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.cognive.projects.casernkb.constant.FesConstants.DEFAULT_BRANCHNUM;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_307;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_310;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_312;
@@ -70,10 +71,10 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
         var isOperationRejection = (boolean) execution.getVariable("isOperationRejection");
 
         var recordType = fesService.getBd(DICTIONARY_86, "1");
-        var groundOfRefusal = isOperationRejection ? fesService.getBd(DICTIONARY_318, "07"):
+        var groundOfRefusal = isOperationRejection ? fesService.getBd(DICTIONARY_318, "07") :
                 rejectTypeCode.equals("2") ?
-                fesService.getBd(DICTIONARY_318, "03"):
-                fesService.getBd(DICTIONARY_318, "09");
+                        fesService.getBd(DICTIONARY_318, "03") :
+                        fesService.getBd(DICTIONARY_318, "09");
         var rejectType = fesService.getBd(DICTIONARY_307, rejectTypeCode);
 
         FesDataPrefill fesDataPrefill = fesDataPrefillRepository.findAll().get(0);
@@ -99,6 +100,7 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
         FesGeneralInformation fesGeneralInformation = new FesGeneralInformation();
         fesGeneralInformation.setCategoryId(fesCategory);
         fesGeneralInformation.setRecordType(recordType);
+        fesGeneralInformation.setNum(fesService.generateNum(fesDataPrefill.getBankRegNum(), DEFAULT_BRANCHNUM, fesCategory));
         if (isOperationRejection) {
             fesGeneralInformation.setComment((String) execution.getVariable("conclusion"));
         }
@@ -108,7 +110,7 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
         fesRefusalCaseDetails.setCategoryId(fesCategory);
         fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
         fesRefusalCaseDetails.setGroundOfRefusal(isOperationRejection ?
-                fesService.getBd(DICTIONARY_318, baseRejectCode):
+                fesService.getBd(DICTIONARY_318, baseRejectCode) :
                 groundOfRefusal);
         fesRefusalCaseDetails.setRejectType(rejectType);
         fesRefusalCaseDetailsRepository.save(fesRefusalCaseDetails);

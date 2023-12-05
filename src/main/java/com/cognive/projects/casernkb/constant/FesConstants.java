@@ -64,4 +64,5 @@ public class FesConstants {
     public static final String SUBNAME_CONTRACT_REJECTION = "Отказ от заключения договора";
     public static final String SUBNAME_CANCEL_CONTRACT = "Расторжение договора";
     public static final String SUBNAME_OPERATION_REJECTION = "Отказ в совершении операции";
+    public static final String DEFAULT_BRANCHNUM = "0000";
 }
