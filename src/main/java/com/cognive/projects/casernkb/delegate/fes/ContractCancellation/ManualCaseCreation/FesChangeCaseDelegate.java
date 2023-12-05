@@ -256,6 +256,30 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesServiceInformationRepository.save(fesServiceInformation);
         }
 
+        List<FesBankInformationDto> fesBankInformationDtoList = fesCaseSaveDto.getFesCategory().getFesBankInformations();
+        if (fesBankInformationDtoList != null && !fesBankInformationDtoList.isEmpty()) {
+            List<FesBankInformation> fesBankInformations = new ArrayList<>();
+            for (FesBankInformationDto fesBankInformationDto : fesBankInformationDtoList) {
+                FesBankInformation fesBankInformation = createOrUpdateFesBankInformation(fesBankInformationDto, fesCategory);
+
+                List<FesBranchInformationDto> fesBranchInformationDtoList = fesBankInformationDto.getFesBranchInformations();
+                List<FesBranchInformation> existingFesBranchInformations = fesBankInformation.getId() != null ?
+                        fesBranchInformationRepository.findByBankInformationId(fesBankInformation) : new ArrayList<>();
+                if (fesBranchInformationDtoList != null && !fesBranchInformationDtoList.isEmpty()) {
+                    List<FesBranchInformation> fesBranchInformations = new ArrayList<>();
+                    for (FesBranchInformationDto fesBranchInformationDto : fesBranchInformationDtoList) {
+                        FesBranchInformation fesBranchInformation = createOrUpdateFesBranchInformation(fesBranchInformationDto, fesBankInformation);
+                        fesBranchInformations.add(fesBranchInformation);
+                    }
+                    fesBranchInformationRepository.saveAll(fesBranchInformations);
+                } else {
+                    fesBranchInformationRepository.deleteAll(existingFesBranchInformations);
+                }
+                fesBankInformations.add(fesBankInformation);
+            }
+            fesBankInformationRepository.saveAll(fesBankInformations);
+        }
+
         FesGeneralInformation fesGeneralInformation = getFesGeneralInformation(fesCategory, recordType, fesCaseSaveDto);
         fesGeneralInformationRepository.save(fesGeneralInformation);
 
@@ -312,30 +336,6 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             } else {
                 fesUnusualOperationFeatureRepository.deleteAll(existingFesUnusualOperationFeatures);
             }
-        }
-
-        List<FesBankInformationDto> fesBankInformationDtoList = fesCaseSaveDto.getFesCategory().getFesBankInformations();
-        if (fesBankInformationDtoList != null && !fesBankInformationDtoList.isEmpty()) {
-            List<FesBankInformation> fesBankInformations = new ArrayList<>();
-            for (FesBankInformationDto fesBankInformationDto : fesBankInformationDtoList) {
-                FesBankInformation fesBankInformation = createOrUpdateFesBankInformation(fesBankInformationDto, fesCategory);
-
-                List<FesBranchInformationDto> fesBranchInformationDtoList = fesBankInformationDto.getFesBranchInformations();
-                List<FesBranchInformation> existingFesBranchInformations = fesBankInformation.getId() != null ?
-                        fesBranchInformationRepository.findByBankInformationId(fesBankInformation) : new ArrayList<>();
-                if (fesBranchInformationDtoList != null && !fesBranchInformationDtoList.isEmpty()) {
-                    List<FesBranchInformation> fesBranchInformations = new ArrayList<>();
-                    for (FesBranchInformationDto fesBranchInformationDto : fesBranchInformationDtoList) {
-                        FesBranchInformation fesBranchInformation = createOrUpdateFesBranchInformation(fesBranchInformationDto, fesBankInformation);
-                        fesBranchInformations.add(fesBranchInformation);
-                    }
-                    fesBranchInformationRepository.saveAll(fesBranchInformations);
-                } else {
-                    fesBranchInformationRepository.deleteAll(existingFesBranchInformations);
-                }
-                fesBankInformations.add(fesBankInformation);
-            }
-            fesBankInformationRepository.saveAll(fesBankInformations);
         }
 
         List<FesRefusalReasonDto> fesRefusalReasonDtoList = fesCaseSaveDto.getFesCategory().getFesRefusalReasons();
@@ -812,16 +812,14 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         }
         fesGeneralInformation.setCategoryId(fesCategory);
         if (fesGeneralInformation.getNum() == null) {
-            List<FesBankInformation> fesBankInformations = fesCategory.getFesBankInformations();
-            if (fesBankInformations != null && !fesBankInformations.isEmpty()) {
-                FesBankInformation fesBankInformation = fesBankInformations.get(0);
-                String regNum = fesBankInformation.getBankRegNum();
-                String branchNum = fesService.getBranchNum(fesBankInformation);
+            FesBankInformationDto fesBankInformation = fesCaseSaveDto.getFesCategory().getFesBankInformations().get(0);
 
-                String num = fesService.generateNum(regNum, branchNum, fesCategory);
-                if (num != null) {
-                    fesGeneralInformation.setNum(num);
-                }
+            String regNum = fesBankInformation.getBankRegNum();
+            String branchNum = fesBankInformation.getFesBranchInformations().get(0).getBranchNum();
+
+            String num = fesService.generateNum(regNum, branchNum, fesCategory);
+            if (num != null) {
+                fesGeneralInformation.setNum(num);
             }
         }
         fesGeneralInformation.setComment(fesCaseSaveDto.getFesCategory().getFesGeneralInformations().get(0).getComment());
