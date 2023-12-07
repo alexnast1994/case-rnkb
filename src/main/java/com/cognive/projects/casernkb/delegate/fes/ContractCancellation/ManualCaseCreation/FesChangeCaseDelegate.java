@@ -755,6 +755,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             for (FesIdentityDocumentGeneralDto fesIdentityDocumentGeneralDto : fesIdentityDocumentGeneralDtoList) {
                 FesIdentityDocumentGeneral fesIdentityDocumentGeneral = createOrUpdateFesIdentityDocumentGeneral(fesIdentityDocumentGeneralDto, fesParticipantIndividual);
 
+                fesIdentityDocumentGeneralRepository.save(fesIdentityDocumentGeneral);
+
                 List<FesIdentityDocumentDto> fesIdentityDocumentDtoList = fesIdentityDocumentGeneralDto.getFesIdentityDocuments();
                 List<FesIdentityDocument> existingFesIdentityDocuments = fesIdentityDocumentGeneral.getId() > 0 ?
                         fesIdentityDocumentRepository.findByIdentityDocumentGeneralId(fesIdentityDocumentGeneral) : new ArrayList<>();
@@ -773,6 +775,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                     }
                     fesIdentityDocumentRepository.saveAll(fesIdentityDocuments);
                     fesIdentityDocumentGeneral.setFesIdentityDocuments(fesIdentityDocuments);
+                } else {
+                    fesIdentityDocumentRepository.deleteAll(existingFesIdentityDocuments);
                 }
 
                 List<FesRightOfResidenceDocumentDto> fesRightOfResidenceDocumentDtoList = fesIdentityDocumentGeneralDto.getFesRightOfResidenceDocuments();
@@ -793,11 +797,16 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                     }
                     fesRightOfResidenceDocumentRepository.saveAll(fesRightOfResidenceDocuments);
                     fesIdentityDocumentGeneral.setFesRightOfResidenceDocuments(fesRightOfResidenceDocuments);
+                } else {
+                    fesRightOfResidenceDocumentRepository.deleteAll(existingFesRightOfResidenceDocuments);
                 }
+
                 fesIdentityDocumentGenerals.add(fesIdentityDocumentGeneral);
             }
             fesIdentityDocumentGeneralRepository.saveAll(fesIdentityDocumentGenerals);
             fesParticipantIndividual.setFesIdentityDocumentGenerals(fesIdentityDocumentGenerals);
+        } else {
+            fesIdentityDocumentGeneralRepository.deleteAll(existingFesIdentityDocumentGenerals);
         }
         fesParticipantIndividuals.add(fesParticipantIndividual);
     }
