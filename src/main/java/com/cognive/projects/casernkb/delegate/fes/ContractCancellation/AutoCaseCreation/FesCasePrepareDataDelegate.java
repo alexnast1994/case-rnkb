@@ -4,11 +4,10 @@ import com.cognive.projects.casernkb.model.fes.FesAutoContractsCancellationDto;
 import com.cognive.projects.casernkb.model.fes.FesCaseAutoSaveDto;
 import com.cognive.projects.casernkb.service.FesService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.prime.db.rnkb.model.Case;
 import com.prime.db.rnkb.model.Client;
 import com.prime.db.rnkb.model.Payment;
-import com.prime.db.rnkb.repository.CaseRepository;
 import com.prime.db.rnkb.repository.ClientRepository;
+import com.prime.db.rnkb.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
@@ -24,7 +23,7 @@ public class FesCasePrepareDataDelegate implements JavaDelegate {
     private final ClientRepository clientRepository;
     private final ObjectMapper objectMapper;
     private final FesService fesService;
-    private final CaseRepository caseRepository;
+    private final PaymentRepository paymentRepository;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
@@ -44,8 +43,7 @@ public class FesCasePrepareDataDelegate implements JavaDelegate {
         Client client;
         if (rejectType.equals("1")) {
             isOperationRejection = true;
-            Case aCase = caseRepository.findById(fesCaseAutoSaveDto.getCaseId()).orElseThrow();
-            Payment payment = aCase.getCaseOperationList().get(0).getPaymentId();
+            Payment payment = paymentRepository.findById(fesCaseAutoSaveDto.getPaymentId()).orElseThrow();
             client = payment.getPayerClientId();
             execution.setVariable("payment", payment);
             execution.setVariable("baseRejectCode", fesCaseAutoSaveDto.getBaseRejectCode());
