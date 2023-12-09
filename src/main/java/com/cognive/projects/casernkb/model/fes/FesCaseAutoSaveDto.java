@@ -12,10 +12,14 @@ public class FesCaseAutoSaveDto implements Serializable {
 
     private long clientId;
     private long caseId;
-    private long paymentId;
+    private Long paymentId;
     private String rejectType;
     private String baseRejectCode;
     private List<String> causeReject;
     private List<String> codeUnusualOp;
     private String conclusion;
+    private Long responsibleUser;
+    private String operationStatus;
+    private String operationType;
+    private List<String> additionalOperationType;
 }

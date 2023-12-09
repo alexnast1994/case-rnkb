@@ -15,10 +15,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+import static com.cognive.projects.casernkb.constant.FesConstants.WRONG_CLIENT_TYPE;
+
 @Component
 @RequiredArgsConstructor
 public class FesCasePrepareDataDelegate implements JavaDelegate {
-    public static final String WRONG_CLIENT_TYPE = "0";
 
     private final ClientRepository clientRepository;
     private final ObjectMapper objectMapper;
@@ -35,21 +36,32 @@ public class FesCasePrepareDataDelegate implements JavaDelegate {
 
 
         FesCaseAutoSaveDto fesCaseAutoSaveDto = data.containsKey("payload") ?
-            objectMapper.convertValue(data.get("payload"), FesAutoContractsCancellationDto.class).getFesCaseAutoSaveDto():
-            objectMapper.convertValue(data, FesCaseAutoSaveDto.class);
+                objectMapper.convertValue(data.get("payload"), FesAutoContractsCancellationDto.class).getFesCaseAutoSaveDto() :
+                objectMapper.convertValue(data, FesCaseAutoSaveDto.class);
 
         var rejectType = fesCaseAutoSaveDto.getRejectType();
         var isOperationRejection = false;
+        var isOperation = false;
         Client client;
-        if (rejectType.equals("1")) {
-            isOperationRejection = true;
+        if (fesCaseAutoSaveDto.getPaymentId() != null) {
             Payment payment = paymentRepository.findById(fesCaseAutoSaveDto.getPaymentId()).orElseThrow();
             client = payment.getPayerClientId();
             execution.setVariable("payment", payment);
-            execution.setVariable("baseRejectCode", fesCaseAutoSaveDto.getBaseRejectCode());
-            execution.setVariable("causeReject", fesCaseAutoSaveDto.getCauseReject());
-            execution.setVariable("codeUnusualOp", fesCaseAutoSaveDto.getCodeUnusualOp());
-            execution.setVariable("conclusion", fesCaseAutoSaveDto.getConclusion());
+
+            if (rejectType == null) {
+                isOperation = true;
+                execution.setVariable("responsibleUser", fesCaseAutoSaveDto.getResponsibleUser());
+                execution.setVariable("operationStatus", fesCaseAutoSaveDto.getOperationStatus());
+                execution.setVariable("operationType", fesCaseAutoSaveDto.getOperationType());
+                execution.setVariable("additionalOperationType", fesCaseAutoSaveDto.getAdditionalOperationType());
+
+            } else {
+                isOperationRejection = true;
+                execution.setVariable("baseRejectCode", fesCaseAutoSaveDto.getBaseRejectCode());
+                execution.setVariable("causeReject", fesCaseAutoSaveDto.getCauseReject());
+                execution.setVariable("codeUnusualOp", fesCaseAutoSaveDto.getCodeUnusualOp());
+                execution.setVariable("conclusion", fesCaseAutoSaveDto.getConclusion());
+            }
         } else {
             var clientId = fesCaseAutoSaveDto.getClientId();
             client = clientRepository.findById(clientId).orElseThrow();
@@ -58,6 +70,7 @@ public class FesCasePrepareDataDelegate implements JavaDelegate {
         String clientType = fesService.checkClientType(client);
 
         execution.setVariable("isOperationRejection", isOperationRejection);
+        execution.setVariable("isOperation", isOperation);
         execution.setVariable("rejectType", rejectType);
         execution.setVariable("clientType", clientType);
         execution.setVariable("clientTypeCode", clientTypeCode);

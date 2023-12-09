@@ -65,4 +65,6 @@ public class FesConstants {
     public static final String SUBNAME_CANCEL_CONTRACT = "Расторжение договора";
     public static final String SUBNAME_OPERATION_REJECTION = "Отказ в совершении операции";
     public static final String DEFAULT_BRANCHNUM = "0000";
+    public static final String WRONG_CLIENT_TYPE = "0";
+    public static final String PARENT_BANK_BIC = "043510607";
 }
