@@ -58,8 +58,7 @@ public class FesCreateMainTablesDelegate implements JavaDelegate {
                 fesService.getBd(DICTIONARY_14, "1");
         var caseObjectSubType = isOperation ? fesService.getBd(DICTIONARY_309, "1") :
                 fesService.getBd(DICTIONARY_309, "4");
-        var status = isOperation ? fesService.getBd(DICTIONARY_38, "2") :
-                fesService.getBd(DICTIONARY_38, "1");
+        var status = fesService.getBd(DICTIONARY_38, "1");
         var caseStatus = isOperation ? fesService.getBd(DICTIONARY_305, "2") :
                 fesService.getBd(DICTIONARY_305, "1");
         var responsibleUser = isOperation ?
