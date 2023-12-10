@@ -6,14 +6,11 @@ import com.prime.db.rnkb.model.Payment;
 import com.prime.db.rnkb.model.fes.FesCasesStatus;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesMainPageNew;
-import com.prime.db.rnkb.model.fes.FesMainPageOtherSections;
-import com.prime.db.rnkb.model.fes.FesMainPageUserDecision;
 import com.prime.db.rnkb.repository.CaseRepository;
 import com.prime.db.rnkb.repository.SysUserRepository;
 import com.prime.db.rnkb.repository.fes.FesCasesStatusRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageNewRepository;
-import com.prime.db.rnkb.repository.fes.FesMainPageOtherSectionsRepository;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
@@ -42,7 +39,6 @@ public class FesCreateMainTablesDelegate implements JavaDelegate {
     private final FesCasesStatusRepository fesCasesStatusRepository;
     private final FesService fesService;
     private final SysUserRepository sysUserRepository;
-    private final FesMainPageOtherSectionsRepository fesMainPageOtherSectionsRepository;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
@@ -103,19 +99,19 @@ public class FesCreateMainTablesDelegate implements JavaDelegate {
         }
         fesMainPageNewRepository.save(fesMainPageNew);
 
-        if (isOperation) {
-            FesMainPageOtherSections fesMainPageOtherSections = new FesMainPageOtherSections();
-            fesMainPageOtherSections.setCasesStatusId(fesCasesStatus);
-            fesMainPageOtherSections.setResponsibleUser(responsibleUser);
-            fesMainPageOtherSectionsRepository.save(fesMainPageOtherSections);
-
-            FesMainPageUserDecision fesMainPageUserDecision = new FesMainPageUserDecision();
-            fesMainPageUserDecision.setCategoryId(fesCategory);
-            fesMainPageUserDecision.setChangingDate(LocalDateTime.now());
-            fesMainPageUserDecision.setCaseStatus(status);
-            fesMainPageUserDecision.setCaseCondition(caseStatus);
-            fesMainPageUserDecision.setResponsibleUser(responsibleUser);
-        }
+//        if (isOperation) {
+//            FesMainPageOtherSections fesMainPageOtherSections = new FesMainPageOtherSections();
+//            fesMainPageOtherSections.setCasesStatusId(fesCasesStatus);
+//            fesMainPageOtherSections.setResponsibleUser(responsibleUser);
+//            fesMainPageOtherSectionsRepository.save(fesMainPageOtherSections);
+//
+//            FesMainPageUserDecision fesMainPageUserDecision = new FesMainPageUserDecision();
+//            fesMainPageUserDecision.setCategoryId(fesCategory);
+//            fesMainPageUserDecision.setChangingDate(LocalDateTime.now());
+//            fesMainPageUserDecision.setCaseStatus(status);
+//            fesMainPageUserDecision.setCaseCondition(caseStatus);
+//            fesMainPageUserDecision.setResponsibleUser(responsibleUser);
+//        }
 
         execution.setVariable("fesCategory", fesCategory);
         execution.setVariable("fesCategoryId", fesCategory.getId());
