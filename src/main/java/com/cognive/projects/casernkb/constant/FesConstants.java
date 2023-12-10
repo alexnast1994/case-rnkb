@@ -67,4 +67,14 @@ public class FesConstants {
     public static final String DEFAULT_BRANCHNUM = "0000";
     public static final String WRONG_CLIENT_TYPE = "0";
     public static final String PARENT_BANK_BIC = "043510607";
+    public static final String LEGAL = "Legal";
+    public static final String FOREIGN = "Foreign";
+    public static final String INDIVIDUAL = "Individual";
+    public static final String UNKNOWN_RESIDENCE_STATUS = "9";
+    public static final String RESIDENT = "1";
+    public static final String NON_RESIDENT = "0";
+    public static final String FES_ADDRESS_OF_REG = "6";
+    public static final String FES_ADDRESS_LOCATION = "7";
+    public static final String ADDRESS_OF_REG = "5";
+    public static final String ADDRESS_LOCATION = "3";
 }

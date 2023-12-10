@@ -96,10 +96,13 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
                 sysUserRepository.findById((Long) execution.getVariable("responsibleUser")).orElse(null) : null;
 
         var recordType = fesService.getBd(DICTIONARY_86, "1");
-        var groundOfRefusal = isOperationRejection ? fesService.getBd(DICTIONARY_318, "07") :
-                rejectTypeCode.equals("2") ?
-                        fesService.getBd(DICTIONARY_318, "03") :
-                        fesService.getBd(DICTIONARY_318, "09");
+        BaseDictionary groundOfRefusal = null;
+        if (!isOperation) {
+            groundOfRefusal = isOperationRejection ? fesService.getBd(DICTIONARY_318, "07") :
+                    rejectTypeCode.equals("2") ?
+                            fesService.getBd(DICTIONARY_318, "03") :
+                            fesService.getBd(DICTIONARY_318, "09");
+        }
         var rejectType = fesService.getBd(DICTIONARY_307, rejectTypeCode);
 
         FesDataPrefill fesDataPrefill = fesDataPrefillRepository.findAll().get(0);
@@ -113,8 +116,10 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
         fesBankInformationRepository.save(fesBankInformation);
 
         FesServiceInformation fesServiceInformation = new FesServiceInformation();
-        if (rejectTypeCode.equals("2") || rejectTypeCode.equals("3")) {
-            fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "01"));
+        if (!isOperation) {
+            if (rejectTypeCode.equals("2") || rejectTypeCode.equals("3")) {
+                fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "01"));
+            }
         }
         fesServiceInformation.setCategoryId(fesCategory);
         fesServiceInformation.setFormatVersion(fesDataPrefill.getFormatVersion());
@@ -167,7 +172,7 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
                 FesOperationsReason fesOperationsReason = new FesOperationsReason();
                 fesOperationsReason.setCategoryId(fesCategory);
                 if (baseDocs != null) {
-//                    fesOperationsReason.setDocType(baseDocs.getDocCode());
+                    fesOperationsReason.setDocType(baseDocs.getDocCode());
                     fesOperationsReason.setDocOtherName(baseDocs.getDocTypeOtherName());
                     fesOperationsReason.setDocDate(baseDocs.getDocDate());
                     fesOperationsReason.setDocNum(baseDocs.getDocNum());

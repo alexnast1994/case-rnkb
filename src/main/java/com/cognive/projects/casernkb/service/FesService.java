@@ -8,6 +8,7 @@ import com.prime.db.rnkb.model.Case;
 import com.prime.db.rnkb.model.Client;
 import com.prime.db.rnkb.model.ClientIndividual;
 import com.prime.db.rnkb.model.ClientRelation;
+import com.prime.db.rnkb.model.OtherPersons;
 import com.prime.db.rnkb.model.Payment;
 import com.prime.db.rnkb.model.SysUser;
 import com.prime.db.rnkb.model.VerificationDocument;
@@ -67,20 +68,29 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.cognive.projects.casernkb.constant.FesConstants.ADDRESS_OF_REG;
 import static com.cognive.projects.casernkb.constant.FesConstants.DEFAULT_BRANCHNUM;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_14;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_18;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_305;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_309;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_321;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_322;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_323;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_325;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_331;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_38;
+import static com.cognive.projects.casernkb.constant.FesConstants.FES_ADDRESS_LOCATION;
+import static com.cognive.projects.casernkb.constant.FesConstants.FES_ADDRESS_OF_REG;
+import static com.cognive.projects.casernkb.constant.FesConstants.FOREIGN;
+import static com.cognive.projects.casernkb.constant.FesConstants.INDIVIDUAL;
+import static com.cognive.projects.casernkb.constant.FesConstants.LEGAL;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_CONTRACT_REJECTION;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_FREEZING;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_INSPECTION;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_OPERATION;
+import static com.cognive.projects.casernkb.constant.FesConstants.WRONG_CLIENT_TYPE;
 
 @Service
 @RequiredArgsConstructor
@@ -99,10 +109,6 @@ public class FesService {
     private static final String DOC_PASSPORT_RF = "21";
     private static final String DOC_PASSPORT_ZAGRAN = "22";
     private static final String[] DOC_RF = {"21", "22", "26", "27"};
-    private static final String LEGAL = "Legal";
-    private static final String FOREIGN = "Foreign";
-    private static final String INDIVIDUAL = "Individual";
-    private static final String WRONG_CLIENT_TYPE = "0";
     private static final String UNKNOWN_RESIDENCE_STATUS = "9";
     private static final String RESIDENT = "1";
     private static final String NON_RESIDENT = "0";
@@ -626,7 +632,9 @@ public class FesService {
 
             String delim = "_";
             String ii = getII(fesCategory);
-            String count = String.format("%010d", num);
+            String count = Objects.equals(fesCategory.getCategory().getCode(), "4") ?
+                    String.format("%010d", num):
+                    String.format("%012d", num);
             String nReg = String.format("%04d", Long.parseLong(regNum));
             return Year.now() + delim + nReg + delim + nnnF + delim + ii + delim + count;
         }
@@ -729,5 +737,61 @@ public class FesService {
         return fesBranchInformation.getTransferringBranchNum() != null
                 ? fesBranchInformation.getTransferringBranchNum()
                 : DEFAULT_BRANCHNUM;
+    }
+
+    public void addParticipantChild(Client client, FesParticipant fesParticipant) {
+        var clientType = checkClientType(client);
+        if (Objects.equals(clientType, INDIVIDUAL)) {
+            addParticipantIndividualGeneric(fesParticipant, null, null, client);
+        } else if (Objects.equals(clientType, LEGAL)) {
+            addParticipantLegal(fesParticipant, null, client);
+            var clientAddressOfReg = findMainLegalAddress(client.getAddressList(), ADDRESS_OF_REG);
+            var clientAddressLocation = findMainLegalAddress(client.getAddressList(), "3");
+            var addressOfRegType = getBd(DICTIONARY_331, FES_ADDRESS_OF_REG);
+            var addressLocationType = getBd(DICTIONARY_331, FES_ADDRESS_LOCATION);
+            addAddress(null, fesParticipant, null, null, addressOfRegType, clientAddressOfReg);
+            addAddress(null, fesParticipant, null, null, addressLocationType, clientAddressLocation);
+        } else {
+            //foreign
+        }
+    }
+
+    public Client getOtherPersonClientFromList(List<OtherPersons> otherPersonsList, String otherPersonTypeCode) {
+        return otherPersonsList.stream()
+                .filter(otherPersons -> Objects.equals(otherPersons.getOtherPersonType().getCode(), otherPersonTypeCode))
+                .findFirst()
+                .map(OtherPersons::getClientId)
+                .orElse(null);
+    }
+
+    public FesParticipant saveFesParticipantOp(FesCategory fesCategory, Client client, String participantStatus) {
+        FesParticipant fesParticipant = new FesParticipant();
+        fesParticipant.setCategoryId(fesCategory);
+        fesParticipant.setParticipantStatus(getBd(DICTIONARY_321, participantStatus));
+        var clientType = client.getClientType();
+        fesParticipant.setParticipantType(getParticipantType(clientType));
+        String residenceStatus = determineResidenceStatus(client.getIsResidentRus(), null);
+        fesParticipant.setParticipantResidentFeature(getBd(DICTIONARY_323, residenceStatus));
+        fesParticipant.setParticipantFeature(client.getClientMark());
+        return fesParticipantRepository.save(fesParticipant);
+    }
+
+    private BaseDictionary getParticipantType(BaseDictionary clientType) {
+        if (clientType != null) {
+            switch (clientType.getCode()) {
+                case "0":
+                    return null;
+                case "2":
+                    return getBd(DICTIONARY_322, "5");
+                case "5":
+                    return getBd(DICTIONARY_322, "3");
+                case "4":
+                case "6":
+                    return getBd(DICTIONARY_322, "2");
+                default:
+                    return getBd(DICTIONARY_322, "1");
+            }
+        }
+        return null;
     }
 }
