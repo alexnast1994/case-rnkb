@@ -262,6 +262,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             for (FesBankInformationDto fesBankInformationDto : fesBankInformationDtoList) {
                 FesBankInformation fesBankInformation = createOrUpdateFesBankInformation(fesBankInformationDto, fesCategory);
 
+                fesBankInformationRepository.save(fesBankInformation);
+
                 List<FesBranchInformationDto> fesBranchInformationDtoList = fesBankInformationDto.getFesBranchInformations();
                 List<FesBranchInformation> existingFesBranchInformations = fesBankInformation.getId() != null ?
                         fesBranchInformationRepository.findByBankInformationId(fesBankInformation) : new ArrayList<>();
@@ -530,6 +532,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                             for (FesParticipantIndividualDto fesParticipantIndividualDto : fesParticipantIndividualDtoList) {
                                 FesParticipantIndividual fesParticipantIndividual = createOrUpdateFesParticipantIndividual(fesParticipantIndividualDto, null, null, fesEio);
 
+                                fesParticipantIndividualRepository.save(fesParticipantIndividual);
+
                                 fesDocumentsProcessing(fesParticipantIndividuals, fesParticipantIndividualDto, fesParticipantIndividual);
                             }
                             fesParticipantIndividualRepository.saveAll(fesParticipantIndividuals);
@@ -582,6 +586,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                             for (FesParticipantIndividualDto fesParticipantIndividualDto : fesParticipantIndividualDtoList) {
                                 FesParticipantIndividual fesParticipantIndividual = createOrUpdateFesParticipantIndividual(fesParticipantIndividualDto, null, fesBeneficiary, null);
 
+                                fesParticipantIndividualRepository.save(fesParticipantIndividual);
+
                                 fesDocumentsProcessing(fesParticipantIndividuals, fesParticipantIndividualDto, fesParticipantIndividual);
                             }
                             fesParticipantIndividualRepository.saveAll(fesParticipantIndividuals);
@@ -618,6 +624,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                     List<FesParticipantIndividual> fesParticipantIndividuals = new ArrayList<>();
                     for (FesParticipantIndividualDto fesParticipantIndividualDto : fesParticipantIndividualDtoList) {
                         FesParticipantIndividual fesParticipantIndividual = createOrUpdateFesParticipantIndividual(fesParticipantIndividualDto, fesParticipant, null, null);
+
+                        fesParticipantIndividualRepository.save(fesParticipantIndividual);
 
                         fesDocumentsProcessing(fesParticipantIndividuals, fesParticipantIndividualDto, fesParticipantIndividual);
                     }
@@ -663,6 +671,8 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                     List<FesParticipantForeign> fesParticipantForeigns = new ArrayList<>();
                     for (FesParticipantForeignDto fesParticipantForeignDto : fesParticipantForeignDtoList) {
                         FesParticipantForeign fesParticipantForeign = createOrUpdateFesParticipantForeign(fesParticipantForeignDto, fesParticipant);
+
+                        fesParticipantForeignRepository.save(fesParticipantForeign);
 
                         List<FesParticipantForeignIdentifierDto> fesParticipantForeignIdentifierDtoList = fesParticipantForeignDto.getFesParticipantForeignIdentifiers();
                         List<FesParticipantForeignIdentifier> existingFesParticipantForeignIdentifiers = fesParticipantForeign.getId() > 0 ?
