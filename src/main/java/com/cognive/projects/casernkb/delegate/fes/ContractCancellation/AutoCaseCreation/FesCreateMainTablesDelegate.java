@@ -95,6 +95,8 @@ public class FesCreateMainTablesDelegate implements JavaDelegate {
             fillMainPageNew(fesMainPageNew, payment);
             if (isOperation) {
                 fesMainPageNew.setOperationStatus(payment.getPaymentSourceStatus());
+                fesMainPageNew.setPaymentReference(payment.getPaymentReference() != null ?
+                        payment.getPaymentReference() : payment.getExId());
             }
         }
         fesMainPageNewRepository.save(fesMainPageNew);

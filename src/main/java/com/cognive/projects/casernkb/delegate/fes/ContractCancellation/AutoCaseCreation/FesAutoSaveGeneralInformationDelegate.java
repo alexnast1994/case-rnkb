@@ -58,6 +58,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_312
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_318;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_320;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_322;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_332;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_333;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_86;
 import static com.cognive.projects.casernkb.constant.FesConstants.PARENT_BANK_BIC;
@@ -198,7 +199,7 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
 
                 FesMoneyTransfers fesMoneyTransfers = new FesMoneyTransfers();
                 fesMoneyTransfers.setCategoryId(fesCategory);
-                fesMoneyTransfers.setTransferType(fesService.getBd(DICTIONARY_322, "1"));
+                fesMoneyTransfers.setTransferType(fesService.getBd(DICTIONARY_332, "1"));
                 fesMoneyTransfers.setMoneyTransferOperatorType(getMoneyTransferOperatorType(payment));
                 fesMoneyTransfers.setPayerAccountNum(payment.getPayerAccountNumber());
                 if (payment.getBankPayerId() != null) {

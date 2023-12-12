@@ -661,11 +661,11 @@ public class FesService {
 
     private long findFirstMissingNum(List<Long> nums) {
         for (int i = 0; i < nums.size(); i++) {
-            if (nums.get(i) != i) {
-                return i;
+            if (nums.get(i) != i+1) {
+                return i+1;
             }
         }
-        return nums.size();
+        return nums.size() + 1;
     }
 
     private String getII(FesCategory fesCategory) {
