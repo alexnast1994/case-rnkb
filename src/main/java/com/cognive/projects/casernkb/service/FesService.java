@@ -623,8 +623,7 @@ public class FesService {
             List<Long> nums = fesGeneralInformationRepository.findAllNumsByCategory(categoryId)
                     .stream()
                     .filter(n -> n.startsWith(currentYearPrefix))
-                    .map(fesCategory.getCategory() != null && !Objects.equals(fesCategory.getCategory().getCode(), "4") ?
-                            this::getLastTwelveDigitsAsLong : this::getLastTenDigitsAsLong)
+                    .map(this::getDigitsBeforeLastUnderscoreAsLong)
                     .sorted().distinct()
                     .collect(Collectors.toList());
 
@@ -641,23 +640,18 @@ public class FesService {
         return null;
     }
 
-    private long getLastTenDigitsAsLong(String num) {
-        String lastTenChars = num.substring(num.length() - 10);
+    private long getDigitsBeforeLastUnderscoreAsLong(String num) {
+        int lastIndex = num.lastIndexOf('_');
+
+        String digits = (lastIndex != -1) ? num.substring(lastIndex + 1) : num;
+
         try {
-            return Long.parseLong(lastTenChars);
+            return Long.parseLong(digits);
         } catch (NumberFormatException e) {
             return 0;
         }
     }
 
-    private long getLastTwelveDigitsAsLong(String num) {
-        String lastChars = num.substring(num.length() - 12);
-        try {
-            return Long.parseLong(lastChars);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
-    }
 
     private long findFirstMissingNum(List<Long> nums) {
         for (int i = 0; i < nums.size(); i++) {
