@@ -257,8 +257,8 @@ def clientRelation = execution.getVariable("clientRelationBase") as ClientRelati
 
 rjClientRe.rjclient = rjClient
 rjClientRe.exToClientId = client
-rjClientRe.toClientId = clientRelation.toClientId
 if(clientRelation!=null){
+rjClientRe.toClientId = clientRelation.toClientId
     rjClientRe.relationType = clientRelation.relationType
     rjClientRe.isEIOChild = clientRelation.iseiochild
     if(client.inn!=null){
