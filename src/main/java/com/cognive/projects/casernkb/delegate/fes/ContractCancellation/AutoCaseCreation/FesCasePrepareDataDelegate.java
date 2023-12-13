@@ -43,9 +43,11 @@ public class FesCasePrepareDataDelegate implements JavaDelegate {
         var isOperationRejection = false;
         var isOperation = false;
         Client client;
+        Client clientPayee;
         if (fesCaseAutoSaveDto.getPaymentId() != null) {
             Payment payment = paymentRepository.findById(fesCaseAutoSaveDto.getPaymentId()).orElseThrow();
             client = payment.getPayerClientId();
+            clientPayee = payment.getPayeeClientId();
             execution.setVariable("payment", payment);
 
             if (rejectType == null) {
@@ -61,6 +63,7 @@ public class FesCasePrepareDataDelegate implements JavaDelegate {
                 execution.setVariable("causeReject", fesCaseAutoSaveDto.getCauseReject());
                 execution.setVariable("codeUnusualOp", fesCaseAutoSaveDto.getCodeUnusualOp());
                 execution.setVariable("conclusion", fesCaseAutoSaveDto.getConclusion());
+                execution.setVariable("clientPayee", clientPayee);
             }
         } else {
             var clientId = fesCaseAutoSaveDto.getClientId();

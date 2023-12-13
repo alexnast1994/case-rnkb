@@ -20,7 +20,6 @@ import com.prime.db.rnkb.model.fes.FesPreciousMetalData;
 import com.prime.db.rnkb.model.fes.FesRefusalCaseDetails;
 import com.prime.db.rnkb.model.fes.FesRefusalReason;
 import com.prime.db.rnkb.model.fes.FesServiceInformation;
-import com.prime.db.rnkb.model.fes.FesSuspiciousActivityIdentifier;
 import com.prime.db.rnkb.model.fes.FesUnusualOperationFeature;
 import com.prime.db.rnkb.repository.PrecMaterialsRepository;
 import com.prime.db.rnkb.repository.SysUserRepository;
@@ -35,7 +34,6 @@ import com.prime.db.rnkb.repository.fes.FesPreciousMetalDataRepository;
 import com.prime.db.rnkb.repository.fes.FesRefusalCaseDetailsRepository;
 import com.prime.db.rnkb.repository.fes.FesRefusalReasonRepository;
 import com.prime.db.rnkb.repository.fes.FesServiceInformationRepository;
-import com.prime.db.rnkb.repository.fes.FesSuspiciousActivityIdentifierRepository;
 import com.prime.db.rnkb.repository.fes.FesUnusualOperationFeatureRepository;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
@@ -73,7 +71,6 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
     private final FesGeneralInformationRepository fesGeneralInformationRepository;
     private final FesRefusalCaseDetailsRepository fesRefusalCaseDetailsRepository;
     private final FesOperationInformationRepository fesOperationInformationRepository;
-    private final FesSuspiciousActivityIdentifierRepository fesSuspiciousActivityIdentifierRepository;
     private final FesUnusualOperationFeatureRepository fesUnusualOperationFeatureRepository;
     private final FesService fesService;
     private final FesRefusalReasonRepository fesRefusalReasonRepository;
@@ -120,6 +117,8 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
         if (!isOperation) {
             if (rejectTypeCode.equals("2") || rejectTypeCode.equals("3")) {
                 fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "01"));
+            } else if (rejectTypeCode.equals("1")) {
+                fesServiceInformation.setInformationType(fesService.getBd(DICTIONARY_312, "02"));
             }
         }
         fesServiceInformation.setCategoryId(fesCategory);
@@ -232,11 +231,6 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
             }
             fesOperationInformationRepository.save(fesOperationInformation);
 
-            FesSuspiciousActivityIdentifier fesSuspiciousActivityIdentifier = new FesSuspiciousActivityIdentifier();
-            fesSuspiciousActivityIdentifier.setCategoryId(fesCategory);
-            fesSuspiciousActivityIdentifier.setSuspiciousActivityIdentifier("TO-DO");
-            fesSuspiciousActivityIdentifierRepository.save(fesSuspiciousActivityIdentifier);
-
             if (isOperationRejection) {
                 List<String> codeUnusualOpList = (List<String>) execution.getVariable("codeUnusualOp");
                 List<FesUnusualOperationFeature> unusualOperationFeatures =
@@ -247,6 +241,7 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
                                 payment.getCaseOperationList().stream()
                                         .map(caseOperation -> caseOperation.getCaseId().getCaseRules())
                                         .flatMap(List::stream)
+                                        .filter(caseRules -> caseRules.getCode() != null)
                                         .filter(distinctByKey(CaseRules::getCode))
                                         .map(caseRule -> getFesUnusualOperationFeature(caseRule.getCode(), fesCategory))
                                         .collect(Collectors.toList());

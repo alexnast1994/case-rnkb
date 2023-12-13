@@ -1,7 +1,9 @@
 package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.AutoCaseCreation;
 
 import com.cognive.projects.casernkb.service.FesService;
+import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
+import com.prime.db.rnkb.model.Client;
 import com.prime.db.rnkb.model.Payment;
 import com.prime.db.rnkb.model.fes.FesCasesStatus;
 import com.prime.db.rnkb.model.fes.FesCategory;
@@ -132,6 +134,24 @@ public class FesCreateMainTablesDelegate implements JavaDelegate {
             fesMainPageNew.setPayerInn(payment.getPayerInn());
             fesMainPageNew.setPayeeName(payment.getPayeeName());
             fesMainPageNew.setPayeeInn(payment.getPayeeInn());
+            fesMainPageNew.setPayerMark(getPayerMark(payment));
+            fesMainPageNew.setPayeeMark(getPayeeMark(payment));
         }
+    }
+
+    private BaseDictionary getPayerMark(Payment payment) {
+        Client payerClient = payment.getPayerClientId();
+        if (payerClient != null) {
+            return payerClient.getIseio() == null || !payerClient.getIseio() ? payerClient.getClientMark() : null;
+        }
+        return null;
+    }
+
+    private BaseDictionary getPayeeMark(Payment payment) {
+        Client payeeClient = payment.getPayeeClientId();
+        if (payeeClient != null) {
+            return payeeClient.getIseio() == null || !payeeClient.getIseio() ? payeeClient.getClientMark() : null;
+        }
+        return null;
     }
 }

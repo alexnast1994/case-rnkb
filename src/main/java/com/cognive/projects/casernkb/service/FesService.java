@@ -569,13 +569,18 @@ public class FesService {
         return resultList;
     }
 
-    public void addFesCashMoneyTransfers(FesParticipant fesParticipant, Payment payment) {
+    public void addFesCashMoneyTransfers(FesParticipant fesParticipant, Payment payment, boolean isPayer) {
         FesCashMoneyTransfers fesCashMoneyTransfers = new FesCashMoneyTransfers();
         fesCashMoneyTransfers.setParticipantId(fesParticipant);
-        fesCashMoneyTransfers.setBankBic(payment.getBankPayerId().getBic());
-        fesCashMoneyTransfers.setBankName(payment.getBankPayerId() != null ?
-                payment.getBankPayerId().getName():
-                null);
+        if (isPayer) {
+            fesCashMoneyTransfers.setBankBic(payment.getBankPayerId() != null ? payment.getBankPayerId().getBic() : null);
+            fesCashMoneyTransfers.setBankName(payment.getBankPayerId() != null ? payment.getBankPayerId().getName() : null);
+            fesCashMoneyTransfers.setClientAccountNum(payment.getPayerAccountNumber());
+        } else {
+            fesCashMoneyTransfers.setBankBic(payment.getBankPayeeId() != null ? payment.getBankPayeeId().getBic() : null);
+            fesCashMoneyTransfers.setBankName(payment.getBankPayeeId() != null ? payment.getBankPayeeId().getName() : null);
+            fesCashMoneyTransfers.setClientAccountNum(payment.getPayeeAccountNumber());
+        }
     }
 
     public BaseDictionary getCaseObjectType(String fesCategoryCode, String rejectTypeCode) {
@@ -770,7 +775,7 @@ public class FesService {
         return fesParticipantRepository.save(fesParticipant);
     }
 
-    private BaseDictionary getParticipantType(BaseDictionary clientType) {
+    public BaseDictionary getParticipantType(BaseDictionary clientType) {
         if (clientType != null) {
             switch (clientType.getCode()) {
                 case "0":
