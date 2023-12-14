@@ -22,9 +22,12 @@ public class FesAutoSaveOpPayeeBenParticipantsDelegate implements JavaDelegate {
         Payment payment = (Payment) execution.getVariable("payment");
 
         Client client = fesService.getOtherPersonClientFromList(payment.getOtherPersonsList(), "18");
+        FesParticipant fesParticipant = null;
         if (client != null) {
-            FesParticipant fesParticipant = fesService.saveFesParticipantOp(fesCategory, client, "8");
+            fesParticipant = fesService.saveFesParticipantOp(fesCategory, client, "8");
             fesService.addParticipantChild(client, fesParticipant);
         }
+        execution.setVariable("fesParticipant", fesParticipant);
+        execution.setVariable("client", client);
     }
 }
