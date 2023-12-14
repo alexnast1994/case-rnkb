@@ -26,6 +26,8 @@ import com.prime.db.rnkb.model.fes.FesMainPageNew;
 import com.prime.db.rnkb.model.fes.FesMainPageOtherSections;
 import com.prime.db.rnkb.model.fes.FesMainPageUserDecision;
 import com.prime.db.rnkb.model.fes.FesParticipant;
+import com.prime.db.rnkb.model.fes.FesParticipantForeign;
+import com.prime.db.rnkb.model.fes.FesParticipantForeignIdentifier;
 import com.prime.db.rnkb.model.fes.FesParticipantIndividual;
 import com.prime.db.rnkb.model.fes.FesParticipantLegal;
 import com.prime.db.rnkb.model.fes.FesRefusalCaseDetails;
@@ -45,6 +47,8 @@ import com.prime.db.rnkb.repository.fes.FesIdentityDocumentRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageNewRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageOtherSectionsRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageUserDecisionRepository;
+import com.prime.db.rnkb.repository.fes.FesParticipantForeignIdentifierRepository;
+import com.prime.db.rnkb.repository.fes.FesParticipantForeignRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantIndividualRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantLegalRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantRepository;
@@ -83,7 +87,11 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_38;
 import static com.cognive.projects.casernkb.constant.FesConstants.FES_ADDRESS_LOCATION;
 import static com.cognive.projects.casernkb.constant.FesConstants.FES_ADDRESS_OF_REG;
+import static com.cognive.projects.casernkb.constant.FesConstants.FES_FOREIGN_ADDRESS_LOCATION;
+import static com.cognive.projects.casernkb.constant.FesConstants.FES_FOREIGN_ADDRESS_OF_REG;
 import static com.cognive.projects.casernkb.constant.FesConstants.FOREIGN;
+import static com.cognive.projects.casernkb.constant.FesConstants.FOREIGN_ADDRESS_LOCATION;
+import static com.cognive.projects.casernkb.constant.FesConstants.FOREIGN_ADDRESS_OF_REG;
 import static com.cognive.projects.casernkb.constant.FesConstants.INDIVIDUAL;
 import static com.cognive.projects.casernkb.constant.FesConstants.LEGAL;
 import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_CONTRACT_REJECTION;
@@ -96,6 +104,8 @@ import static com.cognive.projects.casernkb.constant.FesConstants.WRONG_CLIENT_T
 @RequiredArgsConstructor
 @Slf4j
 public class FesService {
+    private final FesParticipantForeignIdentifierRepository fesParticipantForeignIdentifierRepository;
+    private final FesParticipantForeignRepository fesParticipantForeignRepository;
     private final FesGeneralInformationRepository fesGeneralInformationRepository;
     private final CaseRepository caseRepository;
     private final FesMainPageUserDecisionRepository fesMainPageUserDecisionRepository;
@@ -192,6 +202,34 @@ public class FesService {
         fesParticipantLegal.setInn(client.getInn());
         fesParticipantLegal.setOgrn(client.getOgrn());
         fesParticipantLegalRepository.save(fesParticipantLegal);
+    }
+
+    public void addParticipantForeign(FesParticipant fesParticipant, Client client) {
+        var clientLegal = client.getClientLegal();
+        FesParticipantForeign fesParticipantForeign = new FesParticipantForeign();
+        fesParticipantForeign.setParticipantId(fesParticipant);
+        if (clientLegal != null) {
+            fesParticipantForeign.setParticipantForeignName(clientLegal.getLegalname());
+        }
+        if (extractPartOfName(client.getFullName(), 0) != null) {
+            fesParticipantForeign.setFounderLastname(extractPartOfName(client.getFullName(), 0));
+            fesParticipantForeign.setFounderFirstname(extractPartOfName(client.getFullName(), 1));
+            fesParticipantForeign.setFounderMiddlename(extractPartOfName(client.getFullName(), 2));
+        } else {
+            fesParticipantForeign.setFounderFullName(client.getFullName());
+        }
+        fesParticipantForeign = fesParticipantForeignRepository.save(fesParticipantForeign);
+
+        FesParticipantForeignIdentifier fesParticipantForeignIdentifier = new FesParticipantForeignIdentifier();
+        fesParticipantForeignIdentifier.setParticipantForeignId(fesParticipantForeign);
+        if (clientLegal != null) {
+            fesParticipantForeignIdentifier.setForeignNum(clientLegal.getForeignTaxInNum());
+            fesParticipantForeignIdentifier.setForeignCode(clientLegal.getForeignTaxInCode());
+        }
+        fesParticipantForeignIdentifierRepository.save(fesParticipantForeignIdentifier);
+
+        findForeignAddressAndAdd(fesParticipant.getCategoryId(), client, FES_FOREIGN_ADDRESS_LOCATION, FOREIGN_ADDRESS_LOCATION);
+        findForeignAddressAndAdd(fesParticipant.getCategoryId(), client, FES_FOREIGN_ADDRESS_OF_REG, FOREIGN_ADDRESS_OF_REG);
     }
 
     public FesEio addEio(FesParticipant fesParticipant, BaseDictionary eioType) {
@@ -751,7 +789,7 @@ public class FesService {
             addAddress(null, fesParticipant, null, null, addressOfRegType, clientAddressOfReg);
             addAddress(null, fesParticipant, null, null, addressLocationType, clientAddressLocation);
         } else {
-            //foreign
+            addParticipantForeign(fesParticipant, client);
         }
     }
 

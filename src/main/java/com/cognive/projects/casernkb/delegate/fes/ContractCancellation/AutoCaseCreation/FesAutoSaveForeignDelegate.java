@@ -6,6 +6,7 @@ import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesParticipant;
 import com.prime.db.rnkb.model.fes.FesParticipantForeign;
 import com.prime.db.rnkb.model.fes.FesParticipantForeignIdentifier;
+import com.prime.db.rnkb.repository.fes.FesParticipantForeignIdentifierRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantForeignRepository;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
@@ -24,6 +25,7 @@ public class FesAutoSaveForeignDelegate implements JavaDelegate {
 
     private final FesService fesService;
     private final FesParticipantForeignRepository fesParticipantForeignRepository;
+    private final FesParticipantForeignIdentifierRepository fesParticipantForeignIdentifierRepository;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
@@ -56,6 +58,7 @@ public class FesAutoSaveForeignDelegate implements JavaDelegate {
             fesParticipantForeignIdentifier.setForeignNum(clientLegal.getForeignTaxInNum());
             fesParticipantForeignIdentifier.setForeignCode(clientLegal.getForeignTaxInCode());
         }
+        fesParticipantForeignIdentifierRepository.save(fesParticipantForeignIdentifier);
 
         fesService.findForeignAddressAndAdd(fesCategory, client, FES_ADDRESS_LOCATION, ADDRESS_LOCATION);
         fesService.findForeignAddressAndAdd(fesCategory, client, FES_ADDRESS_OF_REG, ADDRESS_OF_REG);

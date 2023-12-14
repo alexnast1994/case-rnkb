@@ -74,7 +74,11 @@ public class FesConstants {
     public static final String RESIDENT = "1";
     public static final String NON_RESIDENT = "0";
     public static final String FES_ADDRESS_OF_REG = "6";
+    public static final String FES_FOREIGN_ADDRESS_OF_REG = "10";
     public static final String FES_ADDRESS_LOCATION = "7";
+    public static final String FES_FOREIGN_ADDRESS_LOCATION = "9";
+    public static final String FOREIGN_ADDRESS_LOCATION = "9";
     public static final String ADDRESS_OF_REG = "5";
+    public static final String FOREIGN_ADDRESS_OF_REG = "2";
     public static final String ADDRESS_LOCATION = "3";
 }

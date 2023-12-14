@@ -10,6 +10,8 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 @Component
 @RequiredArgsConstructor
 public class FesAutoSaveOpRPayerDelegate implements JavaDelegate {
@@ -21,16 +23,17 @@ public class FesAutoSaveOpRPayerDelegate implements JavaDelegate {
 
         FesCategory fesCategory = (FesCategory) execution.getVariable("fesCategory");
         Payment payment = (Payment) execution.getVariable("payment");
-        var rejectTypeCode = (String) execution.getVariable("rejectType");
         var client = (Client) execution.getVariable("client");
         var isPayer = true;
-        var participantType = fesService.getParticipantType(client.getClientType());
+        var participantStatus = client.getClientMark() != null &&
+                Objects.equals(client.getClientMark().getCode(), "1") ? "1" : "2";
 
-        FesParticipant fesParticipant = fesService.addParticipant(fesCategory, participantType, client.getIsResidentRus(), rejectTypeCode);
+        FesParticipant fesParticipant = fesService.saveFesParticipantOp(fesCategory, client, participantStatus);
         fesService.addFesCashMoneyTransfers(fesParticipant, payment, isPayer);
 
         fesService.addParticipantChild(client, fesParticipant);
 
         execution.setVariable("fesParticipant", fesParticipant);
+        execution.setVariable("client", client);
     }
 }
