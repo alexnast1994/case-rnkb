@@ -28,17 +28,19 @@ public class FesAutoSaveBeneficiaryDelegate implements JavaDelegate {
         var client = (Client) execution.getVariable("client");
         var fesParticipant = (FesParticipant) execution.getVariable("fesParticipant");
 
-        var relationType = fesService.getBd(DICTIONARY_23,"1");
+        if (client != null) {
+            var relationType = fesService.getBd(DICTIONARY_23, "1");
 
-        BaseDictionary beneficiaryType = checkBeneficiaryType(client, relationType);
+            BaseDictionary beneficiaryType = checkBeneficiaryType(client, relationType);
 
-        FesBeneficiary fesBeneficiary = fesService.addBeneficiary(fesParticipant, beneficiaryType);
-        Client beneficiary = fesService.findRelation(client, relationType);
+            FesBeneficiary fesBeneficiary = fesService.addBeneficiary(fesParticipant, beneficiaryType);
+            Client beneficiary = fesService.findRelation(client, relationType);
 
-        if (beneficiary == null || beneficiary.equals(client)) {
-            beneficiary = client;
+            if (beneficiary == null || beneficiary.equals(client)) {
+                beneficiary = client;
+            }
+            fesService.addParticipantIndividualGeneric(null, fesBeneficiary, null, beneficiary);
         }
-        fesService.addParticipantIndividualGeneric(null, fesBeneficiary, null, beneficiary);
     }
 
     private BaseDictionary checkBeneficiaryType(Client client, BaseDictionary relationType) {

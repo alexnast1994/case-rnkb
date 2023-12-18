@@ -30,24 +30,26 @@ public class FesAutoSaveEioDelegate implements JavaDelegate {
         var client = (Client) execution.getVariable("client");
         var fesParticipant = (FesParticipant) execution.getVariable("fesParticipant");
 
-        var eioRelationType = fesService.getBd(DICTIONARY_23, "4");
+        if (client != null) {
+            var eioRelationType = fesService.getBd(DICTIONARY_23, "4");
 
-        Client eioClient = fesService.findRelation(client, eioRelationType);
-        String eioClientType = null;
-        if (eioClient != null) {
-            eioClientType = fesService.checkClientType(eioClient);
-        }
-        BaseDictionary eioType = getEioType(eioClientType);
-        FesEio fesEio = fesService.addEio(fesParticipant, eioType);
+            Client eioClient = fesService.findRelation(client, eioRelationType);
+            String eioClientType = null;
+            if (eioClient != null) {
+                eioClientType = fesService.checkClientType(eioClient);
+            }
+            BaseDictionary eioType = getEioType(eioClientType);
+            FesEio fesEio = fesService.addEio(fesParticipant, eioType);
 
-        // Добавляем анкету EIO, если известен тип клиента
-        if (eioType != null) {
-            if (eioType.getCode().equals("2")) {
-                fesService.addParticipantIndividualGeneric(null, null, fesEio, eioClient);
-            } else if (eioType.getCode().equals("1")) {
-                fesService.addParticipantLegal(null, fesEio, eioClient);
-                fesService.findEioAddressAndAdd(fesEio, eioClient, ADDRESS_OF_REG, FES_ADDRESS_OF_REG);
-                fesService.findEioAddressAndAdd(fesEio, eioClient, ADDRESS_LOCATION, FES_ADDRESS_LOCATION);
+            // Добавляем анкету EIO, если известен тип клиента
+            if (eioType != null) {
+                if (eioType.getCode().equals("2")) {
+                    fesService.addParticipantIndividualGeneric(null, null, fesEio, eioClient);
+                } else if (eioType.getCode().equals("1")) {
+                    fesService.addParticipantLegal(null, fesEio, eioClient);
+                    fesService.findEioAddressAndAdd(fesEio, eioClient, ADDRESS_OF_REG, FES_ADDRESS_OF_REG);
+                    fesService.findEioAddressAndAdd(fesEio, eioClient, ADDRESS_LOCATION, FES_ADDRESS_LOCATION);
+                }
             }
         }
     }

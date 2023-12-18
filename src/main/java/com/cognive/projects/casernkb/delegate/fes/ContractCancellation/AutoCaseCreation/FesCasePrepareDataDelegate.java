@@ -69,14 +69,16 @@ public class FesCasePrepareDataDelegate implements JavaDelegate {
             var clientId = fesCaseAutoSaveDto.getClientId();
             client = clientRepository.findById(clientId).orElseThrow();
         }
-        var clientTypeCode = client.getClientType() != null ? client.getClientType().getCode() : WRONG_CLIENT_TYPE;
-        String clientType = fesService.checkClientType(client);
+        if (client != null) {
+            var clientTypeCode = client.getClientType() != null ? client.getClientType().getCode() : WRONG_CLIENT_TYPE;
+            String clientType = fesService.checkClientType(client);
+            execution.setVariable("clientType", clientType);
+            execution.setVariable("clientTypeCode", clientTypeCode);
+        }
 
         execution.setVariable("isOperationRejection", isOperationRejection);
         execution.setVariable("isOperation", isOperation);
         execution.setVariable("rejectType", rejectType);
-        execution.setVariable("clientType", clientType);
-        execution.setVariable("clientTypeCode", clientTypeCode);
         execution.setVariable("client", client);
     }
 }

@@ -25,15 +25,17 @@ public class FesAutoSaveOpRPayerDelegate implements JavaDelegate {
         Payment payment = (Payment) execution.getVariable("payment");
         var client = (Client) execution.getVariable("client");
         var isPayer = true;
-        var participantStatus = client.getClientMark() != null &&
-                Objects.equals(client.getClientMark().getCode(), "1") ? "1" : "2";
+        if (client != null) {
+            var participantStatus = client.getClientMark() != null &&
+                    Objects.equals(client.getClientMark().getCode(), "1") ? "1" : "2";
 
-        FesParticipant fesParticipant = fesService.saveFesParticipantOp(fesCategory, client, participantStatus);
-        fesService.addFesCashMoneyTransfers(fesParticipant, payment, isPayer);
+            FesParticipant fesParticipant = fesService.saveFesParticipantOp(fesCategory, client, participantStatus);
+            fesService.addFesCashMoneyTransfers(fesParticipant, payment, isPayer);
 
-        fesService.addParticipantChild(client, fesParticipant);
+            fesService.addParticipantChild(client, fesParticipant);
 
-        execution.setVariable("fesParticipant", fesParticipant);
-        execution.setVariable("client", client);
+            execution.setVariable("fesParticipant", fesParticipant);
+            execution.setVariable("client", client);
+        }
     }
 }
