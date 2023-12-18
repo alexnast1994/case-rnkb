@@ -39,6 +39,7 @@ import com.prime.db.rnkb.repository.VerificationDocumentRepository;
 import com.prime.db.rnkb.repository.fes.FesAddressRepository;
 import com.prime.db.rnkb.repository.fes.FesBeneficiaryRepository;
 import com.prime.db.rnkb.repository.fes.FesCasesStatusRepository;
+import com.prime.db.rnkb.repository.fes.FesCashMoneyTransfersRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
 import com.prime.db.rnkb.repository.fes.FesEioRepository;
 import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
@@ -104,6 +105,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.WRONG_CLIENT_T
 @RequiredArgsConstructor
 @Slf4j
 public class FesService {
+    private final FesCashMoneyTransfersRepository fesCashMoneyTransfersRepository;
     private final FesParticipantForeignIdentifierRepository fesParticipantForeignIdentifierRepository;
     private final FesParticipantForeignRepository fesParticipantForeignRepository;
     private final FesGeneralInformationRepository fesGeneralInformationRepository;
@@ -619,6 +621,7 @@ public class FesService {
             fesCashMoneyTransfers.setBankName(payment.getBankPayeeId() != null ? payment.getBankPayeeId().getName() : null);
             fesCashMoneyTransfers.setClientAccountNum(payment.getPayeeAccountNumber());
         }
+        fesCashMoneyTransfersRepository.save(fesCashMoneyTransfers);
     }
 
     public BaseDictionary getCaseObjectType(String fesCategoryCode, String rejectTypeCode) {
