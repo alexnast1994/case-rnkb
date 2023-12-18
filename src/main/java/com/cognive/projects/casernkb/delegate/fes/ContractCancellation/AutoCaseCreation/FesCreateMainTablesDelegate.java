@@ -3,11 +3,13 @@ package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.AutoCase
 import com.cognive.projects.casernkb.service.FesService;
 import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
+import com.prime.db.rnkb.model.CaseClientNew;
 import com.prime.db.rnkb.model.Client;
 import com.prime.db.rnkb.model.Payment;
 import com.prime.db.rnkb.model.fes.FesCasesStatus;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesMainPageNew;
+import com.prime.db.rnkb.repository.CaseClientNewRepository;
 import com.prime.db.rnkb.repository.CaseRepository;
 import com.prime.db.rnkb.repository.SysUserRepository;
 import com.prime.db.rnkb.repository.fes.FesCasesStatusRepository;
@@ -41,6 +43,7 @@ public class FesCreateMainTablesDelegate implements JavaDelegate {
     private final FesCasesStatusRepository fesCasesStatusRepository;
     private final FesService fesService;
     private final SysUserRepository sysUserRepository;
+    private final CaseClientNewRepository caseClientNewRepository;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
@@ -61,6 +64,7 @@ public class FesCreateMainTablesDelegate implements JavaDelegate {
                 fesService.getBd(DICTIONARY_305, "1");
         var responsibleUser = isOperation ?
                 sysUserRepository.findById((Long) execution.getVariable("responsibleUser")).orElse(null) : null;
+        var client = (Client) execution.getVariable("client");
 
         Case aCase = new Case();
         aCase.setName(NAME);
@@ -77,6 +81,14 @@ public class FesCreateMainTablesDelegate implements JavaDelegate {
         aCase.setCreationdate(LocalDateTime.now());
         aCase.setResponsibleUser(responsibleUser);
         aCase = caseRepository.save(aCase);
+
+        if (rejectTypeCode != null &&
+                (rejectTypeCode.equals("2") || rejectTypeCode.equals("3"))) {
+            CaseClientNew caseClientNew = new CaseClientNew();
+            caseClientNew.setCaseId(aCase);
+            caseClientNew.setClientId(client);
+            caseClientNewRepository.save(caseClientNew);
+        }
 
         FesCategory fesCategory = new FesCategory();
         fesCategory.setCaseId(aCase);
