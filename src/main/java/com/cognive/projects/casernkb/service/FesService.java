@@ -82,6 +82,7 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_309
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_321;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_322;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_323;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_324;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_325;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_331;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337;
@@ -812,7 +813,10 @@ public class FesService {
         fesParticipant.setParticipantType(getParticipantType(clientType));
         String residenceStatus = determineResidenceStatus(client.getIsResidentRus(), null);
         fesParticipant.setParticipantResidentFeature(getBd(DICTIONARY_323, residenceStatus));
-        fesParticipant.setParticipantFeature(client.getClientMark());
+        fesParticipant.setParticipantFeature(client.getClientMark() == null ? null :
+                Objects.equals(client.getClientMark().getCode(), "1") ?
+                        getBd(DICTIONARY_324, "1") :
+                        getBd(DICTIONARY_324, "0"));
         return fesParticipantRepository.save(fesParticipant);
     }
 
