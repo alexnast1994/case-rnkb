@@ -158,7 +158,9 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesServiceInformation.setOfficerMiddlename(fesServiceInformationDto.getOfficerMiddleName());
             fesServiceInformation.setOfficerPhone(fesServiceInformationDto.getOfficerPhone());
             fesServiceInformation.setOfficerMail(fesServiceInformationDto.getOfficerMail());
-            fesServiceInformation.setOfficerFullName(fesServiceInformationDto.getOfficerFullName());
+            fesServiceInformation.setOfficerFullName(fesServiceInformationDto.getOfficerLastName() != null &&
+                    fesServiceInformationDto.getOfficerFirstName() != null ?
+                    null : fesServiceInformationDto.getOfficerFullName());
             fesServiceInformationRepository.save(fesServiceInformation);
         }
 
@@ -655,7 +657,9 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         fesParticipantForeign.setFounderLastname(fesParticipantForeignDto.getFounderLastname());
         fesParticipantForeign.setFounderFirstname(fesParticipantForeignDto.getFounderFirstname());
         fesParticipantForeign.setFounderMiddlename(fesParticipantForeignDto.getFounderMiddlename());
-        fesParticipantForeign.setFounderFullName(fesParticipantForeignDto.getFounderFullName());
+        fesParticipantForeign.setFounderFullName(fesParticipantForeignDto.getFounderLastname() != null &&
+                fesParticipantForeignDto.getFounderFirstname() != null ?
+                null : fesParticipantForeignDto.getFounderFullName());
         return fesParticipantForeign;
     }
 
@@ -690,7 +694,9 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         fesParticipantIndividual.setPrivatePractitionerType(fesService.getBd(DICTIONARY_326, fesParticipantIndividualDto.getPrivatePractitionerType() != null ?
                 fesParticipantIndividualDto.getPrivatePractitionerType().getCode() : null));
         fesParticipantIndividual.setPrivatePractitionerRegNum(fesParticipantIndividualDto.getPrivatePractitionerRegNum());
-        fesParticipantIndividual.setFullName(fesParticipantIndividualDto.getFullName());
+        fesParticipantIndividual.setFullName(fesParticipantIndividualDto.getLastName() != null &&
+                fesParticipantIndividualDto.getFirstName() != null ?
+                null : fesParticipantIndividualDto.getFullName());
         fesParticipantIndividual.setBirthDate(fesParticipantIndividualDto.getBirthDate());
         fesParticipantIndividual.setCitizenshipCountryCode(fesService.getBd(DICTIONARY_40, fesParticipantIndividualDto.getCitizenshipCountryCode() != null ?
                 fesParticipantIndividualDto.getCitizenshipCountryCode().getCode() : null));
@@ -793,7 +799,15 @@ public class FesChangeCaseDelegate implements JavaDelegate {
         fesAddress.setHouse(fesAddressDto.getHouse());
         fesAddress.setCorpus(fesAddressDto.getCorpus());
         fesAddress.setRoom(fesAddressDto.getRoom());
-        fesAddress.setAddressText(fesAddressDto.getAddressText());
+        fesAddress.setAddressText(fesAddressDto.getCountryCode() != null &&
+                fesAddressDto.getOkato() != null &&
+                fesAddressDto.getDistrict() != null &&
+                fesAddressDto.getTownship() != null &&
+                fesAddressDto.getStreet() != null &&
+                fesAddressDto.getHouse() != null &&
+                fesAddressDto.getCorpus() != null &&
+                fesAddressDto.getRoom() != null ?
+                null : fesAddressDto.getAddressText());
         fesAddress.setParticipantId(fesParticipant);
         fesAddress.setEioId(fesEio);
         fesAddress.setBeneficiaryId(fesBeneficiary);
