@@ -76,6 +76,7 @@ import com.prime.db.rnkb.repository.fes.FesAddressRepository;
 import com.prime.db.rnkb.repository.fes.FesBankInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesBeneficiaryRepository;
 import com.prime.db.rnkb.repository.fes.FesBranchInformationRepository;
+import com.prime.db.rnkb.repository.fes.FesCasesStatusRepository;
 import com.prime.db.rnkb.repository.fes.FesCashMoneyTransfersRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
 import com.prime.db.rnkb.repository.fes.FesEioRepository;
@@ -116,6 +117,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -206,16 +208,28 @@ public class FesChangeCaseDelegate implements JavaDelegate {
     private final FesAdditionalOperationRepository fesAdditionalOperationRepository;
     private final FesTerrorismFinancingRepository fesTerrorismFinancingRepository;
     private final FesForeignCardTransactionsRepository fesForeignCardTransactionsRepository;
+    private final FesCasesStatusRepository fesCasesStatusRepository;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         var categoryId = (Long) delegateExecution.getVariable("fesCategoryId");
+        var isCaseNew = (boolean) delegateExecution.getVariable("isCaseNew");
 
         var fesCategory = fesCategoryRepository.findById(categoryId).get();
         var fesCaseSaveDto = (FesCaseSaveDto) delegateExecution.getVariable("fesCaseSaveDto");
         var rejectTypeCode = fesCaseSaveDto.getFesCategory().getFesRefusalCaseDetails().get(0).getRejectType().getCode();
         var fesCategoryCode = fesCaseSaveDto.getFesCategory().getCategory().getCode();
         var recordType = fesService.getBd(DICTIONARY_86, "1");
+
+        if (!isCaseNew) {
+            FesCasesStatus fesCasesStatus = fesCategory.getFesCasesStatuses().get(0);
+            if (Objects.equals(fesCasesStatus.getCaseStatus().getCode(), "1") &&
+                    Objects.equals(fesCasesStatus.getCaseCondition().getCode(), "1")) {
+                fesCasesStatus.setCaseStatus(fesService.getCaseStatus());
+                fesCasesStatus.setCaseCondition(fesService.getCaseCondition());
+                fesCasesStatusRepository.save(fesCasesStatus);
+            }
+        }
 
         if (!fesCaseSaveDto.getFesCategory().getFesServiceInformations().isEmpty()) {
             FesServiceInformationDto fesServiceInformationDto = fesCaseSaveDto.getFesCategory().getFesServiceInformations().get(0);
