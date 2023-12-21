@@ -243,7 +243,9 @@ public class FesChangeCaseDelegate implements JavaDelegate {
             fesServiceInformation.setFormatVersion(fesCaseSaveDto.getFesDataPrefill().getFormatVersion());
             fesServiceInformation.setSoftVersion(fesCaseSaveDto.getFesDataPrefill().getSoftVersion());
             fesServiceInformation.setCorrespondentUuid(fesServiceInformationDto.getCorrespondentUuid());
-            fesServiceInformation.setDate(LocalDateTime.now());
+            if (fesServiceInformation.getDate() == null) {
+                fesServiceInformation.setDate(LocalDateTime.now());
+            }
             fesServiceInformation.setOfficerPosition(fesServiceInformationDto.getOfficerPosition());
             fesServiceInformation.setOfficerLastname(fesServiceInformationDto.getOfficerLastName());
             fesServiceInformation.setOfficerFirstname(fesServiceInformationDto.getOfficerFirstName());
@@ -354,7 +356,9 @@ public class FesChangeCaseDelegate implements JavaDelegate {
                     fesRefusalCaseDetailsDto.getBankInfFeature().getCode() : null));
             fesRefusalCaseDetails.setGroundOfRefusal(fesService.getBd(DICTIONARY_318, fesRefusalCaseDetailsDto.getGroundOfRefusal() != null ?
                     fesRefusalCaseDetailsDto.getGroundOfRefusal().getCode() : null));
-            fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
+            if (fesRefusalCaseDetails.getRefusalDate() == null) {
+                fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
+            }
             fesRefusalCaseDetails.setRejectType(fesService.getBd(DICTIONARY_307, fesRefusalCaseDetailsDto.getRejectType() != null ?
                     fesRefusalCaseDetailsDto.getRejectType().getCode() : null));
             fesRefusalCaseDetails.setRemovalReason(fesRefusalCaseDetailsDto.getRemovalReason());
