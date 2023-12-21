@@ -27,7 +27,7 @@ public class FesParticipantIndividualDto implements Serializable {
     String snils;
     String healthCardNum;
     String phoneNumber;
-    String orgnip;
+    String ogrnip;
     BaseDictionary privatePractitionerType;
     String privatePractitionerRegNum;
     BaseDictionary identityDocumentFeature;

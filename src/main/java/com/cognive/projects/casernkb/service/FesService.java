@@ -1,5 +1,6 @@
 package com.cognive.projects.casernkb.service;
 
+import com.cognive.projects.casernkb.constant.FesConstants;
 import com.cognive.projects.casernkb.model.fes.FesCaseSaveDto;
 import com.prime.db.rnkb.model.Address;
 import com.prime.db.rnkb.model.BaseDictionary;
@@ -7,11 +8,16 @@ import com.prime.db.rnkb.model.Case;
 import com.prime.db.rnkb.model.Client;
 import com.prime.db.rnkb.model.ClientIndividual;
 import com.prime.db.rnkb.model.ClientRelation;
+import com.prime.db.rnkb.model.OtherPersons;
+import com.prime.db.rnkb.model.Payment;
 import com.prime.db.rnkb.model.SysUser;
 import com.prime.db.rnkb.model.VerificationDocument;
 import com.prime.db.rnkb.model.fes.FesAddress;
+import com.prime.db.rnkb.model.fes.FesBankInformation;
 import com.prime.db.rnkb.model.fes.FesBeneficiary;
+import com.prime.db.rnkb.model.fes.FesBranchInformation;
 import com.prime.db.rnkb.model.fes.FesCasesStatus;
+import com.prime.db.rnkb.model.fes.FesCashMoneyTransfers;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesEio;
 import com.prime.db.rnkb.model.fes.FesIdentityDocument;
@@ -20,6 +26,8 @@ import com.prime.db.rnkb.model.fes.FesMainPageNew;
 import com.prime.db.rnkb.model.fes.FesMainPageOtherSections;
 import com.prime.db.rnkb.model.fes.FesMainPageUserDecision;
 import com.prime.db.rnkb.model.fes.FesParticipant;
+import com.prime.db.rnkb.model.fes.FesParticipantForeign;
+import com.prime.db.rnkb.model.fes.FesParticipantForeignIdentifier;
 import com.prime.db.rnkb.model.fes.FesParticipantIndividual;
 import com.prime.db.rnkb.model.fes.FesParticipantLegal;
 import com.prime.db.rnkb.model.fes.FesRefusalCaseDetails;
@@ -31,13 +39,17 @@ import com.prime.db.rnkb.repository.VerificationDocumentRepository;
 import com.prime.db.rnkb.repository.fes.FesAddressRepository;
 import com.prime.db.rnkb.repository.fes.FesBeneficiaryRepository;
 import com.prime.db.rnkb.repository.fes.FesCasesStatusRepository;
+import com.prime.db.rnkb.repository.fes.FesCashMoneyTransfersRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
 import com.prime.db.rnkb.repository.fes.FesEioRepository;
+import com.prime.db.rnkb.repository.fes.FesGeneralInformationRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentGeneralRepository;
 import com.prime.db.rnkb.repository.fes.FesIdentityDocumentRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageNewRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageOtherSectionsRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageUserDecisionRepository;
+import com.prime.db.rnkb.repository.fes.FesParticipantForeignIdentifierRepository;
+import com.prime.db.rnkb.repository.fes.FesParticipantForeignRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantIndividualRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantLegalRepository;
 import com.prime.db.rnkb.repository.fes.FesParticipantRepository;
@@ -51,6 +63,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -60,15 +73,43 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.cognive.projects.casernkb.constant.FesConstants.ADDRESS_OF_REG;
+import static com.cognive.projects.casernkb.constant.FesConstants.DEFAULT_BRANCHNUM;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_14;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_18;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_305;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_309;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_321;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_322;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_323;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_324;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_325;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_331;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_38;
+import static com.cognive.projects.casernkb.constant.FesConstants.FES_ADDRESS_LOCATION;
+import static com.cognive.projects.casernkb.constant.FesConstants.FES_ADDRESS_OF_REG;
+import static com.cognive.projects.casernkb.constant.FesConstants.FES_FOREIGN_ADDRESS_LOCATION;
+import static com.cognive.projects.casernkb.constant.FesConstants.FES_FOREIGN_ADDRESS_OF_REG;
+import static com.cognive.projects.casernkb.constant.FesConstants.FOREIGN;
+import static com.cognive.projects.casernkb.constant.FesConstants.FOREIGN_ADDRESS_LOCATION;
+import static com.cognive.projects.casernkb.constant.FesConstants.FOREIGN_ADDRESS_OF_REG;
+import static com.cognive.projects.casernkb.constant.FesConstants.INDIVIDUAL;
+import static com.cognive.projects.casernkb.constant.FesConstants.LEGAL;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_CONTRACT_REJECTION;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_FREEZING;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_INSPECTION;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_OPERATION;
+import static com.cognive.projects.casernkb.constant.FesConstants.WRONG_CLIENT_TYPE;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class FesService {
+    private final FesCashMoneyTransfersRepository fesCashMoneyTransfersRepository;
+    private final FesParticipantForeignIdentifierRepository fesParticipantForeignIdentifierRepository;
+    private final FesParticipantForeignRepository fesParticipantForeignRepository;
+    private final FesGeneralInformationRepository fesGeneralInformationRepository;
     private final CaseRepository caseRepository;
     private final FesMainPageUserDecisionRepository fesMainPageUserDecisionRepository;
     private final FesMainPageOtherSectionsRepository fesMainPageOtherSectionsRepository;
@@ -81,12 +122,6 @@ public class FesService {
     private static final String DOC_PASSPORT_RF = "21";
     private static final String DOC_PASSPORT_ZAGRAN = "22";
     private static final String[] DOC_RF = {"21", "22", "26", "27"};
-    private static final String LEGAL = "Legal";
-    private static final String FOREIGN = "Foreign";
-    private static final String INDIVIDUAL = "Individual";
-    private static final String WRONG_CLIENT_TYPE = "0";
-    private static final String NAME = "ФЭС";
-    private static final String SUBNAME = "Отказ от заключения договора (расторжение)";
     private static final String UNKNOWN_RESIDENCE_STATUS = "9";
     private static final String RESIDENT = "1";
     private static final String NON_RESIDENT = "0";
@@ -170,6 +205,34 @@ public class FesService {
         fesParticipantLegal.setInn(client.getInn());
         fesParticipantLegal.setOgrn(client.getOgrn());
         fesParticipantLegalRepository.save(fesParticipantLegal);
+    }
+
+    public void addParticipantForeign(FesParticipant fesParticipant, Client client) {
+        var clientLegal = client.getClientLegal();
+        FesParticipantForeign fesParticipantForeign = new FesParticipantForeign();
+        fesParticipantForeign.setParticipantId(fesParticipant);
+        if (clientLegal != null) {
+            fesParticipantForeign.setParticipantForeignName(clientLegal.getLegalname());
+        }
+        if (extractPartOfName(client.getFullName(), 0) != null) {
+            fesParticipantForeign.setFounderLastname(extractPartOfName(client.getFullName(), 0));
+            fesParticipantForeign.setFounderFirstname(extractPartOfName(client.getFullName(), 1));
+            fesParticipantForeign.setFounderMiddlename(extractPartOfName(client.getFullName(), 2));
+        } else {
+            fesParticipantForeign.setFounderFullName(client.getFullName());
+        }
+        fesParticipantForeign = fesParticipantForeignRepository.save(fesParticipantForeign);
+
+        FesParticipantForeignIdentifier fesParticipantForeignIdentifier = new FesParticipantForeignIdentifier();
+        fesParticipantForeignIdentifier.setParticipantForeignId(fesParticipantForeign);
+        if (clientLegal != null) {
+            fesParticipantForeignIdentifier.setForeignNum(clientLegal.getForeignTaxInNum());
+            fesParticipantForeignIdentifier.setForeignCode(clientLegal.getForeignTaxInCode());
+        }
+        fesParticipantForeignIdentifierRepository.save(fesParticipantForeignIdentifier);
+
+        findForeignAddressAndAdd(fesParticipant.getCategoryId(), client, FES_FOREIGN_ADDRESS_LOCATION, FOREIGN_ADDRESS_LOCATION);
+        findForeignAddressAndAdd(fesParticipant.getCategoryId(), client, FES_FOREIGN_ADDRESS_OF_REG, FOREIGN_ADDRESS_OF_REG);
     }
 
     public FesEio addEio(FesParticipant fesParticipant, BaseDictionary eioType) {
@@ -431,11 +494,14 @@ public class FesService {
     public FesCategory getFesCategory(BaseDictionary caseType, BaseDictionary caseCategory, BaseDictionary caseObjectType, BaseDictionary caseStatus, SysUser responsibleUser, BaseDictionary caseCondition, BaseDictionary rejectType, FesCaseSaveDto fesCaseSaveDto) {
         Case aCase = createCase(caseType, caseCategory, caseObjectType, caseStatus, responsibleUser, caseCondition);
         FesCategory fesCategory = createFesCategory(aCase, caseCategory);
-        FesRefusalCaseDetails fesRefusalCaseDetails = createFesRefusalCaseDetails(fesCategory, rejectType);
-        fesCategory.setFesRefusalCaseDetails(new ArrayList<>(List.of(fesRefusalCaseDetails)));
+        if (rejectType != null) {
+            FesRefusalCaseDetails fesRefusalCaseDetails = createFesRefusalCaseDetails(fesCategory, rejectType);
+            fesCategory.setFesRefusalCaseDetails(new ArrayList<>(List.of(fesRefusalCaseDetails)));
+        }
         FesCasesStatus fesCasesStatus = createFesCasesStatus(fesCategory, caseStatus, caseCondition);
         fesCategory.setFesCasesStatuses(new ArrayList<>(List.of(fesCasesStatus)));
-        createFesMainPageNew(fesCasesStatus, aCase);
+        FesMainPageNew fesMainPageNew = createFesMainPageNew(fesCasesStatus, aCase);
+        fesCasesStatus.setFesMainPageNews(new ArrayList<>(List.of(fesMainPageNew)));
         FesMainPageOtherSections fesMainPageOtherSections = createFesMainPageOtherSections(responsibleUser, fesCasesStatus, fesCaseSaveDto);
         fesCasesStatus.setFesMainPageOtherSections(new ArrayList<>(List.of(fesMainPageOtherSections)));
         createFesMainPageUserDecision(responsibleUser, fesCategory, caseStatus, caseCondition, fesCaseSaveDto);
@@ -455,7 +521,6 @@ public class FesService {
     private FesRefusalCaseDetails createFesRefusalCaseDetails(FesCategory fesCategory, BaseDictionary rejectType) {
         FesRefusalCaseDetails fesRefusalCaseDetails = new FesRefusalCaseDetails();
         fesRefusalCaseDetails.setCategoryId(fesCategory);
-        fesRefusalCaseDetails.setRefusalDate(LocalDateTime.now());
         fesRefusalCaseDetails.setRejectType(rejectType);
         return fesRefusalCaseDetailsRepository.save(fesRefusalCaseDetails);
     }
@@ -470,11 +535,11 @@ public class FesService {
         return fesCasesStatus;
     }
 
-    private void createFesMainPageNew(FesCasesStatus fesCasesStatus, Case aCase) {
+    private FesMainPageNew createFesMainPageNew(FesCasesStatus fesCasesStatus, Case aCase) {
         FesMainPageNew fesMainPageNew = new FesMainPageNew();
         fesMainPageNew.setCasesStatusId(fesCasesStatus);
         fesMainPageNew.setCaseDate(aCase.getCreationdate());
-        fesMainPageNewRepository.save(fesMainPageNew);
+        return fesMainPageNewRepository.save(fesMainPageNew);
     }
 
     private FesMainPageOtherSections createFesMainPageOtherSections(SysUser responsibleUser, FesCasesStatus fesCasesStatus, FesCaseSaveDto fesCaseSaveDto) {
@@ -499,8 +564,8 @@ public class FesService {
     @NotNull
     private Case createCase(BaseDictionary caseType, BaseDictionary caseCategory, BaseDictionary caseObjectType, BaseDictionary caseStatus, SysUser responsibleUser, BaseDictionary caseCondition) {
         Case aCase = new Case();
-        aCase.setName(NAME);
-        aCase.setSubname(SUBNAME);
+        aCase.setName(FesConstants.NAME);
+        aCase.setSubname(getSubname(caseCategory));
         aCase.setCaseType(caseType);
         aCase.setCaseObjectType(caseObjectType);
         aCase.setStatus(caseStatus);
@@ -510,6 +575,14 @@ public class FesService {
         aCase.setCaseObjectSubType(caseCategory);
         aCase = caseRepository.save(aCase);
         return aCase;
+    }
+
+    private String getSubname(BaseDictionary caseCategory) {
+        return caseCategory.getCode().equals("2") ?
+                SUBNAME_FREEZING : caseCategory.getCode().equals("3") ?
+                SUBNAME_INSPECTION : caseCategory.getCode().equals("1") ?
+                SUBNAME_OPERATION :
+                SUBNAME_CONTRACT_REJECTION;
     }
 
     public <T, D> void deleteMissingItems(List<D> dtoList, List<T> existingList, JpaRepository<T, Long> repository, Function<D, Long> idExtractorDto, Function<T, Long> idExtractor) {
@@ -537,4 +610,232 @@ public class FesService {
         return resultList;
     }
 
+    public void addFesCashMoneyTransfers(FesParticipant fesParticipant, Payment payment, boolean isPayer) {
+        FesCashMoneyTransfers fesCashMoneyTransfers = new FesCashMoneyTransfers();
+        fesCashMoneyTransfers.setParticipantId(fesParticipant);
+        if (isPayer) {
+            fesCashMoneyTransfers.setBankBic(payment.getBankPayerId() != null ? payment.getBankPayerId().getBic() : null);
+            fesCashMoneyTransfers.setBankName(payment.getBankPayerId() != null ? payment.getBankPayerId().getName() : null);
+            fesCashMoneyTransfers.setClientAccountNum(payment.getPayerAccountNumber());
+        } else {
+            fesCashMoneyTransfers.setBankBic(payment.getBankPayeeId() != null ? payment.getBankPayeeId().getBic() : null);
+            fesCashMoneyTransfers.setBankName(payment.getBankPayeeId() != null ? payment.getBankPayeeId().getName() : null);
+            fesCashMoneyTransfers.setClientAccountNum(payment.getPayeeAccountNumber());
+        }
+        fesCashMoneyTransfersRepository.save(fesCashMoneyTransfers);
+    }
+
+    public BaseDictionary getCaseObjectType(String fesCategoryCode, String rejectTypeCode) {
+        return Objects.equals(fesCategoryCode, "2") ||
+                Objects.equals(rejectTypeCode, "2") ||
+                Objects.equals(rejectTypeCode, "3") ?
+                getBd(DICTIONARY_14, "1") :
+                Objects.equals(fesCategoryCode, "3") ?
+                        getBd(DICTIONARY_14, "5") :
+                        getBd(DICTIONARY_14, "2");
+    }
+
+    public BaseDictionary getCaseStatus() {
+        return getBd(DICTIONARY_38, "2");
+    }
+
+    public BaseDictionary getCaseType(String fesCategoryCode) {
+        if (Objects.equals(fesCategoryCode, "1")) {
+            return getBd(DICTIONARY_18, "9");
+        }
+        if (Objects.equals(fesCategoryCode, "2")) {
+            return getBd(DICTIONARY_18, "10");
+        }
+        if (Objects.equals(fesCategoryCode, "3")) {
+            return getBd(DICTIONARY_18, "11");
+        }
+        return getBd(DICTIONARY_18, "12");
+    }
+
+    public BaseDictionary getCaseCategory(String fesCategoryCode) {
+       return getBd(DICTIONARY_309, fesCategoryCode);
+    }
+
+    public BaseDictionary getCaseCondition() {
+        return getBd(DICTIONARY_305, "2");
+    }
+
+    public String generateNum(String regNum, String branchNum, FesCategory fesCategory) {
+        String currentYearPrefix = String.valueOf(Year.now().getValue());
+        String nnnF = (branchNum != null) ? String.format("%04d", Long.parseLong(branchNum)) : DEFAULT_BRANCHNUM;
+
+        Long categoryId = (fesCategory.getCategory() != null) ? fesCategory.getCategory().getId() : null;
+
+        if (categoryId != null) {
+            List<Long> nums = fesGeneralInformationRepository.findAllNumsByCategory(categoryId)
+                    .stream()
+                    .filter(n -> n.startsWith(currentYearPrefix))
+                    .map(this::getDigitsBeforeLastUnderscoreAsLong)
+                    .sorted().distinct()
+                    .collect(Collectors.toList());
+
+            long num = findFirstMissingNum(nums);
+
+            String delim = "_";
+            String ii = getII(fesCategory);
+            String count = Objects.equals(fesCategory.getCategory().getCode(), "4") ?
+                    String.format("%010d", num):
+                    String.format("%012d", num);
+            String nReg = String.format("%04d", Long.parseLong(regNum));
+            return Year.now() + delim + nReg + delim + nnnF + delim + ii + delim + count;
+        }
+        return null;
+    }
+
+    private long getDigitsBeforeLastUnderscoreAsLong(String num) {
+        int lastIndex = num.lastIndexOf('_');
+
+        String digits = (lastIndex != -1) ? num.substring(lastIndex + 1) : num;
+
+        try {
+            return Long.parseLong(digits);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+
+    private long findFirstMissingNum(List<Long> nums) {
+        for (int i = 0; i < nums.size(); i++) {
+            if (nums.get(i) != i+1) {
+                return i+1;
+            }
+        }
+        return nums.size() + 1;
+    }
+
+    private String getII(FesCategory fesCategory) {
+        String ii = "00";
+        switch (fesCategory.getCategory().getCode()) {
+            case "1":
+                ii = getIIOperation(fesCategory);
+                break;
+            case "2":
+                ii = "03";
+                break;
+            case "3":
+                ii = "04";
+                break;
+            case "4":
+                ii = getIIRefusal(fesCategory);
+                break;
+            case "5":
+                ii = "05";
+                break;
+            case "6":
+                ii = "09";
+                break;
+        }
+        return ii;
+    }
+
+    private String getIIOperation(FesCategory fesCategory) {
+        if (fesCategory.getCaseId().getCaseOperationList() != null && !fesCategory.getCaseId().getCaseOperationList().isEmpty()) {
+            Payment payment = fesCategory.getCaseId().getCaseOperationList().get(0).getPaymentId();
+            if (payment != null && payment.getPaymentSourceStatus() != null &&
+                    Objects.equals(payment.getPaymentSourceStatus().getCode(), "3")) {
+                return "06";
+            }
+        }
+        return "01";
+    }
+
+    private String getIIRefusal(FesCategory fesCategory) {
+        List<FesRefusalCaseDetails> refusalCaseDetails = fesCategory.getFesRefusalCaseDetails();
+
+        if (refusalCaseDetails != null && !refusalCaseDetails.isEmpty()) {
+            FesRefusalCaseDetails fesRefusalCaseDetails = refusalCaseDetails.get(0);
+            if (fesRefusalCaseDetails != null && fesRefusalCaseDetails.getGroundOfRefusal() != null) {
+                String code = fesRefusalCaseDetails.getGroundOfRefusal().getCode();
+                if (Objects.equals(code, "03")) {
+                    return "01";
+                } else if (Objects.equals(code, "09")) {
+                    return "11";
+                }
+            }
+        }
+        return "02";
+    }
+
+    public String getBranchNum(FesBankInformation fesBankInformation) {
+        List<FesBranchInformation> fesBranchInformations = fesBankInformation.getFesBranchInformations();
+
+        if (fesBranchInformations == null || fesBranchInformations.isEmpty()) {
+            return DEFAULT_BRANCHNUM;
+        }
+
+        FesBranchInformation fesBranchInformation = fesBranchInformations.get(0);
+
+        if (fesBankInformation.getReportingAttribute() != null && fesBankInformation.getReportingAttribute()) {
+            return fesBranchInformation.getBranchNum();
+        }
+
+        return fesBranchInformation.getTransferringBranchNum() != null
+                ? fesBranchInformation.getTransferringBranchNum()
+                : DEFAULT_BRANCHNUM;
+    }
+
+    public void addParticipantChild(Client client, FesParticipant fesParticipant) {
+        var clientType = checkClientType(client);
+        if (Objects.equals(clientType, INDIVIDUAL)) {
+            addParticipantIndividualGeneric(fesParticipant, null, null, client);
+        } else if (Objects.equals(clientType, LEGAL)) {
+            addParticipantLegal(fesParticipant, null, client);
+            var clientAddressOfReg = findMainLegalAddress(client.getAddressList(), ADDRESS_OF_REG);
+            var clientAddressLocation = findMainLegalAddress(client.getAddressList(), "3");
+            var addressOfRegType = getBd(DICTIONARY_331, FES_ADDRESS_OF_REG);
+            var addressLocationType = getBd(DICTIONARY_331, FES_ADDRESS_LOCATION);
+            addAddress(null, fesParticipant, null, null, addressOfRegType, clientAddressOfReg);
+            addAddress(null, fesParticipant, null, null, addressLocationType, clientAddressLocation);
+        } else {
+            addParticipantForeign(fesParticipant, client);
+        }
+    }
+
+    public Client getOtherPersonClientFromList(List<OtherPersons> otherPersonsList, String otherPersonTypeCode) {
+        return otherPersonsList.stream()
+                .filter(otherPersons -> Objects.equals(otherPersons.getOtherPersonType().getCode(), otherPersonTypeCode))
+                .findFirst()
+                .map(OtherPersons::getClientId)
+                .orElse(null);
+    }
+
+    public FesParticipant saveFesParticipantOp(FesCategory fesCategory, Client client, String participantStatus) {
+        FesParticipant fesParticipant = new FesParticipant();
+        fesParticipant.setCategoryId(fesCategory);
+        fesParticipant.setParticipantStatus(getBd(DICTIONARY_321, participantStatus));
+        var clientType = client.getClientType();
+        fesParticipant.setParticipantType(getParticipantType(clientType));
+        String residenceStatus = determineResidenceStatus(client.getIsResidentRus(), null);
+        fesParticipant.setParticipantResidentFeature(getBd(DICTIONARY_323, residenceStatus));
+        fesParticipant.setParticipantFeature(client.getClientMark() == null ? null :
+                Objects.equals(client.getClientMark().getCode(), "1") ?
+                        getBd(DICTIONARY_324, "1") :
+                        getBd(DICTIONARY_324, "0"));
+        return fesParticipantRepository.save(fesParticipant);
+    }
+
+    public BaseDictionary getParticipantType(BaseDictionary clientType) {
+        if (clientType != null) {
+            switch (clientType.getCode()) {
+                case "0":
+                    return null;
+                case "2":
+                    return getBd(DICTIONARY_322, "5");
+                case "5":
+                    return getBd(DICTIONARY_322, "3");
+                case "4":
+                case "6":
+                    return getBd(DICTIONARY_322, "2");
+                default:
+                    return getBd(DICTIONARY_322, "1");
+            }
+        }
+        return null;
+    }
 }

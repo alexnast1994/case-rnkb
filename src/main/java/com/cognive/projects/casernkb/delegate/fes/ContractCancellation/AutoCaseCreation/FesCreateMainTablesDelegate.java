@@ -1,11 +1,17 @@
 package com.cognive.projects.casernkb.delegate.fes.ContractCancellation.AutoCaseCreation;
 
 import com.cognive.projects.casernkb.service.FesService;
+import com.prime.db.rnkb.model.BaseDictionary;
 import com.prime.db.rnkb.model.Case;
+import com.prime.db.rnkb.model.CaseClientNew;
+import com.prime.db.rnkb.model.Client;
+import com.prime.db.rnkb.model.Payment;
 import com.prime.db.rnkb.model.fes.FesCasesStatus;
 import com.prime.db.rnkb.model.fes.FesCategory;
 import com.prime.db.rnkb.model.fes.FesMainPageNew;
+import com.prime.db.rnkb.repository.CaseClientNewRepository;
 import com.prime.db.rnkb.repository.CaseRepository;
+import com.prime.db.rnkb.repository.SysUserRepository;
 import com.prime.db.rnkb.repository.fes.FesCasesStatusRepository;
 import com.prime.db.rnkb.repository.fes.FesCategoryRepository;
 import com.prime.db.rnkb.repository.fes.FesMainPageNewRepository;
@@ -21,41 +27,68 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_18;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_305;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_309;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_38;
+import static com.cognive.projects.casernkb.constant.FesConstants.NAME;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_CANCEL_CONTRACT;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_CONTRACT_REJECTION;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_OPERATION;
+import static com.cognive.projects.casernkb.constant.FesConstants.SUBNAME_OPERATION_REJECTION;
 
 @Component
 @RequiredArgsConstructor
 public class FesCreateMainTablesDelegate implements JavaDelegate {
-    private static final String NAME = "ФЭС";
-    private static final String SUBNAME = "Отказ от заключения договора";
-    private static final String SUBNAME_CANCEL_CONTRACT = "Расторжение договора";
 
     private final CaseRepository caseRepository;
     private final FesCategoryRepository fesCategoryRepository;
     private final FesMainPageNewRepository fesMainPageNewRepository;
     private final FesCasesStatusRepository fesCasesStatusRepository;
     private final FesService fesService;
+    private final SysUserRepository sysUserRepository;
+    private final CaseClientNewRepository caseClientNewRepository;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
 
-        var rejectTypeCode = (String) execution.getVariable("rejectType");
+        var isOperationRejection = (boolean) execution.getVariable("isOperationRejection");
+        var isOperation = (boolean) execution.getVariable("isOperation");
+        var rejectTypeCode = execution.getVariable("rejectType");
 
-        var caseType = fesService.getBd(DICTIONARY_18, "12");
-        var caseObjectType = fesService.getBd(DICTIONARY_14, "1");
-        var caseObjectSubType = fesService.getBd(DICTIONARY_309, "4");
+        var caseType = isOperation ? fesService.getBd(DICTIONARY_18, "9") :
+                fesService.getBd(DICTIONARY_18, "12");
+        var caseObjectType = isOperationRejection || isOperation ?
+                fesService.getBd(DICTIONARY_14, "2"):
+                fesService.getBd(DICTIONARY_14, "1");
+        var caseObjectSubType = isOperation ? fesService.getBd(DICTIONARY_309, "1") :
+                fesService.getBd(DICTIONARY_309, "4");
         var status = fesService.getBd(DICTIONARY_38, "1");
-        var caseStatus = fesService.getBd(DICTIONARY_305, "1");
+        var caseStatus = isOperation ? fesService.getBd(DICTIONARY_305, "2") :
+                fesService.getBd(DICTIONARY_305, "1");
+        var responsibleUser = isOperation ?
+                sysUserRepository.findById((Long) execution.getVariable("responsibleUser")).orElse(null) : null;
+        var client = (Client) execution.getVariable("client");
 
         Case aCase = new Case();
         aCase.setName(NAME);
-        aCase.setSubname(rejectTypeCode.equals("2") ? SUBNAME : SUBNAME_CANCEL_CONTRACT);
+        aCase.setSubname(isOperation ?
+                SUBNAME_OPERATION :
+                isOperationRejection ?
+                SUBNAME_OPERATION_REJECTION : rejectTypeCode.equals("2") ?
+                SUBNAME_CONTRACT_REJECTION : SUBNAME_CANCEL_CONTRACT);
         aCase.setCaseType(caseType);
         aCase.setCaseObjectType(caseObjectType);
         aCase.setCaseObjectSubType(caseObjectSubType);
         aCase.setStatus(status);
         aCase.setCaseStatus(caseStatus);
         aCase.setCreationdate(LocalDateTime.now());
+        aCase.setResponsibleUser(responsibleUser);
         aCase = caseRepository.save(aCase);
+
+        if (rejectTypeCode != null &&
+                (rejectTypeCode.equals("2") || rejectTypeCode.equals("3"))) {
+            CaseClientNew caseClientNew = new CaseClientNew();
+            caseClientNew.setCaseId(aCase);
+            caseClientNew.setClientId(client);
+            caseClientNewRepository.save(caseClientNew);
+        }
 
         FesCategory fesCategory = new FesCategory();
         fesCategory.setCaseId(aCase);
@@ -71,11 +104,66 @@ public class FesCreateMainTablesDelegate implements JavaDelegate {
         FesMainPageNew fesMainPageNew = new FesMainPageNew();
         fesMainPageNew.setCasesStatusId(fesCasesStatus);
         fesMainPageNew.setCaseDate(aCase.getCreationdate());
+        if (isOperationRejection || isOperation) {
+            Payment payment = (Payment) execution.getVariable("payment");
+            fillMainPageNew(fesMainPageNew, payment);
+            if (isOperation) {
+                fesMainPageNew.setOperationStatus(payment.getPaymentSourceStatus());
+                fesMainPageNew.setPaymentReference(payment.getPaymentReference() != null ?
+                        payment.getPaymentReference() : payment.getExId());
+            }
+        }
         fesMainPageNewRepository.save(fesMainPageNew);
+
+//        if (isOperation) {
+//            FesMainPageOtherSections fesMainPageOtherSections = new FesMainPageOtherSections();
+//            fesMainPageOtherSections.setCasesStatusId(fesCasesStatus);
+//            fesMainPageOtherSections.setResponsibleUser(responsibleUser);
+//            fesMainPageOtherSectionsRepository.save(fesMainPageOtherSections);
+//
+//            FesMainPageUserDecision fesMainPageUserDecision = new FesMainPageUserDecision();
+//            fesMainPageUserDecision.setCategoryId(fesCategory);
+//            fesMainPageUserDecision.setChangingDate(LocalDateTime.now());
+//            fesMainPageUserDecision.setCaseStatus(status);
+//            fesMainPageUserDecision.setCaseCondition(caseStatus);
+//            fesMainPageUserDecision.setResponsibleUser(responsibleUser);
+//        }
 
         execution.setVariable("fesCategory", fesCategory);
         execution.setVariable("fesCategoryId", fesCategory.getId());
         execution.setVariable("caseId", aCase.getId());
+        execution.setVariable("case", aCase);
 
+    }
+
+    private void fillMainPageNew(FesMainPageNew fesMainPageNew, Payment payment) {
+        if (payment != null) {
+            fesMainPageNew.setOperationDate(payment.getDateOper());
+            fesMainPageNew.setPayerType(payment.getPayerType());
+            fesMainPageNew.setPayeeType(payment.getPayeeType());
+            fesMainPageNew.setPurpose(payment.getPurpose());
+            fesMainPageNew.setPayerName(payment.getPayerName());
+            fesMainPageNew.setPayerInn(payment.getPayerInn());
+            fesMainPageNew.setPayeeName(payment.getPayeeName());
+            fesMainPageNew.setPayeeInn(payment.getPayeeInn());
+            fesMainPageNew.setPayerMark(getPayerMark(payment));
+            fesMainPageNew.setPayeeMark(getPayeeMark(payment));
+        }
+    }
+
+    private BaseDictionary getPayerMark(Payment payment) {
+        Client payerClient = payment.getPayerClientId();
+        if (payerClient != null) {
+            return payerClient.getIseio() == null || !payerClient.getIseio() ? payerClient.getClientMark() : null;
+        }
+        return null;
+    }
+
+    private BaseDictionary getPayeeMark(Payment payment) {
+        Client payeeClient = payment.getPayeeClientId();
+        if (payeeClient != null) {
+            return payeeClient.getIseio() == null || !payeeClient.getIseio() ? payeeClient.getClientMark() : null;
+        }
+        return null;
     }
 }

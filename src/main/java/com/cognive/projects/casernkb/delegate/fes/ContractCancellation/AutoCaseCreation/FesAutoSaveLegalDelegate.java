@@ -44,5 +44,7 @@ public class FesAutoSaveLegalDelegate implements JavaDelegate {
 
         fesService.addAddress(null, fesParticipant, null, null, addressOfRegType, clientAddressOfReg);
         fesService.addAddress(null, fesParticipant, null, null, addressLocationType, clientAddressLocation);
+
+        execution.setVariable("fesParticipant", fesParticipant);
     }
 }

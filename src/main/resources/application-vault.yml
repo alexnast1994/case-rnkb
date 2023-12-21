@@ -69,7 +69,7 @@ spring:
       username: ${DATABASE_USERNAME:OSADMIN}
       password: ${DATABASE_PASSWORD:Qawsed123}
       driver-class-name: ${DATABASE_DRIVER:oracle.jdbc.OracleDriver}
-      schema: ${DATABASE_USERNAME:OSADMIN}
+      schema: ${DB_SCHEMA:DEV_USER_RNKB}
       connection-test-query: ${TEST_QUERY:select 1 from dual}
 
   application:
