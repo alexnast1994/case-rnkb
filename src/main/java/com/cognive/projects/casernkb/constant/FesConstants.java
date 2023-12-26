@@ -56,6 +56,7 @@ public class FesConstants {
     public static final Integer DICTIONARY_346 = 346;
     public static final Integer DICTIONARY_347 = 347;
     public static final Integer DICTIONARY_348 = 348;
+    public static final Integer DICTIONARY_350 = 350;
 
     public static final String NAME = "ФЭС";
     public static final String SUBNAME_FREEZING = "Заморозка";

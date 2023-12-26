@@ -226,7 +226,7 @@ public class FesAutoSaveGeneralInformationDelegate implements JavaDelegate {
             fesOperationInformation.setAmountNationalCurrency(payment.getAmountNationalCurrency());
             if (payment.getCurrency() != null &&
                     (!Objects.equals(payment.getCurrency().getCode(), "810")
-                            || !Objects.equals(payment.getCurrency().getCode(), "643"))) {
+                            && !Objects.equals(payment.getCurrency().getCode(), "643"))) {
                 fesOperationInformation.setCurrencyTransactionAttribute("VO");
             }
             fesOperationInformationRepository.save(fesOperationInformation);

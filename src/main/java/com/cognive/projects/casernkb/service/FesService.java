@@ -75,6 +75,7 @@ import java.util.stream.Collectors;
 
 import static com.cognive.projects.casernkb.constant.FesConstants.ADDRESS_OF_REG;
 import static com.cognive.projects.casernkb.constant.FesConstants.DEFAULT_BRANCHNUM;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_101;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_14;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_18;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_305;
@@ -86,6 +87,8 @@ import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_324
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_325;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_331;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_337;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_342;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_350;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_38;
 import static com.cognive.projects.casernkb.constant.FesConstants.FES_ADDRESS_LOCATION;
 import static com.cognive.projects.casernkb.constant.FesConstants.FES_ADDRESS_OF_REG;
@@ -201,6 +204,9 @@ public class FesService {
             fesParticipantLegal.setParticipantLegalName(clientLegal.getLegalname());
             fesParticipantLegal.setKpp(clientLegal.getKpp());
             fesParticipantLegal.setRegistrationDate(clientLegal.getDateofregistrationbeforeogrn());
+            fesParticipantLegal.setBranchFeature(clientLegal.getLegalForm() != null &&
+                    Objects.equals(clientLegal.getLegalForm().getCode(), "30002") ?
+                    getBd(DICTIONARY_342, "1") : getBd(DICTIONARY_342, "0"));
         }
         fesParticipantLegal.setInn(client.getInn());
         fesParticipantLegal.setOgrn(client.getOgrn());
@@ -266,13 +272,16 @@ public class FesService {
             fesAddress.setHouse(clientAddress.getHouseN1());
             fesAddress.setCorpus(clientAddress.getHouseN2());
             fesAddress.setRoom(clientAddress.getRoomN());
+            fesAddress.setPostal(clientAddress.getPostal());
+            fesAddress.setOkato(getBd(DICTIONARY_101, clientAddress.getOkato()));
             if (clientAddress.getCountryCode() == null &&
                     clientAddress.getAreaName() == null &&
                     clientAddress.getCityName() == null &&
                     clientAddress.getStreetName() == null &&
                     clientAddress.getHouseN1() == null &&
                     clientAddress.getHouseN2() == null &&
-                    clientAddress.getRoomN() == null) {
+                    clientAddress.getRoomN() == null &&
+                    clientAddress.getPostal() == null) {
                 fesAddress.setAddressText(clientAddress.getAddressLine());
             }
         }
@@ -817,6 +826,7 @@ public class FesService {
                 Objects.equals(client.getClientMark().getCode(), "1") ?
                         getBd(DICTIONARY_324, "1") :
                         getBd(DICTIONARY_324, "0"));
+        fesParticipant.setBeneficiaryIdentificateFeature(getBd(DICTIONARY_350, "1"));
         return fesParticipantRepository.save(fesParticipant);
     }
 

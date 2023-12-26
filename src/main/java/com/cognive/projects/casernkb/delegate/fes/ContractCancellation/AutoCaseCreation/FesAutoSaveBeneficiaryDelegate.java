@@ -6,6 +6,7 @@ import com.prime.db.rnkb.model.Client;
 import com.prime.db.rnkb.model.ClientRelation;
 import com.prime.db.rnkb.model.fes.FesBeneficiary;
 import com.prime.db.rnkb.model.fes.FesParticipant;
+import com.prime.db.rnkb.repository.fes.FesParticipantRepository;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
@@ -15,12 +16,14 @@ import java.util.Optional;
 
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_23;
 import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_328;
+import static com.cognive.projects.casernkb.constant.FesConstants.DICTIONARY_350;
 
 @Component
 @RequiredArgsConstructor
 public class FesAutoSaveBeneficiaryDelegate implements JavaDelegate {
 
     private final FesService fesService;
+    private final FesParticipantRepository fesParticipantRepository;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
@@ -38,6 +41,9 @@ public class FesAutoSaveBeneficiaryDelegate implements JavaDelegate {
 
             if (beneficiary == null || beneficiary.equals(client)) {
                 beneficiary = client;
+            } else {
+                fesParticipant.setBeneficiaryIdentificateFeature(fesService.getBd(DICTIONARY_350, "0"));
+                fesParticipantRepository.save(fesParticipant);
             }
             fesService.addParticipantIndividualGeneric(null, fesBeneficiary, null, beneficiary);
         }
