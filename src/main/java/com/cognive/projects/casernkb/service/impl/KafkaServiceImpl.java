@@ -37,9 +37,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -211,7 +209,8 @@ public class KafkaServiceImpl implements KafkaService {
             runProcess(x, () -> {
 
                 Map<String, Object> variables = new HashMap<>();
-                variables.put("payload", x.getPayload());
+                ObjectValue jsonData = Variables.objectValue(x.getPayload()).serializationDataFormat("application/json").create();
+                variables.put("payload", jsonData);
                 return new Process(properties.getPipeline().getProcessName(),
                         false,
                         variables);
