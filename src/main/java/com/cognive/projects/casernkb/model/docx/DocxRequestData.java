@@ -46,27 +46,32 @@ public class DocxRequestData {
             var cell = row.getCell(0);
             var paragraph = cell.addParagraph();
             var run = paragraph.createRun();
-            run.setText(p.getDocCreateDate().format(RUS) + " № " + p.getOperationNumber());
+            var date = p.getDocCreateDate() != null ? p.getDocCreateDate().format(RUS) : "-";
+            run.setText(date + " № " + createText(p.getOperationNumber()));
 
             cell = row.getCell(1);
             paragraph = cell.addParagraph();
             run = paragraph.createRun();
-            run.setText(p.getPayeeName());
+            run.setText(createText(p.getPayeeName()));
 
             cell = row.getCell(2);
             paragraph = cell.addParagraph();
             run = paragraph.createRun();
-            run.setText(p.getPayeeInn());
+            run.setText(createText(p.getPayeeInn()));
 
             cell = row.getCell(3);
             paragraph = cell.addParagraph();
             run = paragraph.createRun();
-            run.setText(p.getAmount().toString());
+            run.setText(createText(p.getAmount().toString()));
 
             cell = row.getCell(4);
             paragraph = cell.addParagraph();
             run = paragraph.createRun();
-            run.setText(p.getPurpose());
+            run.setText(createText(p.getPurpose()));
         });
+    }
+
+    private static String createText(String text) {
+        return text != null ? text : "-";
     }
 }

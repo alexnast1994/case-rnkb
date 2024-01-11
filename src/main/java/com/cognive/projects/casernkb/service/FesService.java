@@ -273,7 +273,7 @@ public class FesService {
             fesAddress.setCorpus(clientAddress.getHouseN2());
             fesAddress.setRoom(clientAddress.getRoomN());
             fesAddress.setPostal(clientAddress.getPostal());
-            fesAddress.setOkato(getBd(DICTIONARY_101, clientAddress.getOkato()));
+            fesAddress.setOkato(clientAddress.getOkato());
             if (clientAddress.getCountryCode() == null &&
                     clientAddress.getAreaName() == null &&
                     clientAddress.getCityName() == null &&
